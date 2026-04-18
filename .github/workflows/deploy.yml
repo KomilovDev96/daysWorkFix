@@ -1,0 +1,39 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+            cd /root/daysWorkfix
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "--- Installing server deps ---"
+            cd /root/daysWorkfix/server
+            npm ci --omit=dev
+
+            echo "--- Installing client deps & building ---"
+            cd /root/daysWorkfix/client
+            npm ci
+            npm run build
+
+            echo "--- Restarting PM2 ---"
+            cd /root/daysWorkfix/server
+            pm2 reload daysworkfix-server || pm2 start server.js --name daysworkfix-server --update-env
+            pm2 save
+
+            echo "--- Done ---"
