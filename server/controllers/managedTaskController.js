@@ -129,8 +129,9 @@ exports.updateTask = catchAsync(async (req, res, next) => {
     if (!isWorker && !canModify(task, req.user))
         return next(new AppError('Нет прав для редактирования этой задачи', 403));
 
-    // Воркер не может поставить completed/cancelled — только менеджер/admin
-    if (isWorker && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
+    // Воркер не может поставить completed/cancelled, КРОМЕ своих личных задач (isSelfTask, созданных им самим)
+    const isOwnSelfTask = task.isSelfTask && String(task.createdBy?._id || task.createdBy) === String(req.user._id);
+    if (isWorker && !isOwnSelfTask && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
         return next(new AppError('Воркер не может установить этот статус. Ожидайте одобрения менеджера.', 403));
 
     const allowed = ['title', 'description', 'status', 'isHot',

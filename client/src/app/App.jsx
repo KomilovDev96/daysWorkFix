@@ -46,7 +46,24 @@ const RoleRedirect = () => {
 
 const App = () => (
     <Provider store={store}>
-        <ConfigProvider locale={ru_RU}>
+        <ConfigProvider
+            locale={ru_RU}
+            theme={{
+                token: {
+                    colorPrimary: '#6ba932',
+                    colorInfo: '#6ba932',
+                    colorLink: '#6ba932',
+                    colorBgLayout: '#f3faef',
+                },
+                components: {
+                    Button: {
+                        colorPrimary: '#1677ff',
+                        colorPrimaryHover: '#4096ff',
+                        colorPrimaryActive: '#0958d9',
+                    },
+                },
+            }}
+        >
             <QueryProvider>
                 <BrowserRouter>
                     <Routes>

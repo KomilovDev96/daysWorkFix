@@ -126,9 +126,12 @@ const MainLayout = () => {
                 <div style={{
                     height: 64, margin: 16,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 'bold', fontSize: collapsed ? 16 : 18, whiteSpace: 'nowrap',
                 }}>
-                    {collapsed ? 'ДЖ' : 'Дневной журнал'}
+                    <img
+                        src="/logo.png"
+                        alt="DaysWorkFix"
+                        style={{ maxHeight: 48, maxWidth: '100%', objectFit: 'contain' }}
+                    />
                 </div>
 
                 {settingsLoading && needsPerms ? (
