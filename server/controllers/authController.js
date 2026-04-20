@@ -56,11 +56,8 @@ exports.getWorkers = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'success', data: { users: workers } });
 });
 
-// Admin — только менеджеры
-exports.getManagers = catchAsync(async (req, res, next) => {
-    if (req.user.role !== 'admin')
-        return next(new AppError('Только администратор', 403));
-
+// Список менеджеров — доступен всем авторизованным (воркеры используют для выбора исполнителя личных задач)
+exports.getManagers = catchAsync(async (req, res) => {
     const managers = await User.find({ role: 'projectManager' }).select('name email role');
     res.status(200).json({ status: 'success', data: { users: managers } });
 });

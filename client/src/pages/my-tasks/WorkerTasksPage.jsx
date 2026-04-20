@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-    Card, Tabs, Table, Button, Modal, Form, Input, Select,
+    Card, Tabs, Table, Button, Modal, Form, Input, Select, AutoComplete,
     DatePicker, InputNumber, Tag, Space, Typography, Popconfirm,
     Badge, Spin, message, Tooltip, Row, Col, Empty, Avatar,
 } from 'antd';
@@ -14,7 +14,7 @@ import TaskCommentsDrawer  from '../../shared/ui/TaskCommentsDrawer';
 import ExportTasksButton   from '../../shared/ui/ExportTasksButton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskProjects, createTaskProject } from '../../shared/api/managedTasksApi';
+import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskProjects, createTaskProject, fetchManagers } from '../../shared/api/managedTasksApi';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -384,7 +384,7 @@ const STATUS_LABEL_MAP = {
     cancelled:   'Отменено',
 };
 
-const SelfTaskModal = ({ open, onClose, onSave, initial, projects }) => {
+const SelfTaskModal = ({ open, onClose, onSave, initial, projects, managers }) => {
     const [form] = Form.useForm();
 
     React.useEffect(() => {
@@ -438,6 +438,16 @@ const SelfTaskModal = ({ open, onClose, onSave, initial, projects }) => {
                 <Form.Item name="project" label="Проект (необязательно)">
                     <Select placeholder="Без проекта" allowClear
                         options={(projects || []).map((p) => ({ value: p._id, label: p.name }))}
+                    />
+                </Form.Item>
+                <Form.Item name="manualAssignee" label="Исполнитель">
+                    <AutoComplete
+                        placeholder="Выберите менеджера или введите имя"
+                        allowClear
+                        filterOption={(input, option) =>
+                            (option?.value ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={(managers || []).map((m) => ({ value: m.name }))}
                     />
                 </Form.Item>
                 <Row gutter={12}>
@@ -501,6 +511,11 @@ const SelfTasksTab = () => {
         queryFn:  fetchTaskProjects,
     });
 
+    const { data: managers = [] } = useQuery({
+        queryKey: ['managers'],
+        queryFn:  fetchManagers,
+    });
+
     const selfTasks = (data?.tasks ?? []).filter((t) => t.isSelfTask);
     const invalidate = () => qc.invalidateQueries({ queryKey: ['my-self-tasks'] });
 
@@ -544,6 +559,12 @@ const SelfTasksTab = () => {
             title: 'Проект', key: 'project', width: 140,
             render: (_, r) => r.project?.name
                 ? <Tag icon={<FolderOutlined />} color="purple">{r.project.name}</Tag>
+                : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
+        },
+        {
+            title: 'Исполнитель', dataIndex: 'manualAssignee', key: 'manualAssignee', width: 140,
+            render: (v) => v
+                ? <Tag icon={<UserOutlined />} color="blue">{v}</Tag>
                 : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
         },
         {
@@ -594,6 +615,7 @@ const SelfTasksTab = () => {
                 onSave={handleSave}
                 initial={editTask}
                 projects={projects}
+                managers={managers}
             />
         </>
     );

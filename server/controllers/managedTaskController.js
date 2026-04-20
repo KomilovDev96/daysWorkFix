@@ -79,7 +79,7 @@ exports.getTask = catchAsync(async (req, res, next) => {
 exports.createTask = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { title, description, type, parentId, assignedTo, isHot,
-            estimatedHours, startDate, dueDate, isSelfTask, project, client } = req.body;
+            estimatedHours, startDate, dueDate, isSelfTask, project, client, manualAssignee } = req.body;
 
     // Worker может создавать только свои задачи
     if (user.role === 'worker' && !isSelfTask)
@@ -103,6 +103,7 @@ exports.createTask = catchAsync(async (req, res, next) => {
         startDate:      startDate || null,
         dueDate:        dueDate   || null,
         client:         client    || '',
+        manualAssignee: manualAssignee || '',
     });
 
     await task.populate(POPULATE_OPTS);
@@ -136,9 +137,11 @@ exports.updateTask = catchAsync(async (req, res, next) => {
 
     const allowed = ['title', 'description', 'status', 'isHot',
                      'estimatedHours', 'actualHours', 'startDate', 'dueDate',
-                     'assignedTo', 'project', 'client'];
-    // Воркер может менять только статус и фактические часы
-    const workerAllowed = ['status', 'actualHours'];
+                     'assignedTo', 'project', 'client', 'manualAssignee'];
+    // Воркер может менять только статус, часы и (для своих) исполнителя и основные поля
+    const workerAllowed = isOwnSelfTask
+        ? ['title', 'description', 'status', 'estimatedHours', 'actualHours', 'startDate', 'dueDate', 'project', 'manualAssignee']
+        : ['status', 'actualHours'];
     const fields = isWorker ? workerAllowed : allowed;
 
     fields.forEach((f) => { if (req.body[f] !== undefined) task[f] = req.body[f]; });
