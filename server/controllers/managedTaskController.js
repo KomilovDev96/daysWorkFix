@@ -130,14 +130,15 @@ exports.updateTask = catchAsync(async (req, res, next) => {
         return next(new AppError('Нет прав для редактирования этой задачи', 403));
 
     // Воркер не может поставить completed/cancelled — только менеджер/admin
-    if (isWorker && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
+    // Исключение: личные задачи (isSelfTask) — воркер управляет ими сам
+    if (isWorker && !task.isSelfTask && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
         return next(new AppError('Воркер не может установить этот статус. Ожидайте одобрения менеджера.', 403));
 
     const allowed = ['title', 'description', 'status', 'isHot',
                      'estimatedHours', 'actualHours', 'startDate', 'dueDate',
                      'assignedTo', 'project', 'client'];
-    // Воркер может менять только статус и фактические часы
-    const workerAllowed = ['status', 'actualHours'];
+    // Воркер может менять только статус и фактические часы (но для личных задач — все поля)
+    const workerAllowed = task.isSelfTask ? allowed : ['status', 'actualHours'];
     const fields = isWorker ? workerAllowed : allowed;
 
     fields.forEach((f) => { if (req.body[f] !== undefined) task[f] = req.body[f]; });

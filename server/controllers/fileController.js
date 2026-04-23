@@ -30,6 +30,13 @@ exports.uploadFile = catchAsync(async (req, res, next) => {
     });
 });
 
+exports.getFilesByTask = catchAsync(async (req, res, next) => {
+    const { taskId } = req.query;
+    if (!taskId) return next(new AppError('taskId обязателен', 400));
+    const files = await TaskFile.find({ taskId }).sort({ createdAt: -1 });
+    res.status(200).json({ status: 'success', data: { files } });
+});
+
 exports.deleteFile = catchAsync(async (req, res, next) => {
     const file = await TaskFile.findByIdAndDelete(req.params.id);
 

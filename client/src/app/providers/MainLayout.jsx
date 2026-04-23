@@ -122,13 +122,15 @@ const MainLayout = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <Sider trigger={null} collapsible collapsed={collapsed} theme="light">
+            <Sider trigger={null} collapsible collapsed={collapsed} theme="light" style={{ position: 'relative' }}>
                 <div style={{
                     height: 64, margin: 16,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 'bold', fontSize: collapsed ? 16 : 18, whiteSpace: 'nowrap',
                 }}>
-                    {collapsed ? 'ДЖ' : 'Дневной журнал'}
+                    {collapsed
+                        ? <img src="/weeko-logo-icon.svg" alt="W" style={{ height: 32 }} />
+                        : <img src="/weeko-logo.svg" alt="Weeko" style={{ height: 30, maxWidth: 130 }} />
+                    }
                 </div>
 
                 {settingsLoading && needsPerms ? (
@@ -143,6 +145,15 @@ const MainLayout = () => {
                         onClick={({ key }) => { if (!key.startsWith('/')) return; navigate(key); }}
                     />
                 )}
+
+                <div style={{
+                    position: 'absolute', bottom: 16,
+                    width: '100%', textAlign: 'center',
+                    fontSize: 11, color: '#bbb',
+                    letterSpacing: 0.5,
+                }}>
+                    {!collapsed && 'by azdev'}
+                </div>
             </Sider>
 
             <Layout>

@@ -186,73 +186,112 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
 
     if (!project) return next(new AppError('Проект не найден', 404));
 
+    // ?unpaidOnly=true — только неоплаченные задачи
+    const unpaidOnly = req.query.unpaidOnly === 'true';
+    const allTasks   = (project.tasks || []).map(t => t.toObject ? t.toObject() : t);
+    const tasks      = unpaidOnly ? allTasks.filter(t => !t.isPaid) : allTasks;
+
+    const sheetLabel = unpaidOnly
+        ? `${project.name.slice(0, 25)} (неопл.)`
+        : project.name.slice(0, 31);
+
     const workbook = new ExcelJS.Workbook();
-    const ws = workbook.addWorksheet(project.name.slice(0, 31));
+    const ws = workbook.addWorksheet(sheetLabel);
 
-    ws.columns = [
-        { header: 'нумерация', key: 'num',      width: 12 },
-        { header: 'Задачи',    key: 'title',     width: 55 },
-        { header: 'время  часы', key: 'hours',   width: 14 },
-        { header: 'заказчик',  key: 'customer',  width: 25 },
-        { header: 'проект(система)', key: 'system', width: 22 },
-        { header: 'дата',      key: 'date',      width: 14 },
-    ];
-
-    // Header — красный фон, синий жирный текст
-    const headerRow = ws.getRow(1);
-    headerRow.height = 22;
-    headerRow.font  = { bold: true, color: { argb: 'FF0000CC' } };
-    headerRow.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFB3B3' } };
-    headerRow.eachCell((cell) => {
+    const border = (cell) => {
         cell.border = {
             top:    { style: 'thin', color: { argb: 'FF999999' } },
             left:   { style: 'thin', color: { argb: 'FF999999' } },
             bottom: { style: 'thin', color: { argb: 'FF999999' } },
             right:  { style: 'thin', color: { argb: 'FF999999' } },
         };
-    });
-
-    const addStyledRow = (values) => {
-        const row = ws.addRow(values);
-        row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9EAD3' } };
-        row.eachCell({ includeEmpty: true }, (cell) => {
-            cell.border = {
-                top:    { style: 'thin', color: { argb: 'FF999999' } },
-                left:   { style: 'thin', color: { argb: 'FF999999' } },
-                bottom: { style: 'thin', color: { argb: 'FF999999' } },
-                right:  { style: 'thin', color: { argb: 'FF999999' } },
-            };
-        });
-        return row;
     };
 
-    project.tasks.forEach((task, index) => {
+    ws.columns = [
+        { header: '№',               key: 'num',      width: 6  },
+        { header: 'Задача',          key: 'title',    width: 52 },
+        { header: 'Часы',            key: 'hours',    width: 10 },
+        { header: 'Заказчик',        key: 'customer', width: 24 },
+        { header: 'Система/Проект',  key: 'system',   width: 20 },
+        { header: 'Дата',            key: 'date',     width: 13 },
+        { header: 'Оплата',          key: 'paid',     width: 14 },
+    ];
+
+    // Заголовок
+    const headerRow = ws.getRow(1);
+    headerRow.height = 24;
+    headerRow.font  = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+    headerRow.fill  = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF166534' } };
+    headerRow.eachCell((cell) => {
+        border(cell);
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    });
+
+    tasks.forEach((task, index) => {
         const dateStr = task.dueDate
-            ? new Date(task.dueDate).toISOString().slice(0, 10)
-            : '';
-        addStyledRow({
+            ? new Date(task.dueDate).toLocaleDateString('ru-RU')
+            : '—';
+        const isPaid = task.isPaid === true;
+
+        const row = ws.addRow({
             num:      index + 1,
             title:    task.title,
             hours:    task.hours || 0,
-            customer: task.customer || '',
-            system:   task.system  || '',
+            customer: task.customer || '—',
+            system:   task.system  || '—',
             date:     dateStr,
+            paid:     isPaid ? '✅ Оплачено' : '❌ Не оплачено',
         });
+
+        row.height = 20;
+
+        // Чередование строк
+        const baseBg = index % 2 === 0 ? 'FFD9EAD3' : 'FFF0FAF4';
+        row.eachCell({ includeEmpty: true }, (cell) => {
+            border(cell);
+            cell.alignment = { vertical: 'middle', wrapText: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: baseBg } };
+        });
+
+        // Колонка "Оплата" — цветная
+        const paidCell = row.getCell('paid');
+        paidCell.font = { bold: true, color: { argb: isPaid ? 'FF166534' : 'FFB91C1C' } };
+        paidCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isPaid ? 'FFD1FAE5' : 'FFFEE2E2' } };
+        paidCell.alignment = { horizontal: 'center', vertical: 'middle' };
     });
 
-    // Пустые зелёные строки до конца (как на скриншоте)
-    const fillerCount = Math.max(0, 20 - project.tasks.length);
-    for (let i = 0; i < fillerCount; i++) {
-        addStyledRow({ num: '', title: '', hours: '', customer: '', system: '', date: '' });
-    }
+    // ── Итоговая строка ────────────────────────────────────────────────────────
+    const totalHours    = tasks.reduce((s, t) => s + (Number(t.hours) || 0), 0);
+    const paidHours     = tasks.filter((t) => t.isPaid).reduce((s, t) => s + (Number(t.hours) || 0), 0);
+    const unpaidHours   = totalHours - paidHours;
+    const paidCount     = tasks.filter((t) => t.isPaid).length;
+    const unpaidCount   = tasks.length - paidCount;
 
-    // Выравнивание
+    ws.addRow({}); // пустая строка-разделитель
+
+    const totalRow = ws.addRow({
+        num:      '',
+        title:    `Итого задач: ${tasks.length}  |  Оплачено: ${paidCount}  |  Не оплачено: ${unpaidCount}`,
+        hours:    totalHours,
+        customer: '',
+        system:   '',
+        date:     '',
+        paid:     `✅ ${paidHours}ч  /  ❌ ${unpaidHours}ч`,
+    });
+    totalRow.height = 24;
+    totalRow.font   = { bold: true, size: 11, color: { argb: 'FF052E16' } };
+    totalRow.fill   = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF86EFAC' } };
+    totalRow.eachCell({ includeEmpty: true }, (cell) => {
+        border(cell);
+        cell.alignment = { vertical: 'middle', wrapText: true };
+    });
+    totalRow.getCell('paid').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    // Выравнивание колонок
     ws.getColumn('title').alignment    = { wrapText: true, vertical: 'middle' };
     ws.getColumn('hours').alignment    = { horizontal: 'center', vertical: 'middle' };
     ws.getColumn('num').alignment      = { horizontal: 'center', vertical: 'middle' };
     ws.getColumn('date').alignment     = { horizontal: 'center', vertical: 'middle' };
-    ws.getColumn('customer').alignment = { vertical: 'middle' };
-    ws.getColumn('system').alignment   = { vertical: 'middle' };
 
     const safeFileName = project.name.replace(/[^a-zA-Zа-яА-Я0-9_\- ]/g, '').trim() || 'project';
 

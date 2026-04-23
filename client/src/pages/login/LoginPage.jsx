@@ -38,7 +38,8 @@ const LoginPage = () => {
         <Layout style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Card style={{ width: 400, boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
                 <div style={{ textAlign: 'center', marginBottom: 24 }}>
-                    <Title level={2}>Дневной журнал работы</Title>
+                    <img src="/weeko-logo.svg" alt="Weeko" style={{ height: 40, marginBottom: 16 }} />
+                    <Title level={2} style={{ marginTop: 0 }}>Дневной журнал работы</Title>
                     <Text type="secondary">Система записи ежедневных задач для сотрудников</Text>
                 </div>
                 <Form

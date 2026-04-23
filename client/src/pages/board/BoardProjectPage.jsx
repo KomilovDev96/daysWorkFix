@@ -548,19 +548,23 @@ const BoardProjectPage = () => {
         }
     };
 
-    const handleExcel = async (project) => {
+    const handleExcel = async (project, unpaidOnly = false) => {
         try {
-            const response = await apiClient.get(`/board-projects/${project._id}/export`, { responseType: 'blob' });
+            const response = await apiClient.get(`/board-projects/${project._id}/export`, {
+                responseType: 'blob',
+                params: unpaidOnly ? { unpaidOnly: 'true' } : {},
+            });
             const blob = new Blob([response.data], {
                 type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             });
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', `${project.name}.xlsx`);
+            const suffix = unpaidOnly ? '_неоплаченные' : '';
+            link.setAttribute('download', `${project.name}${suffix}.xlsx`);
             document.body.appendChild(link);
             link.click();
             link.remove();
-            message.success('Excel экспортирован');
+            message.success(unpaidOnly ? 'Неоплаченные задачи экспортированы' : 'Excel экспортирован');
         } catch {
             message.error('Не удалось экспортировать');
         }
@@ -918,6 +922,14 @@ const BoardProjectPage = () => {
                         disabled={!currentProject.tasks?.length}
                     >
                         Экспорт Excel
+                    </Button>
+                    <Button
+                        icon={<FileExcelOutlined />}
+                        style={{ color: '#DC2626', borderColor: '#DC2626' }}
+                        onClick={() => handleExcel(currentProject, true)}
+                        disabled={!currentProject.tasks?.some(t => !t.isPaid)}
+                    >
+                        ❌ Неоплаченные
                     </Button>
                     <Button type="primary" icon={<PlusOutlined />} onClick={openCreateTask}>
                         Добавить задачу

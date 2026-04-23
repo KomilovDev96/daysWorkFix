@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.use(protect);
 
+router.get('/',           fileController.getFilesByTask);
 router.post('/upload', upload.single('file'), fileController.uploadFile);
 router.delete('/:id', fileController.deleteFile);
 

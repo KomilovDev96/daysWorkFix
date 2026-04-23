@@ -32,3 +32,13 @@ export const exportMyTasks = (params) => apiClient.get('/managed-tasks/export-my
 // Пользователи
 export const fetchWorkers  = () => apiClient.get('/auth/workers').then(r => r.data.data.users);
 export const fetchManagers = () => apiClient.get('/auth/managers').then(r => r.data.data.users);
+
+// Файлы задач
+export const fetchTaskFiles  = (taskId)       => apiClient.get('/files', { params: { taskId } }).then(r => r.data.data.files);
+export const uploadTaskFile  = (taskId, file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('taskId', taskId);
+    return apiClient.post('/files/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } }).then(r => r.data.data.file);
+};
+export const deleteTaskFile  = (fileId)       => apiClient.delete(`/files/${fileId}`);

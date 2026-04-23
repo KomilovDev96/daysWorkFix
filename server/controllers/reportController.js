@@ -2,6 +2,7 @@ const DayLog = require('../models/DayLog');
 const Task = require('../models/Task');
 const Project = require('../models/Project');
 const AiInsight = require('../models/AiInsight');
+const ManagedTask = require('../models/ManagedTask');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const excelService = require('../services/excelService');
@@ -763,13 +764,33 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
     const logIds = logs.map((l) => l._id);
     const totalTasks = await Task.countDocuments({ dayLogId: { $in: logIds } });
 
+    // Также подтягиваем выполненные ManagedTask за период (личные + назначенные)
+    const managedFilter = {
+        status: 'completed',
+        dueDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+    };
+    if (effectiveUserId) {
+        managedFilter.$or = [
+            { assignedTo: effectiveUserId },
+            { createdBy: effectiveUserId, isSelfTask: true },
+        ];
+    }
+    const managedTasks = await ManagedTask.find(managedFilter)
+        .populate('createdBy', 'name email')
+        .populate('project', 'name')
+        .sort({ dueDate: -1 });
+
+    const managedHours = managedTasks.reduce((s, t) => s + (t.actualHours || t.estimatedHours || 0), 0);
+
     res.status(200).json({
         status: 'success',
         data: {
             totalTasks,
             totalHours,
             daysWorked,
-            logs
+            logs,
+            managedTasks,
+            managedHours,
         }
     });
 });
@@ -1028,6 +1049,44 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
             });
         });
     });
+
+    // Добавляем выполненные ManagedTask за тот же период
+    const managedFilter = {
+        status: 'completed',
+        dueDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+    };
+    if (effectiveUserId) {
+        managedFilter.$or = [
+            { assignedTo: effectiveUserId },
+            { createdBy: effectiveUserId, isSelfTask: true },
+        ];
+    }
+    const managedTasks = await ManagedTask.find(managedFilter)
+        .populate('createdBy', 'name email')
+        .populate('project', 'name')
+        .sort({ dueDate: -1 });
+
+    managedTasks.forEach((task) => {
+        const hours = task.actualHours || task.estimatedHours || 0;
+        reportData.push({
+            user:        task.createdBy || { name: '—', email: '—' },
+            date:        task.dueDate,
+            projectName: task.project?.name || '—',
+            tasks: [{
+                title:         task.title,
+                description:   task.description || '',
+                hours,
+                comment:       task.isSelfTask ? '[Личная задача]' : '[От менеджера]',
+                customer:      task.client ? { name: task.client } : null,
+                testingStatus: 'completed',
+            }],
+            totalHours: hours,
+            period:     periodLabel,
+        });
+    });
+
+    // Сортируем по дате — свежие сверху
+    reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     const workbook = await excelService.generateReport(reportData);
 
