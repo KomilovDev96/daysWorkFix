@@ -79,7 +79,7 @@ exports.getTask = catchAsync(async (req, res, next) => {
 exports.createTask = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { title, description, type, parentId, assignedTo, isHot,
-            estimatedHours, startDate, dueDate, isSelfTask, project, client } = req.body;
+            estimatedHours, startDate, dueDate, isSelfTask, project, client, manualAssignee } = req.body;
 
     // Worker может создавать только свои задачи
     if (user.role === 'worker' && !isSelfTask)
@@ -103,6 +103,7 @@ exports.createTask = catchAsync(async (req, res, next) => {
         startDate:      startDate || null,
         dueDate:        dueDate   || null,
         client:         client    || '',
+        manualAssignee: manualAssignee || '',
     });
 
     await task.populate(POPULATE_OPTS);
@@ -129,16 +130,30 @@ exports.updateTask = catchAsync(async (req, res, next) => {
     if (!isWorker && !canModify(task, req.user))
         return next(new AppError('Нет прав для редактирования этой задачи', 403));
 
+<<<<<<< HEAD
     // Воркер не может поставить completed/cancelled — только менеджер/admin
     // Исключение: личные задачи (isSelfTask) — воркер управляет ими сам
     if (isWorker && !task.isSelfTask && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
+=======
+    // Воркер не может поставить completed/cancelled, КРОМЕ своих личных задач (isSelfTask, созданных им самим)
+    const isOwnSelfTask = task.isSelfTask && String(task.createdBy?._id || task.createdBy) === String(req.user._id);
+    if (isWorker && !isOwnSelfTask && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
         return next(new AppError('Воркер не может установить этот статус. Ожидайте одобрения менеджера.', 403));
 
     const allowed = ['title', 'description', 'status', 'isHot',
                      'estimatedHours', 'actualHours', 'startDate', 'dueDate',
+<<<<<<< HEAD
                      'assignedTo', 'project', 'client'];
     // Воркер может менять только статус и фактические часы (но для личных задач — все поля)
     const workerAllowed = task.isSelfTask ? allowed : ['status', 'actualHours'];
+=======
+                     'assignedTo', 'project', 'client', 'manualAssignee'];
+    // Воркер может менять только статус, часы и (для своих) исполнителя и основные поля
+    const workerAllowed = isOwnSelfTask
+        ? ['title', 'description', 'status', 'estimatedHours', 'actualHours', 'startDate', 'dueDate', 'project', 'manualAssignee']
+        : ['status', 'actualHours'];
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
     const fields = isWorker ? workerAllowed : allowed;
 
     fields.forEach((f) => { if (req.body[f] !== undefined) task[f] = req.body[f]; });

@@ -1,0 +1,2816 @@
+{
+  "projectcomments": [],
+  "managedtasks": [
+    {
+      "_id": "69dcc6bb983d9e65262c98f4",
+      "title": "кенкенкенкенкенке",
+      "description": "кернкенрекн",
+      "type": "hourly",
+      "parentId": null,
+      "createdBy": "69dc76551fbca6293e3072eb",
+      "assignedTo": [
+        "69dcc6330e76cbce759b1f48",
+        "69df4c1f68b81fb2208f8c6a"
+      ],
+      "status": "completed",
+      "isHot": true,
+      "isSelfTask": false,
+      "estimatedHours": 2,
+      "actualHours": 0,
+      "startDate": "2026-04-12T19:00:00.000Z",
+      "dueDate": "2026-04-13T10:34:24.500Z",
+      "createdAt": "2026-04-13T10:34:35.039Z",
+      "updatedAt": "2026-04-13T10:40:02.116Z",
+      "__v": 0
+    },
+    {
+      "_id": "69dcc981419263dd1e989b61",
+      "title": "asdas",
+      "description": "dasdas",
+      "type": "hourly",
+      "parentId": null,
+      "project": "69dcc974419263dd1e989b51",
+      "createdBy": "69dc76551fbca6293e3072eb",
+      "assignedTo": [
+        "69dcc6330e76cbce759b1f48",
+        "69df4c1f68b81fb2208f8c6a"
+      ],
+      "status": "completed",
+      "isHot": false,
+      "isSelfTask": false,
+      "estimatedHours": 2,
+      "actualHours": 0,
+      "startDate": "2026-04-12T19:00:00.000Z",
+      "dueDate": "2026-04-12T19:00:00.000Z",
+      "createdAt": "2026-04-13T10:46:25.432Z",
+      "updatedAt": "2026-04-13T10:46:45.043Z",
+      "__v": 0
+    },
+    {
+      "_id": "69dcca5c419263dd1e989d1d",
+      "title": "фывфыв",
+      "description": "ыфвфывфывфы",
+      "type": "hourly",
+      "parentId": null,
+      "project": "69dcc974419263dd1e989b51",
+      "createdBy": "69dc76551fbca6293e3072eb",
+      "assignedTo": [
+        "69dcc6330e76cbce759b1f48",
+        "69df4c1f68b81fb2208f8c6a"
+      ],
+      "status": "completed",
+      "isHot": true,
+      "isSelfTask": false,
+      "estimatedHours": 0,
+      "actualHours": 0,
+      "startDate": "2026-04-12T19:00:00.000Z",
+      "dueDate": "2026-04-12T19:00:00.000Z",
+      "createdAt": "2026-04-13T10:50:04.522Z",
+      "updatedAt": "2026-04-13T10:50:32.155Z",
+      "__v": 0
+    },
+    {
+      "_id": "69dcd0ca1020c2f2aa383f18",
+      "title": "фывыфвфы",
+      "description": "фывфывыф",
+      "type": "weekly",
+      "parentId": null,
+      "project": "69dcc974419263dd1e989b51",
+      "createdBy": "69dc76551fbca6293e3072eb",
+      "assignedTo": [
+        "69dcc6330e76cbce759b1f48",
+        "69df4c1f68b81fb2208f8c6a"
+      ],
+      "status": "completed",
+      "isHot": false,
+      "isSelfTask": false,
+      "estimatedHours": 6,
+      "actualHours": 0,
+      "startDate": "2026-04-12T19:00:00.000Z",
+      "dueDate": "2026-04-20T19:00:00.000Z",
+      "comments": [
+        {
+          "text": "фывфывфыв",
+          "author": "69dcc6330e76cbce759b1f48",
+          "_id": "69dcd0d61020c2f2aa383f39",
+          "createdAt": "2026-04-13T11:17:42.600Z"
+        },
+        {
+          "text": "фывфыв",
+          "author": "69dc76551fbca6293e3072eb",
+          "_id": "69dcd1011020c2f2aa383f9f",
+          "createdAt": "2026-04-13T11:18:25.943Z"
+        }
+      ],
+      "createdAt": "2026-04-13T11:17:30.855Z",
+      "updatedAt": "2026-04-13T11:18:25.944Z",
+      "__v": 2
+    },
+    {
+      "_id": "69df4d5068b81fb2208f8d8e",
+      "title": "SmartSpace",
+      "description": "asdasdas",
+      "type": "daily",
+      "parentId": null,
+      "project": "69df54c268b81fb2208f9019",
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "assignedTo": [
+        "69df4c1f68b81fb2208f8c6a"
+      ],
+      "status": "completed",
+      "isHot": false,
+      "client": "Aziz Kobulov",
+      "isSelfTask": true,
+      "estimatedHours": 4,
+      "actualHours": 0,
+      "startDate": "2026-04-14T19:00:00.000Z",
+      "dueDate": "2026-04-14T19:00:00.000Z",
+      "comments": [],
+      "createdAt": "2026-04-15T08:33:20.207Z",
+      "updatedAt": "2026-04-15T09:32:51.874Z",
+      "__v": 0
+    },
+    {
+      "_id": "69df551568b81fb2208f903b",
+      "title": "Coinlar Admin Panel Smart Space boyicha",
+      "description": "Smart Space boyica Admin Panel",
+      "type": "daily",
+      "parentId": null,
+      "project": "69df54c268b81fb2208f9019",
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "assignedTo": [],
+      "status": "completed",
+      "isHot": false,
+      "client": "Aziz Kobulov",
+      "isSelfTask": true,
+      "estimatedHours": 4,
+      "actualHours": 0,
+      "startDate": "2026-04-14T19:00:00.000Z",
+      "dueDate": "2026-04-15T18:59:59.999Z",
+      "comments": [],
+      "createdAt": "2026-04-15T09:06:29.571Z",
+      "updatedAt": "2026-04-16T06:39:11.432Z",
+      "__v": 0
+    },
+    {
+      "_id": "69e083bdf33a64aacd414854",
+      "title": "SmartSpace-> Dashboard qilish kerak",
+      "description": "Yangi dashboardga dizayn va qanday apilar ketadi tahlab chiqish kerak  Golosari va baglar hr-page bo\\limida",
+      "type": "hourly",
+      "parentId": null,
+      "project": "69df54c268b81fb2208f9019",
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "assignedTo": [],
+      "status": "completed",
+      "isHot": false,
+      "client": "Aziz Kobulov",
+      "isSelfTask": true,
+      "estimatedHours": 8,
+      "actualHours": 0,
+      "startDate": "2026-04-15T19:00:00.000Z",
+      "dueDate": "2026-04-16T18:59:59.999Z",
+      "comments": [],
+      "createdAt": "2026-04-16T06:37:49.013Z",
+      "updatedAt": "2026-04-16T10:07:44.521Z",
+      "__v": 0
+    },
+    {
+      "_id": "69e1b379e8771b1561b85dfb",
+      "title": "Smart Space-Hr-pageFixBug",
+      "description": "Smart Space bo'limida hr-page bug qilyapiz va admin panel yangi dizayn bo'yicha",
+      "type": "daily",
+      "parentId": null,
+      "project": "69df54c268b81fb2208f9019",
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "assignedTo": [],
+      "status": "pending",
+      "isHot": false,
+      "client": "Aziz Kobulov",
+      "isSelfTask": true,
+      "estimatedHours": 8,
+      "actualHours": 0,
+      "startDate": "2026-04-16T19:00:00.000Z",
+      "dueDate": "2026-04-17T18:59:59.999Z",
+      "comments": [],
+      "createdAt": "2026-04-17T04:13:45.423Z",
+      "updatedAt": "2026-04-17T04:13:45.423Z",
+      "__v": 0
+    }
+  ],
+  "aiinsights": [
+    {
+      "_id": "69ca3977c0b37ee95d83fad0",
+      "userId": null,
+      "requestedBy": "69a950b1ec0975e84b7add82",
+      "startDate": "2025-12-30T00:00:00.000Z",
+      "endDate": "2026-03-30T00:00:00.000Z",
+      "provider": "huggingface",
+      "model": "https://router.huggingface.co/v1/chat/completions | model=Qwen/Qwen3.5-9B",
+      "prompt": "You are an experienced project delivery analyst.\nAnalyze this project's execution health and respond ONLY in Russian.\n\nPeriod: 2025-12-30 to 2026-03-30\nOverview:\n- totalHours: 128\n- totalTasks: 29\n- completedTasks: 27\n- pendingTasks: 2\n- failedTasks: 0\n- testingCompleted: 1\n- testingInProgress: 0\n- testingNotReviewed: 28\n- completionRate: 93.1%\n\nWeekly comparison:\n- bestWeek: 2026-W11 (completed=7, hours=30)\n- worstWeek: 2026-W14 (completed=2, hours=8)\n- totalResolvedTasks: 27\n- latestVsPrevious: deltaResolvedTasks=-4, deltaHours=-25\n\nDaily samples:\n2026-03-18: tasks=2, completed=2, hours=9, completionRate=100%\n2026-03-19: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-23: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-24: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-25: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-27: tasks=2, completed=1, hours=9, completionRate=50%\n2026-03-30: tasks=2, completed=2, hours=8, completionRate=100%\n\nWeekly samples:\n2026-W10: tasks=7, completed=6, hours=28, completionRate=85.71%\n2026-W11: tasks=7, completed=7, hours=30, completionRate=100%\n2026-W12: tasks=6, completed=6, hours=29, completionRate=100%\n2026-W13: tasks=7, completed=6, hours=33, completionRate=85.71%\n2026-W14: tasks=2, completed=2, hours=8, completionRate=100%\n\nMonthly samples:\n2026-03: tasks=29, completed=27, hours=128, completionRate=93.1%\n\nReturn strict markdown with sections:\n## Состояние проекта\n## Растет ли успеваемость\n## Разница между неделями\n## Риски\n## Советы по улучшению\n\nIn \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.",
+      "aiSummary": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Role:** Project Delivery Analyst.\n    *   **Task:** Analyze project execution health based on provided data.\n    *   **Language:** Russian ONLY.\n    *   **Period:** 2025-12-30 to 2026-03-30 (Note: The data provided seems to be from March 2026, which is in the future relative to \"now\", but I must treat the data as given).\n    *   **Output Format:** Strict Markdown with specific sections:\n        *   `## Состояние проекта`\n        *   `## Растет ли успеваемость`\n        *   `## Разница между неделями`\n        *   `## Риски`\n        *   `## Советы по улучшению`\n    *   **Constraint:** In \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.\n    *   **Constraint:** Respond ONLY in Russian.\n\n2.  **Analyze the Data:**\n    *   **Overview:**\n        *   Total Hours: 128\n        *   Total Tasks: 29\n        *   Completed: 27 (93.1%)\n        *   Pending: 2\n        *   Failed: 0\n        *   Testing Completed: 1\n        *   Testing Not Reviewed: 28 (This is a huge red flag. Only 1 task has testing completed, but 28 are not reviewed. This suggests a bottleneck in QA or definition of \"testing\").\n    *   **Weekly Comparison:**\n        *   Best Week: W11 (7 tasks, 30 hours)\n        *   Worst Week: W14 (2 tasks, 8 hours)\n        *   Latest vs Previous: deltaResolvedTasks = -4, deltaHours = -25. (This implies a slowdown in recent activity compared to the previous period).\n    *   **Daily Samples:**\n        *   Mostly 100% completion on specific days (18, 19, 23, 24, 25, 30).\n        *   One day (27) was 50% (1/2 tasks).\n        *   High completion rate daily.\n    *   **Weekly Samples:**\n        *   W10: 85.71%\n        *   W11: 100%\n        *   W12: 100%\n        *   W13: 85.71%\n        *   W14: 100% (but only 2 tasks).\n    *   **Monthly Samples:**\n        *   March 2026: 93.1% completion.\n\n3.  **Evaluate Execution Health:**\n    *   **Completion Rate:** High (93.1%).\n    *   **Testing Status:** Critical issue. 28 tasks are \"testingNotReviewed\". Only 1 is \"testingCompleted\". This contradicts the high completion rate if \"completed\" means \"done\". Usually, if testing is not reviewed, the task isn't truly",
+      "aiRawResponse": {
+        "id": "od7MnwH-3pDw3Z-9e45de9dfbd78293",
+        "object": "chat.completion",
+        "created": 1774860662,
+        "model": "Qwen/Qwen3.5-9B",
+        "metadata": {
+          "weight_version": "default"
+        },
+        "prompt": [],
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "tool_calls": [],
+              "reasoning": "Thinking Process:\n\n1.  **Analyze the Request:**\n    *   **Role:** Project Delivery Analyst.\n    *   **Task:** Analyze project execution health based on provided data.\n    *   **Language:** Russian ONLY.\n    *   **Period:** 2025-12-30 to 2026-03-30 (Note: The data provided seems to be from March 2026, which is in the future relative to \"now\", but I must treat the data as given).\n    *   **Output Format:** Strict Markdown with specific sections:\n        *   `## Состояние проекта`\n        *   `## Растет ли успеваемость`\n        *   `## Разница между неделями`\n        *   `## Риски`\n        *   `## Советы по улучшению`\n    *   **Constraint:** In \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.\n    *   **Constraint:** Respond ONLY in Russian.\n\n2.  **Analyze the Data:**\n    *   **Overview:**\n        *   Total Hours: 128\n        *   Total Tasks: 29\n        *   Completed: 27 (93.1%)\n        *   Pending: 2\n        *   Failed: 0\n        *   Testing Completed: 1\n        *   Testing Not Reviewed: 28 (This is a huge red flag. Only 1 task has testing completed, but 28 are not reviewed. This suggests a bottleneck in QA or definition of \"testing\").\n    *   **Weekly Comparison:**\n        *   Best Week: W11 (7 tasks, 30 hours)\n        *   Worst Week: W14 (2 tasks, 8 hours)\n        *   Latest vs Previous: deltaResolvedTasks = -4, deltaHours = -25. (This implies a slowdown in recent activity compared to the previous period).\n    *   **Daily Samples:**\n        *   Mostly 100% completion on specific days (18, 19, 23, 24, 25, 30).\n        *   One day (27) was 50% (1/2 tasks).\n        *   High completion rate daily.\n    *   **Weekly Samples:**\n        *   W10: 85.71%\n        *   W11: 100%\n        *   W12: 100%\n        *   W13: 85.71%\n        *   W14: 100% (but only 2 tasks).\n    *   **Monthly Samples:**\n        *   March 2026: 93.1% completion.\n\n3.  **Evaluate Execution Health:**\n    *   **Completion Rate:** High (93.1%).\n    *   **Testing Status:** Critical issue. 28 tasks are \"testingNotReviewed\". Only 1 is \"testingCompleted\". This contradicts the high completion rate if \"completed\" means \"done\". Usually, if testing is not reviewed, the task isn't truly"
+            },
+            "logprobs": null,
+            "finish_reason": "length",
+            "seed": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 693,
+          "total_tokens": 1393,
+          "completion_tokens": 700,
+          "reasoning_tokens": 0
+        }
+      },
+      "analyticsSnapshot": {
+        "period": {
+          "startDate": "2025-12-30",
+          "endDate": "2026-03-30"
+        },
+        "overview": {
+          "totalHours": 128,
+          "totalTasks": 29,
+          "completedTasks": 27,
+          "failedTasks": 0,
+          "pendingTasks": 2,
+          "testingCompleted": 1,
+          "testingInProgress": 0,
+          "testingNotReviewed": 28,
+          "completionRate": 93.1
+        },
+        "daily": [
+          {
+            "label": "2026-03-07",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-10",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-11",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 6,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-12",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-13",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-16",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 7,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-17",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-18",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 9,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-19",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-23",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-24",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-25",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-27",
+            "totalTasks": 2,
+            "completedTasks": 1,
+            "totalHours": 9,
+            "completionRate": 50
+          },
+          {
+            "label": "2026-03-30",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "weekly": [
+          {
+            "label": "2026-W10",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 28,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W11",
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "totalHours": 30,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W12",
+            "totalTasks": 6,
+            "completedTasks": 6,
+            "totalHours": 29,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W13",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 33,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W14",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "monthly": [
+          {
+            "label": "2026-03",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "yearly": [
+          {
+            "label": "2026",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "weeklyInsights": {
+          "bestWeek": {
+            "key": "2026-W11",
+            "label": "2026-W11",
+            "startDate": "2026-03-09",
+            "endDate": "2026-03-15",
+            "totalHours": 30,
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 0,
+            "testingInProgress": 0,
+            "testingNotReviewed": 7,
+            "completionRate": 100
+          },
+          "worstWeek": {
+            "key": "2026-W14",
+            "label": "2026-W14",
+            "startDate": "2026-03-30",
+            "endDate": "2026-04-05",
+            "totalHours": 8,
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 1,
+            "testingInProgress": 0,
+            "testingNotReviewed": 1,
+            "completionRate": 100
+          },
+          "totalResolvedTasks": 27,
+          "latestVsPrevious": {
+            "latestWeek": {
+              "key": "2026-W14",
+              "label": "2026-W14",
+              "startDate": "2026-03-30",
+              "endDate": "2026-04-05",
+              "totalHours": 8,
+              "totalTasks": 2,
+              "completedTasks": 2,
+              "pendingTasks": 0,
+              "failedTasks": 0,
+              "testingCompleted": 1,
+              "testingInProgress": 0,
+              "testingNotReviewed": 1,
+              "completionRate": 100
+            },
+            "previousWeek": {
+              "key": "2026-W13",
+              "label": "2026-W13",
+              "startDate": "2026-03-23",
+              "endDate": "2026-03-29",
+              "totalHours": 33,
+              "totalTasks": 7,
+              "completedTasks": 6,
+              "pendingTasks": 1,
+              "failedTasks": 0,
+              "testingCompleted": 0,
+              "testingInProgress": 0,
+              "testingNotReviewed": 7,
+              "completionRate": 85.71
+            },
+            "deltaResolvedTasks": -4,
+            "deltaHours": -25
+          }
+        }
+      },
+      "createdAt": "2026-03-30T08:51:03.136Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ca3d9472a09de3e3887163",
+      "userId": null,
+      "requestedBy": "69a950b1ec0975e84b7add82",
+      "startDate": "2025-12-30T00:00:00.000Z",
+      "endDate": "2026-03-30T00:00:00.000Z",
+      "provider": "huggingface",
+      "model": "https://router.huggingface.co/v1/chat/completions | model=openai/gpt-oss-120b",
+      "prompt": "You are an experienced project delivery analyst.\nAnalyze this project's execution health and respond ONLY in Russian.\n\nPeriod: 2025-12-30 to 2026-03-30\nOverview:\n- totalHours: 128\n- totalTasks: 29\n- completedTasks: 27\n- pendingTasks: 2\n- failedTasks: 0\n- testingCompleted: 1\n- testingInProgress: 0\n- testingNotReviewed: 28\n- completionRate: 93.1%\n\nWeekly comparison:\n- bestWeek: 2026-W11 (completed=7, hours=30)\n- worstWeek: 2026-W14 (completed=2, hours=8)\n- totalResolvedTasks: 27\n- latestVsPrevious: deltaResolvedTasks=-4, deltaHours=-25\n\nDaily samples:\n2026-03-18: tasks=2, completed=2, hours=9, completionRate=100%\n2026-03-19: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-23: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-24: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-25: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-27: tasks=2, completed=1, hours=9, completionRate=50%\n2026-03-30: tasks=2, completed=2, hours=8, completionRate=100%\n\nWeekly samples:\n2026-W10: tasks=7, completed=6, hours=28, completionRate=85.71%\n2026-W11: tasks=7, completed=7, hours=30, completionRate=100%\n2026-W12: tasks=6, completed=6, hours=29, completionRate=100%\n2026-W13: tasks=7, completed=6, hours=33, completionRate=85.71%\n2026-W14: tasks=2, completed=2, hours=8, completionRate=100%\n\nMonthly samples:\n2026-03: tasks=29, completed=27, hours=128, completionRate=93.1%\n\nReturn strict markdown with sections:\n## Состояние проекта\n## Растет ли успеваемость\n## Разница между неделями\n## Риски\n## Советы по улучшению\n\nIn \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.",
+      "aiSummary": "## Состояние проекта\n- Период: 2025-12-30 — 2026-03-30\n- Всего задач: 29\n- Решено: 27\n- В процессе: 2\n- Провалено: 0\n- Отработано часов: 128\n- Конверсия выполнения: 93.1%\n- Тестирование завершено: 1\n- Тестирование в процессе: 0\n- Тестирование не рассмотрено: 28\n\n## Растет ли успеваемость\nЕсть просадка: за последнюю неделю решено на 4 задач меньше, чем неделей ранее.\n\n## Разница между неделями\n- Лучшая неделя: 2026-W11: 7 решённых задач, 30 ч.\n- Слабая неделя: 2026-W14: 2 решённых задач, 8 ч.\n- Решено задач за все недели: 27\n\n## Риски\n- Большой бэклог по тестированию.\n\n## Советы по улучшению\n- Зафиксируйте еженедельный целевой KPI по завершенным задачам и сверяйте факт каждую пятницу.\n- Разбейте большие задачи на более короткие этапы, чтобы повышать стабильность закрытия.\n- Выделяйте ежедневное окно под тестирование, чтобы уменьшать бэклог “не рассмотрено”.\n- Для недель с просадкой заранее планируйте приоритеты и лимит незавершенных задач.\n- Раз в неделю проводите короткий ретро-разбор причин задержек и корректируйте план.",
+      "aiRawResponse": {
+        "id": "chatcmpl-a46e9577-2107-4429-8820-d61c54d7d2ad",
+        "object": "chat.completion",
+        "created": 1774861716,
+        "model": "openai/gpt-oss-120b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "## Состояние проекта\n- **Общий прогресс:** 27 из 29 задач выполнены → коэффициент завершения = 93,1 %.  \n- **Трудозатраты:** 128 ч за период, среднее ≈ 4,4 ч на задачу.  \n- **Тестирование:** завершено только 1 задача, остальные 28 находятся в статусе *не проверено* – узкое место.  \n- **Отказов:** 0 % (отсутствуют проваленные задачи).  \n- **Тенденция:** за последние недели наблюдается снижение количества решённых задач (‑4) и уменьшение отработанных часов (‑25 ч).\n\n## Растет ли успеваемость\nУспеваемость **не растёт** стабильно. В недели W11 и W12 достигнута 100 % выполнения, но в W13 и W14 наблюдается падение количества задач (7 → 2) и в W13 – снижение завершения до 85,71 %. Кроме того, за последние дни зафиксировано отклонение (50 % в 2026‑03‑27). Общий тренд – снижение темпа работы.\n\n## Разница между неделями\n| Неделя | Задач | Выполнено | Часы | % выполнения |\n|--------|------|-----------|------|--------------|\n| **W10** | 7 | 6 | 28 | 85,71 % |\n| **W11** | 7 | 7 | 30 | 100 % |\n| **W12** | 6 | 6 | 29 | 100 % |\n| **W13** | 7 | 6 | 33 | 85,71 % |\n| **W14** | 2 | 2 | 8  | 100 % |\n\n- **Лучший период:** W11 – максимальная продуктивность (30 ч, 100 %).  \n- **Худший период:** W13 – снижение завершения до 85,71 % при самом большом объёме часов (33 ч).  \n- **Тренд:** после пика в W11‑W12 наблюдается падение количества задач и",
+              "reasoning": "We need to produce answer in Russian, strict markdown with sections as listed. Provide analysis of execution health. Use data. Provide sections. Ensure \"Советы по улучшению\" exactly 5 bullet points. Provide concise analysis. No extra sections. Ensure markdown headings. Let's craft.\n\nCompute health: high completion rate 93.1%, 27/29 tasks done, no failures. Testing: only 1 completed, 28 not reviewed - risk. Recent week drop: deltaResolvedTasks -4, deltaHours -25 indicates slowdown. Worst week W14 actually 2 tasks completed, but still 100% completion rate; but low volume. Week13 had 85.71% due to 1 not completed. Daily sample shows one day with 50% (2026-03-27). So overall good but some volatility.\n\nRisks: testing backlog, pending tasks, decreasing velocity, possible burnout due to high hours per task, limited testing review.\n\nAdvice: 5 bullet points.\n\nLet's produce."
+            },
+            "logprobs": null,
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.076497819,
+          "prompt_tokens": 628,
+          "prompt_time": 0.028444996,
+          "completion_tokens": 700,
+          "completion_time": 1.474163741,
+          "total_tokens": 1328,
+          "total_time": 1.502608737,
+          "completion_tokens_details": {
+            "reasoning_tokens": 205
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_3af2d41834",
+        "x_groq": {
+          "id": "req_01kmz011p2f39b9yptf84b59gm",
+          "seed": 1168805483
+        },
+        "service_tier": "on_demand"
+      },
+      "analyticsSnapshot": {
+        "period": {
+          "startDate": "2025-12-30",
+          "endDate": "2026-03-30"
+        },
+        "overview": {
+          "totalHours": 128,
+          "totalTasks": 29,
+          "completedTasks": 27,
+          "failedTasks": 0,
+          "pendingTasks": 2,
+          "testingCompleted": 1,
+          "testingInProgress": 0,
+          "testingNotReviewed": 28,
+          "completionRate": 93.1
+        },
+        "daily": [
+          {
+            "label": "2026-03-07",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-10",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-11",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 6,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-12",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-13",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-16",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 7,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-17",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-18",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 9,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-19",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-23",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-24",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-25",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-27",
+            "totalTasks": 2,
+            "completedTasks": 1,
+            "totalHours": 9,
+            "completionRate": 50
+          },
+          {
+            "label": "2026-03-30",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "weekly": [
+          {
+            "label": "2026-W10",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 28,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W11",
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "totalHours": 30,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W12",
+            "totalTasks": 6,
+            "completedTasks": 6,
+            "totalHours": 29,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W13",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 33,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W14",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "monthly": [
+          {
+            "label": "2026-03",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "yearly": [
+          {
+            "label": "2026",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "weeklyInsights": {
+          "bestWeek": {
+            "key": "2026-W11",
+            "label": "2026-W11",
+            "startDate": "2026-03-09",
+            "endDate": "2026-03-15",
+            "totalHours": 30,
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 0,
+            "testingInProgress": 0,
+            "testingNotReviewed": 7,
+            "completionRate": 100
+          },
+          "worstWeek": {
+            "key": "2026-W14",
+            "label": "2026-W14",
+            "startDate": "2026-03-30",
+            "endDate": "2026-04-05",
+            "totalHours": 8,
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 1,
+            "testingInProgress": 0,
+            "testingNotReviewed": 1,
+            "completionRate": 100
+          },
+          "totalResolvedTasks": 27,
+          "latestVsPrevious": {
+            "latestWeek": {
+              "key": "2026-W14",
+              "label": "2026-W14",
+              "startDate": "2026-03-30",
+              "endDate": "2026-04-05",
+              "totalHours": 8,
+              "totalTasks": 2,
+              "completedTasks": 2,
+              "pendingTasks": 0,
+              "failedTasks": 0,
+              "testingCompleted": 1,
+              "testingInProgress": 0,
+              "testingNotReviewed": 1,
+              "completionRate": 100
+            },
+            "previousWeek": {
+              "key": "2026-W13",
+              "label": "2026-W13",
+              "startDate": "2026-03-23",
+              "endDate": "2026-03-29",
+              "totalHours": 33,
+              "totalTasks": 7,
+              "completedTasks": 6,
+              "pendingTasks": 1,
+              "failedTasks": 0,
+              "testingCompleted": 0,
+              "testingInProgress": 0,
+              "testingNotReviewed": 7,
+              "completionRate": 85.71
+            },
+            "deltaResolvedTasks": -4,
+            "deltaHours": -25
+          }
+        }
+      },
+      "createdAt": "2026-03-30T09:08:36.821Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ca3db872a09de3e388716e",
+      "userId": null,
+      "requestedBy": "69a950b1ec0975e84b7add82",
+      "startDate": "2025-12-30T00:00:00.000Z",
+      "endDate": "2026-03-30T00:00:00.000Z",
+      "provider": "huggingface",
+      "model": "https://router.huggingface.co/v1/chat/completions | model=openai/gpt-oss-120b",
+      "prompt": "You are an experienced project delivery analyst.\nAnalyze this project's execution health and respond ONLY in Russian.\n\nPeriod: 2025-12-30 to 2026-03-30\nOverview:\n- totalHours: 128\n- totalTasks: 29\n- completedTasks: 27\n- pendingTasks: 2\n- failedTasks: 0\n- testingCompleted: 1\n- testingInProgress: 0\n- testingNotReviewed: 28\n- completionRate: 93.1%\n\nWeekly comparison:\n- bestWeek: 2026-W11 (completed=7, hours=30)\n- worstWeek: 2026-W14 (completed=2, hours=8)\n- totalResolvedTasks: 27\n- latestVsPrevious: deltaResolvedTasks=-4, deltaHours=-25\n\nDaily samples:\n2026-03-18: tasks=2, completed=2, hours=9, completionRate=100%\n2026-03-19: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-23: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-24: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-25: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-27: tasks=2, completed=1, hours=9, completionRate=50%\n2026-03-30: tasks=2, completed=2, hours=8, completionRate=100%\n\nWeekly samples:\n2026-W10: tasks=7, completed=6, hours=28, completionRate=85.71%\n2026-W11: tasks=7, completed=7, hours=30, completionRate=100%\n2026-W12: tasks=6, completed=6, hours=29, completionRate=100%\n2026-W13: tasks=7, completed=6, hours=33, completionRate=85.71%\n2026-W14: tasks=2, completed=2, hours=8, completionRate=100%\n\nMonthly samples:\n2026-03: tasks=29, completed=27, hours=128, completionRate=93.1%\n\nReturn strict markdown with sections:\n## Состояние проекта\n## Растет ли успеваемость\n## Разница между неделями\n## Риски\n## Советы по улучшению\n\nIn \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.",
+      "aiSummary": "## Состояние проекта\n- Период: 2025-12-30 — 2026-03-30\n- Всего задач: 29\n- Решено: 27\n- В процессе: 2\n- Провалено: 0\n- Отработано часов: 128\n- Конверсия выполнения: 93.1%\n- Тестирование завершено: 1\n- Тестирование в процессе: 0\n- Тестирование не рассмотрено: 28\n\n## Растет ли успеваемость\nЕсть просадка: за последнюю неделю решено на 4 задач меньше, чем неделей ранее.\n\n## Разница между неделями\n- Лучшая неделя: 2026-W11: 7 решённых задач, 30 ч.\n- Слабая неделя: 2026-W14: 2 решённых задач, 8 ч.\n- Решено задач за все недели: 27\n\n## Риски\n- Большой бэклог по тестированию.\n\n## Советы по улучшению\n- Зафиксируйте еженедельный целевой KPI по завершенным задачам и сверяйте факт каждую пятницу.\n- Разбейте большие задачи на более короткие этапы, чтобы повышать стабильность закрытия.\n- Выделяйте ежедневное окно под тестирование, чтобы уменьшать бэклог “не рассмотрено”.\n- Для недель с просадкой заранее планируйте приоритеты и лимит незавершенных задач.\n- Раз в неделю проводите короткий ретро-разбор причин задержек и корректируйте план.",
+      "aiRawResponse": {
+        "id": "chatcmpl-db6f4bd7-f197-4d25-a95e-5df0a91f4795",
+        "object": "chat.completion",
+        "created": 1774861752,
+        "model": "openai/gpt-oss-120b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "## Состояние проекта\n- **Общий объём работы:** 29 задач, из которых завершено 27 (93,1 %).  \n- **Трудозатраты:** 128 ч за квартал, среднее ≈ 4,4 ч на задачу.  \n- **Тестирование:** завершено только 1 задача, остальные 28 находятся в статусе *не проверено* – узкое место.  \n- **Отставание:** за последний период наблюдается снижение количества решённых задач на 4 и сокращение отработанных часов на 25 ч, что указывает на замедление темпа.\n\n## Растет ли успеваемость\nУспеваемость **не растёт** стабильно.  \n- В последних четырёх неделях наблюдаются колебания: две недели (W10, W13) – 85,7 % выполнения, две недели (W11, W12, W14) – 100 %, но общая динамика отрицательная (‑4 задачи, ‑25 ч).  \n- Ежедневные показатели в основном 100 %, однако 27 марта (50 %) показывает потенциальные проблемы в планировании нагрузки.\n\n## Разница между неделями\n| Неделя | Задач | Завершено | Часов | % выполнения |\n|--------|-------|-----------|------|--------------|\n| **W10** | 7 | 6 | 28 | 85,71 % |\n| **W11** | 7 | 7 | 30 | 100 % |\n| **W12** | 6 | 6 | 29 | 100 % |\n| **W13** | 7 | 6 | 33 | 85,71 % |\n| **W14** | 2 | 2 | 8  | 100 % |\n\n- **Луч",
+              "reasoning": "We need to produce answer in Russian, strict markdown with sections as listed. Provide analysis of execution health. Use given data. Provide sections: \"## Состояние проекта\", \"## Растет ли успеваемость\", \"## Разница между неделями\", \"## Риски\", \"## Советы по улучшению\". In \"Советы по улучшению\" exactly 5 bullet points with concrete actions.\n\nWe need to analyze: total tasks 29, completed 27, pending 2, no failures, testingCompleted 1, testingNotReviewed 28 (so testing backlog). Completion rate 93.1%. Weekly best week W11 with 7 completed, 30 hours. Worst week W14 with 2 completed, 8 hours (but still 100% completion). However overall delta resolved tasks -4, delta hours -25 compared to previous period, indicating slowdown.\n\nDaily samples show mostly 100% except one day 2026-03-27 with 50% (1 of 2). Weekly samples show W10 and W13 at 85.71% (6/7). So some variance.\n\nRisks: testing backlog, pending tasks, possible slowdown, resource fatigue, risk of missing final deadlines.\n\nAdvice: prioritize testing review, allocate resources, improve planning, monitor daily completion, implement retrospectives, etc.\n\nMake exactly 5 bullet points.\n\nLet's craft answer."
+            },
+            "logprobs": null,
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.07718271,
+          "prompt_tokens": 628,
+          "prompt_time": 0.030022134,
+          "completion_tokens": 700,
+          "completion_time": 1.476719648,
+          "total_tokens": 1328,
+          "total_time": 1.506741782,
+          "completion_tokens_details": {
+            "reasoning_tokens": 287
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_556aa7f94f",
+        "x_groq": {
+          "id": "req_01kmz024mnfwfs9qnhzh03kbjg",
+          "seed": 843071885
+        },
+        "service_tier": "on_demand"
+      },
+      "analyticsSnapshot": {
+        "period": {
+          "startDate": "2025-12-30",
+          "endDate": "2026-03-30"
+        },
+        "overview": {
+          "totalHours": 128,
+          "totalTasks": 29,
+          "completedTasks": 27,
+          "failedTasks": 0,
+          "pendingTasks": 2,
+          "testingCompleted": 1,
+          "testingInProgress": 0,
+          "testingNotReviewed": 28,
+          "completionRate": 93.1
+        },
+        "daily": [
+          {
+            "label": "2026-03-07",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-10",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-11",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 6,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-12",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-13",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-16",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 7,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-17",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-18",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 9,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-19",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-23",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-24",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-25",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-27",
+            "totalTasks": 2,
+            "completedTasks": 1,
+            "totalHours": 9,
+            "completionRate": 50
+          },
+          {
+            "label": "2026-03-30",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "weekly": [
+          {
+            "label": "2026-W10",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 28,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W11",
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "totalHours": 30,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W12",
+            "totalTasks": 6,
+            "completedTasks": 6,
+            "totalHours": 29,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W13",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 33,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W14",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "monthly": [
+          {
+            "label": "2026-03",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "yearly": [
+          {
+            "label": "2026",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "weeklyInsights": {
+          "bestWeek": {
+            "key": "2026-W11",
+            "label": "2026-W11",
+            "startDate": "2026-03-09",
+            "endDate": "2026-03-15",
+            "totalHours": 30,
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 0,
+            "testingInProgress": 0,
+            "testingNotReviewed": 7,
+            "completionRate": 100
+          },
+          "worstWeek": {
+            "key": "2026-W14",
+            "label": "2026-W14",
+            "startDate": "2026-03-30",
+            "endDate": "2026-04-05",
+            "totalHours": 8,
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 1,
+            "testingInProgress": 0,
+            "testingNotReviewed": 1,
+            "completionRate": 100
+          },
+          "totalResolvedTasks": 27,
+          "latestVsPrevious": {
+            "latestWeek": {
+              "key": "2026-W14",
+              "label": "2026-W14",
+              "startDate": "2026-03-30",
+              "endDate": "2026-04-05",
+              "totalHours": 8,
+              "totalTasks": 2,
+              "completedTasks": 2,
+              "pendingTasks": 0,
+              "failedTasks": 0,
+              "testingCompleted": 1,
+              "testingInProgress": 0,
+              "testingNotReviewed": 1,
+              "completionRate": 100
+            },
+            "previousWeek": {
+              "key": "2026-W13",
+              "label": "2026-W13",
+              "startDate": "2026-03-23",
+              "endDate": "2026-03-29",
+              "totalHours": 33,
+              "totalTasks": 7,
+              "completedTasks": 6,
+              "pendingTasks": 1,
+              "failedTasks": 0,
+              "testingCompleted": 0,
+              "testingInProgress": 0,
+              "testingNotReviewed": 7,
+              "completionRate": 85.71
+            },
+            "deltaResolvedTasks": -4,
+            "deltaHours": -25
+          }
+        }
+      },
+      "createdAt": "2026-03-30T09:09:12.614Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cb52fddd838e4c1fc108b0",
+      "userId": null,
+      "requestedBy": "69a950b1ec0975e84b7add82",
+      "startDate": "2025-12-31T00:00:00.000Z",
+      "endDate": "2026-03-31T00:00:00.000Z",
+      "provider": "huggingface",
+      "model": "https://router.huggingface.co/v1/chat/completions | model=openai/gpt-oss-120b",
+      "prompt": "You are an experienced project delivery analyst.\nAnalyze this project's execution health and respond ONLY in Russian.\n\nPeriod: 2025-12-31 to 2026-03-31\nOverview:\n- totalHours: 128\n- totalTasks: 29\n- completedTasks: 27\n- pendingTasks: 2\n- failedTasks: 0\n- testingCompleted: 1\n- testingInProgress: 0\n- testingNotReviewed: 28\n- completionRate: 93.1%\n\nWeekly comparison:\n- bestWeek: 2026-W11 (completed=7, hours=30)\n- worstWeek: 2026-W14 (completed=2, hours=8)\n- totalResolvedTasks: 27\n- latestVsPrevious: deltaResolvedTasks=-4, deltaHours=-25\n\nDaily samples:\n2026-03-18: tasks=2, completed=2, hours=9, completionRate=100%\n2026-03-19: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-23: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-24: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-25: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-27: tasks=2, completed=1, hours=9, completionRate=50%\n2026-03-30: tasks=2, completed=2, hours=8, completionRate=100%\n\nWeekly samples:\n2026-W10: tasks=7, completed=6, hours=28, completionRate=85.71%\n2026-W11: tasks=7, completed=7, hours=30, completionRate=100%\n2026-W12: tasks=6, completed=6, hours=29, completionRate=100%\n2026-W13: tasks=7, completed=6, hours=33, completionRate=85.71%\n2026-W14: tasks=2, completed=2, hours=8, completionRate=100%\n\nMonthly samples:\n2026-03: tasks=29, completed=27, hours=128, completionRate=93.1%\n\nReturn strict markdown with sections:\n## Состояние проекта\n## Растет ли успеваемость\n## Разница между неделями\n## Риски\n## Советы по улучшению\n\nIn \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.",
+      "aiSummary": "## Состояние проекта\n- Период: 2025-12-31 — 2026-03-31\n- Всего задач: 29\n- Решено: 27\n- В процессе: 2\n- Провалено: 0\n- Отработано часов: 128\n- Конверсия выполнения: 93.1%\n- Тестирование завершено: 1\n- Тестирование в процессе: 0\n- Тестирование не рассмотрено: 28\n\n## Растет ли успеваемость\nЕсть просадка: за последнюю неделю решено на 4 задач меньше, чем неделей ранее.\n\n## Разница между неделями\n- Лучшая неделя: 2026-W11: 7 решённых задач, 30 ч.\n- Слабая неделя: 2026-W14: 2 решённых задач, 8 ч.\n- Решено задач за все недели: 27\n\n## Риски\n- Большой бэклог по тестированию.\n\n## Советы по улучшению\n- Зафиксируйте еженедельный целевой KPI по завершенным задачам и сверяйте факт каждую пятницу.\n- Разбейте большие задачи на более короткие этапы, чтобы повышать стабильность закрытия.\n- Выделяйте ежедневное окно под тестирование, чтобы уменьшать бэклог “не рассмотрено”.\n- Для недель с просадкой заранее планируйте приоритеты и лимит незавершенных задач.\n- Раз в неделю проводите короткий ретро-разбор причин задержек и корректируйте план.",
+      "aiRawResponse": {
+        "id": "chatcmpl-4bc17c04-761f-4b2b-8cf6-b229d07afe60",
+        "object": "chat.completion",
+        "created": 1774932732,
+        "model": "openai/gpt-oss-120b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "## Состояние проекта\n- **Общий объём работы:** 29 задач, из которых выполнено 27 (93,1 %).  \n- **Трудозатраты:** 128 ч за квартал, среднее ≈ 4,4 ч на задачу.  \n- **Тестирование:** завершено только 1 задача, остальные 28 находятся в статусе *не проверено*.  \n- **Отказов:** нет.  \n- **Текущий прогресс:** почти завершён, но остаётся 2 незавершённые задачи и значительный объём неревьюванного тестирования, что может задержать окончательную сдачу.\n\n## Растет ли успеваемость\n- **Краткосрочная динамика:** в последних 7 днях (2026‑03‑18 – 2026‑03‑30) выполнено 12 из 12 задач – 100 % выполнения.  \n- **Недельные показатели:** две недели (W10, W13) имели коэффициент завершения 85,71 %, остальные – 100 %.  \n- **Тренд:** сравнение с предыдущим периодом показывает снижение решённых задач на 4 и снижение отработанных часов на 25 ч, что указывает на небольшое замедление темпа.  \n- **Итого:** успеваемость в целом высокая, но наблюдается небольшое снижение скорости выполнения и рост тестового бэклога.\n\n## Разница между неделями\n| Неделя | Задач | Выполнено | Часы | % завершения |\n|--------|------|-----------|------|---------------|\n| W10    | 7    | 6         | 28   | 85,71 % |\n| W11    | 7    | ",
+              "reasoning": "We need to produce answer in Russian, markdown with sections exactly as specified. Provide analysis of execution health. Use given data. Provide sections: \"## Состояние проекта\", \"## Растет ли успеваемость\", \"## Разница между неделями\", \"## Риски\", \"## Советы по улучшению\". In \"Советы по улучшению\" exactly 5 bullet points with concrete actions.\n\nWe need to interpret data: total tasks 29, completed 27, pending 2, no failures, testingCompleted 1, testingNotReviewed 28 (most tasks not reviewed). Completion rate 93.1%. Weekly best week W11 7 completed, 30 hours. Worst week W14 2 completed, 8 hours (but still 100% completion). However deltaResolvedTasks -4, deltaHours -25 indicates drop compared to previous period. Daily samples show mostly 100% except one day 50% (2026-03-27). Weekly samples show two weeks with 85.71% (W10, W13). So overall health good but some slowdown and testing backlog.\n\nWe need to discuss growth of performance: maybe decreasing trend in resolved tasks and hours, but weekly completion rates vary. Provide risk: testing backlog, potential burnout, decreasing velocity.\n\nProvide 5 bullet points: e.g., prioritize testing review, balance workload, monitor weekly velocity, implement daily stand-ups, use retrospectives, etc.\n\nMake sure markdown sections.\n\nLet's craft answer."
+            },
+            "logprobs": null,
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.035457127,
+          "prompt_tokens": 628,
+          "prompt_time": 0.032939805,
+          "completion_tokens": 700,
+          "completion_time": 1.463953719,
+          "total_tokens": 1328,
+          "total_time": 1.4968935239999999,
+          "completion_tokens_details": {
+            "reasoning_tokens": 306
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_6c36ac20de",
+        "x_groq": {
+          "id": "req_01kn13r9gwea1r7txh6ervxxza",
+          "seed": 1271881101
+        },
+        "service_tier": "on_demand"
+      },
+      "analyticsSnapshot": {
+        "period": {
+          "startDate": "2025-12-31",
+          "endDate": "2026-03-31"
+        },
+        "overview": {
+          "totalHours": 128,
+          "totalTasks": 29,
+          "completedTasks": 27,
+          "failedTasks": 0,
+          "pendingTasks": 2,
+          "testingCompleted": 1,
+          "testingInProgress": 0,
+          "testingNotReviewed": 28,
+          "completionRate": 93.1
+        },
+        "daily": [
+          {
+            "label": "2026-03-07",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-10",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-11",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 6,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-12",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-13",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-16",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 7,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-17",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-18",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 9,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-19",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-23",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-24",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-25",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-27",
+            "totalTasks": 2,
+            "completedTasks": 1,
+            "totalHours": 9,
+            "completionRate": 50
+          },
+          {
+            "label": "2026-03-30",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "weekly": [
+          {
+            "label": "2026-W10",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 28,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W11",
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "totalHours": 30,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W12",
+            "totalTasks": 6,
+            "completedTasks": 6,
+            "totalHours": 29,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W13",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 33,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W14",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "monthly": [
+          {
+            "label": "2026-03",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "yearly": [
+          {
+            "label": "2026",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "weeklyInsights": {
+          "bestWeek": {
+            "key": "2026-W11",
+            "label": "2026-W11",
+            "startDate": "2026-03-09",
+            "endDate": "2026-03-15",
+            "totalHours": 30,
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 0,
+            "testingInProgress": 0,
+            "testingNotReviewed": 7,
+            "completionRate": 100
+          },
+          "worstWeek": {
+            "key": "2026-W14",
+            "label": "2026-W14",
+            "startDate": "2026-03-30",
+            "endDate": "2026-04-05",
+            "totalHours": 8,
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 1,
+            "testingInProgress": 0,
+            "testingNotReviewed": 1,
+            "completionRate": 100
+          },
+          "totalResolvedTasks": 27,
+          "latestVsPrevious": {
+            "latestWeek": {
+              "key": "2026-W14",
+              "label": "2026-W14",
+              "startDate": "2026-03-30",
+              "endDate": "2026-04-05",
+              "totalHours": 8,
+              "totalTasks": 2,
+              "completedTasks": 2,
+              "pendingTasks": 0,
+              "failedTasks": 0,
+              "testingCompleted": 1,
+              "testingInProgress": 0,
+              "testingNotReviewed": 1,
+              "completionRate": 100
+            },
+            "previousWeek": {
+              "key": "2026-W13",
+              "label": "2026-W13",
+              "startDate": "2026-03-23",
+              "endDate": "2026-03-29",
+              "totalHours": 33,
+              "totalTasks": 7,
+              "completedTasks": 6,
+              "pendingTasks": 1,
+              "failedTasks": 0,
+              "testingCompleted": 0,
+              "testingInProgress": 0,
+              "testingNotReviewed": 7,
+              "completionRate": 85.71
+            },
+            "deltaResolvedTasks": -4,
+            "deltaHours": -25
+          }
+        }
+      },
+      "createdAt": "2026-03-31T04:52:13.050Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cb538add838e4c1fc108de",
+      "userId": null,
+      "requestedBy": "69a950b1ec0975e84b7add82",
+      "startDate": "2025-12-31T00:00:00.000Z",
+      "endDate": "2026-03-31T00:00:00.000Z",
+      "provider": "huggingface",
+      "model": "https://router.huggingface.co/v1/chat/completions | model=openai/gpt-oss-120b",
+      "prompt": "You are an experienced project delivery analyst.\nAnalyze this project's execution health and respond ONLY in Russian.\n\nPeriod: 2025-12-31 to 2026-03-31\nOverview:\n- totalHours: 128\n- totalTasks: 29\n- completedTasks: 27\n- pendingTasks: 2\n- failedTasks: 0\n- testingCompleted: 1\n- testingInProgress: 0\n- testingNotReviewed: 28\n- completionRate: 93.1%\n\nWeekly comparison:\n- bestWeek: 2026-W11 (completed=7, hours=30)\n- worstWeek: 2026-W14 (completed=2, hours=8)\n- totalResolvedTasks: 27\n- latestVsPrevious: deltaResolvedTasks=-4, deltaHours=-25\n\nDaily samples:\n2026-03-18: tasks=2, completed=2, hours=9, completionRate=100%\n2026-03-19: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-23: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-24: tasks=1, completed=1, hours=8, completionRate=100%\n2026-03-25: tasks=2, completed=2, hours=8, completionRate=100%\n2026-03-27: tasks=2, completed=1, hours=9, completionRate=50%\n2026-03-30: tasks=2, completed=2, hours=8, completionRate=100%\n\nWeekly samples:\n2026-W10: tasks=7, completed=6, hours=28, completionRate=85.71%\n2026-W11: tasks=7, completed=7, hours=30, completionRate=100%\n2026-W12: tasks=6, completed=6, hours=29, completionRate=100%\n2026-W13: tasks=7, completed=6, hours=33, completionRate=85.71%\n2026-W14: tasks=2, completed=2, hours=8, completionRate=100%\n\nMonthly samples:\n2026-03: tasks=29, completed=27, hours=128, completionRate=93.1%\n\nReturn strict markdown with sections:\n## Состояние проекта\n## Растет ли успеваемость\n## Разница между неделями\n## Риски\n## Советы по улучшению\n\nIn \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.",
+      "aiSummary": "## Состояние проекта\n- Период: 2025-12-31 — 2026-03-31\n- Всего задач: 29\n- Решено: 27\n- В процессе: 2\n- Провалено: 0\n- Отработано часов: 128\n- Конверсия выполнения: 93.1%\n- Тестирование завершено: 1\n- Тестирование в процессе: 0\n- Тестирование не рассмотрено: 28\n\n## Растет ли успеваемость\nЕсть просадка: за последнюю неделю решено на 4 задач меньше, чем неделей ранее.\n\n## Разница между неделями\n- Лучшая неделя: 2026-W11: 7 решённых задач, 30 ч.\n- Слабая неделя: 2026-W14: 2 решённых задач, 8 ч.\n- Решено задач за все недели: 27\n\n## Риски\n- Большой бэклог по тестированию.\n\n## Советы по улучшению\n- Зафиксируйте еженедельный целевой KPI по завершенным задачам и сверяйте факт каждую пятницу.\n- Разбейте большие задачи на более короткие этапы, чтобы повышать стабильность закрытия.\n- Выделяйте ежедневное окно под тестирование, чтобы уменьшать бэклог “не рассмотрено”.\n- Для недель с просадкой заранее планируйте приоритеты и лимит незавершенных задач.\n- Раз в неделю проводите короткий ретро-разбор причин задержек и корректируйте план.",
+      "aiRawResponse": {
+        "id": "chatcmpl-dfda5141-6651-4efc-aa6a-961e07d87d21",
+        "object": "chat.completion",
+        "created": 1774932874,
+        "model": "openai/gpt-oss-120b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "## Состояние проекта\n- **Общий объём работы:** 29 задач, из которых завершено 27 (93,1 %).  \n- **Трудозатраты:** 128 ч за квартал, среднее ≈ 4,4 ч на задачу.  \n- **Тестирование:** завершено только 1 задача, остальные 28 находятся в статусе *не проверено* – узкое место процесса контроля качества.  \n- **Отсутствие провалов:** 0 проваленных задач, что говорит о стабильности выполнения.  \n\n## Растет ли успеваемость\n- За последние недели наблюдается **неоднозначная динамика**:  \n  - В недели W11 и W12 – 100 % выполнения.  \n  - В недели W10 и W13 – лишь 85,7 % (по 1 незавершённой задаче).  \n- Сравнение с предыдущим периодом показывает **снижение решённых задач на 4 и сокращение отработанных часов на 25**.  \n- Таким образом, успеваемость **не растёт стабильно**, а колеблется.\n\n## Разница между неделями\n| Неделя | Задач | Завершено | Часы | % выполнения |\n|--------|-------|-----------|------|--------------|\n| W10    | 7     | 6         | 28   | 85,71 %      |\n| W11    | 7     | 7         | 30   | 100 %        |\n| W12    | 6     | 6         | 29   | 100 %        |\n| W13    | 7     | 6         | 33   | 85,71 %      |\n| W14    *|",
+              "reasoning": "We need to produce answer in Russian, strict markdown with sections as listed. Provide analysis of execution health. Use given data. Provide sections: \"## Состояние проекта\", \"## Растет ли успеваемость\", \"## Разница между неделями\", \"## Риски\", \"## Советы по улучшению\". In \"Советы по улучшению\" exactly 5 bullet points with concrete actions.\n\nWe need to analyze: total tasks 29, completed 27, pending 2, no failures. Completion rate 93.1%. Testing: only 1 completed, 28 not reviewed (maybe pending). Weekly best week W11 7 completed, 30h. Worst week W14 2 completed, 8h (but still 100% completion). However overall delta resolved tasks -4, delta hours -25 compared to previous period, indicating drop.\n\nDaily samples show mostly 100% except 2026-03-27 50% (1 of 2). Weekly samples show W10 85.71%, W11 100%, W12 100%, W13 85.71%, W14 100%.\n\nThus overall health good but some volatility, testing backlog large.\n\nRisks: testing backlog, pending tasks, possible burnout due to high hours, decreasing productivity trend.\n\nAdvice: prioritize testing review, balance workload, monitor weekly trends, improve task estimation, implement daily stand-ups.\n\nProvide exactly 5 bullet points.\n\nLet's craft answer."
+            },
+            "logprobs": null,
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "queue_time": 0.035459495,
+          "prompt_tokens": 628,
+          "prompt_time": 0.030526731,
+          "completion_tokens": 700,
+          "completion_time": 1.49369832,
+          "total_tokens": 1328,
+          "total_time": 1.5242250510000002,
+          "completion_tokens_details": {
+            "reasoning_tokens": 302
+          }
+        },
+        "usage_breakdown": null,
+        "system_fingerprint": "fp_068241849b",
+        "x_groq": {
+          "id": "req_01kn13wkvafxsb3f84kfk3c5qg",
+          "seed": 925219668
+        },
+        "service_tier": "on_demand"
+      },
+      "analyticsSnapshot": {
+        "period": {
+          "startDate": "2025-12-31",
+          "endDate": "2026-03-31"
+        },
+        "overview": {
+          "totalHours": 128,
+          "totalTasks": 29,
+          "completedTasks": 27,
+          "failedTasks": 0,
+          "pendingTasks": 2,
+          "testingCompleted": 1,
+          "testingInProgress": 0,
+          "testingNotReviewed": 28,
+          "completionRate": 93.1
+        },
+        "daily": [
+          {
+            "label": "2026-03-07",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-10",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-11",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 6,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-12",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-13",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-16",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 7,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-17",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 5,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-18",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 9,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-19",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-23",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-24",
+            "totalTasks": 1,
+            "completedTasks": 1,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-25",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-03-27",
+            "totalTasks": 2,
+            "completedTasks": 1,
+            "totalHours": 9,
+            "completionRate": 50
+          },
+          {
+            "label": "2026-03-30",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "weekly": [
+          {
+            "label": "2026-W10",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 28,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W11",
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "totalHours": 30,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W12",
+            "totalTasks": 6,
+            "completedTasks": 6,
+            "totalHours": 29,
+            "completionRate": 100
+          },
+          {
+            "label": "2026-W13",
+            "totalTasks": 7,
+            "completedTasks": 6,
+            "totalHours": 33,
+            "completionRate": 85.71
+          },
+          {
+            "label": "2026-W14",
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "totalHours": 8,
+            "completionRate": 100
+          }
+        ],
+        "monthly": [
+          {
+            "label": "2026-03",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "yearly": [
+          {
+            "label": "2026",
+            "totalTasks": 29,
+            "completedTasks": 27,
+            "totalHours": 128,
+            "completionRate": 93.1
+          }
+        ],
+        "weeklyInsights": {
+          "bestWeek": {
+            "key": "2026-W11",
+            "label": "2026-W11",
+            "startDate": "2026-03-09",
+            "endDate": "2026-03-15",
+            "totalHours": 30,
+            "totalTasks": 7,
+            "completedTasks": 7,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 0,
+            "testingInProgress": 0,
+            "testingNotReviewed": 7,
+            "completionRate": 100
+          },
+          "worstWeek": {
+            "key": "2026-W14",
+            "label": "2026-W14",
+            "startDate": "2026-03-30",
+            "endDate": "2026-04-05",
+            "totalHours": 8,
+            "totalTasks": 2,
+            "completedTasks": 2,
+            "pendingTasks": 0,
+            "failedTasks": 0,
+            "testingCompleted": 1,
+            "testingInProgress": 0,
+            "testingNotReviewed": 1,
+            "completionRate": 100
+          },
+          "totalResolvedTasks": 27,
+          "latestVsPrevious": {
+            "latestWeek": {
+              "key": "2026-W14",
+              "label": "2026-W14",
+              "startDate": "2026-03-30",
+              "endDate": "2026-04-05",
+              "totalHours": 8,
+              "totalTasks": 2,
+              "completedTasks": 2,
+              "pendingTasks": 0,
+              "failedTasks": 0,
+              "testingCompleted": 1,
+              "testingInProgress": 0,
+              "testingNotReviewed": 1,
+              "completionRate": 100
+            },
+            "previousWeek": {
+              "key": "2026-W13",
+              "label": "2026-W13",
+              "startDate": "2026-03-23",
+              "endDate": "2026-03-29",
+              "totalHours": 33,
+              "totalTasks": 7,
+              "completedTasks": 6,
+              "pendingTasks": 1,
+              "failedTasks": 0,
+              "testingCompleted": 0,
+              "testingInProgress": 0,
+              "testingNotReviewed": 7,
+              "completionRate": 85.71
+            },
+            "deltaResolvedTasks": -4,
+            "deltaHours": -25
+          }
+        }
+      },
+      "createdAt": "2026-03-31T04:54:34.730Z",
+      "__v": 0
+    },
+    {
+      "_id": "69dcca08419263dd1e989cab",
+      "userId": "69dc76551fbca6293e3072eb",
+      "requestedBy": "69dc76551fbca6293e3072eb",
+      "startDate": "2026-01-13T00:00:00.000Z",
+      "endDate": "2026-04-13T00:00:00.000Z",
+      "provider": "huggingface",
+      "model": "https://router.huggingface.co/v1/chat/completions | model=openai/gpt-oss-120b",
+      "prompt": "You are an experienced project delivery analyst.\nAnalyze this project's execution health and respond ONLY in Russian.\n\nPeriod: 2026-01-13 to 2026-04-13\nOverview:\n- totalHours: 0\n- totalTasks: 0\n- completedTasks: 0\n- pendingTasks: 0\n- failedTasks: 0\n- testingCompleted: 0\n- testingInProgress: 0\n- testingNotReviewed: 0\n- completionRate: 0%\n\nWeekly comparison:\n- bestWeek: no data\n- worstWeek: no data\n- totalResolvedTasks: 0\n- latestVsPrevious: no data\n\nDaily samples:\n- no data\n\nWeekly samples:\n- no data\n\nMonthly samples:\n- no data\n\nReturn strict markdown with sections:\n## Состояние проекта\n## Растет ли успеваемость\n## Разница между неделями\n## Риски\n## Советы по улучшению\n\nIn \"Советы по улучшению\", provide exactly 5 bullet points with concrete actions.",
+      "aiSummary": "## Состояние проекта\nНа текущий период (13 января 2026 – 13 апреля 2026) проект не демонстрирует никакой активности: отсутствуют отработанные часы, задачи, тестирование и показатели завершённости. Отсутствие данных указывает на возможные проблемы с планированием, запуском или учётом работы.\n## Растет ли успеваемость\nУспеваемость невозможно оценить, так как нет ни выполненных, ни запланированных задач. Отсутствие динамики свидетельствует о полной стагнации проекта.\n## Разница между неделями\nСравнительный анализ недель невозможен – данные о лучшей и худшей неделе отсутствуют. Это указывает на отсутствие регулярного мониторинга или отчётности.\n## Риски\n- **Полный простой проекта** – отсутствие активности может привести к потере интереса заказчика и команды.  \n- **Недостаток видимости** – без учёта часов и задач невозможно контролировать прогресс и своевременно реагировать на отклонения.  \n- **Риск потери ресурсов** – сотрудники могут быть задействованы в других проектах, что усложнит последующий запуск.  \n- **Отсутствие данных для принятия решений** – без метрик руководство не сможет оценить эффективность и планировать дальнейшие шаги.  \n- **Вероятность срыва сроков** – если проект только начинается, отсутствие стартовых данных может привести к задержкам в дальнейшем.\n## Советы по улучшению\n- Внедрить систему учёта рабочего времени (например, Jira/ClickUp) и обязательный ежедневный ввод данных о выполненных задачах.  \n- Сформировать базовый план проекта с чётко определёнными задачами, сроками и ответственными лицами.  \n- Организовать еженедельные стендапы для контроля прогресса и своевременного выявления отклонений.  \n- Назначить ответственного за мониторинг KPI (часов, задач, тестирования) и регулярную подготовку отчётов.  \n- Провести вводный воркшоп с командой для согласования процессов отчётности и установления минимального уровня активности.",
+      "aiRawResponse": {
+        "id": "chatcmpl-93d21923-7711-4078-a613-6247522bf3e4",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "message": {
+              "content": "## Состояние проекта\nНа текущий период (13 января 2026 – 13 апреля 2026) проект не демонстрирует никакой активности: отсутствуют отработанные часы, задачи, тестирование и показатели завершённости. Отсутствие данных указывает на возможные проблемы с планированием, запуском или учётом работы.\n\n## Растет ли успеваемость\nУспеваемость невозможно оценить, так как нет ни выполненных, ни запланированных задач. Отсутствие динамики свидетельствует о полной стагнации проекта.\n\n## Разница между неделями\nСравнительный анализ недель невозможен – данные о лучшей и худшей неделе отсутствуют. Это указывает на отсутствие регулярного мониторинга или отчётности.\n\n## Риски\n- **Полный простой проекта** – отсутствие активности может привести к потере интереса заказчика и команды.  \n- **Недостаток видимости** – без учёта часов и задач невозможно контролировать прогресс и своевременно реагировать на отклонения.  \n- **Риск потери ресурсов** – сотрудники могут быть задействованы в других проектах, что усложнит последующий запуск.  \n- **Отсутствие данных для принятия решений** – без метрик руководство не сможет оценить эффективность и планировать дальнейшие шаги.  \n- **Вероятность срыва сроков** – если проект только начинается, отсутствие стартовых данных может привести к задержкам в дальнейшем.\n\n## Советы по улучшению\n- Внедрить систему учёта рабочего времени (например, Jira/ClickUp) и обязательный ежедневный ввод данных о выполненных задачах.  \n- Сформировать базовый план проекта с чётко определёнными задачами, сроками и ответственными лицами.  \n- Организовать еженедельные стендапы для контроля прогресса и своевременного выявления отклонений.  \n- Назначить ответственного за мониторинг KPI (часов, задач, тестирования) и регулярную подготовку отчётов.  \n- Провести вводный воркшоп с командой для согласования процессов отчётности и установления минимального уровня активности.",
+              "reasoning": "We need to respond in Russian, strict markdown with sections. The data shows zero tasks, no data. So we need to analyze health: likely no activity, unknown. Provide sections accordingly. Provide 5 bullet points. Ensure only those sections. No extra text. Provide analysis accordingly.",
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1776077320,
+        "model": "gpt-oss-120b",
+        "system_fingerprint": "fp_4c26d27ac5dbffe28c72",
+        "object": "chat.completion",
+        "usage": {
+          "total_tokens": 840,
+          "completion_tokens": 538,
+          "completion_tokens_details": {
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0,
+            "reasoning_tokens": 0
+          },
+          "prompt_tokens": 302,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "time_info": {
+          "queue_time": 0.005468343,
+          "prompt_time": 0.009926574,
+          "completion_time": 0.466786141,
+          "total_time": 0.4856081008911133,
+          "created": 1776077320.0193923
+        }
+      },
+      "analyticsSnapshot": {
+        "period": {
+          "startDate": "2026-01-13",
+          "endDate": "2026-04-13"
+        },
+        "overview": {
+          "totalHours": 0,
+          "totalTasks": 0,
+          "completedTasks": 0,
+          "failedTasks": 0,
+          "pendingTasks": 0,
+          "testingCompleted": 0,
+          "testingInProgress": 0,
+          "testingNotReviewed": 0,
+          "completionRate": 0
+        },
+        "daily": [],
+        "weekly": [],
+        "monthly": [],
+        "yearly": [],
+        "weeklyInsights": {
+          "bestWeek": null,
+          "worstWeek": null,
+          "totalResolvedTasks": 0,
+          "latestVsPrevious": null
+        }
+      },
+      "createdAt": "2026-04-13T10:48:40.647Z",
+      "__v": 0
+    }
+  ],
+  "appsettings": [
+    {
+      "_id": "69d0e41ed03bbefded9bd55b",
+      "workerPermissions": {
+        "canViewDashboard": true,
+        "canViewReports": true,
+        "canViewAnalytics": true,
+        "canViewAssistant": true,
+        "canViewTemplates": true,
+        "canViewProjectReport": true,
+        "canViewCustomerReport": true,
+        "canViewStartup": true,
+        "canViewBoard": true,
+        "canExportExcel": true
+      },
+      "updatedAt": "2026-04-15T08:33:55.471Z",
+      "__v": 0,
+      "managerPermissions": {
+        "canViewDashboard": true,
+        "canViewReports": false,
+        "canViewAnalytics": true,
+        "canViewAssistant": false,
+        "canViewTemplates": false,
+        "canViewProjectReport": false,
+        "canViewCustomerReport": false,
+        "canViewStartup": false,
+        "canViewBoard": false,
+        "canExportExcel": true
+      }
+    }
+  ],
+  "projecttemplates": [
+    {
+      "_id": "69d0950ef1c307e7255e75bf",
+      "name": "ROST",
+      "description": "Rosdagi kichik vazifalar",
+      "createdBy": "69a950b1ec0975e84b7add82",
+      "tasks": [
+        {
+          "title": "Login sahifasi",
+          "description": "Login sahifasini o'zgarishi",
+          "estimatedHours": 1,
+          "order": 0,
+          "_id": "69d0950ef1c307e7255e75c0"
+        }
+      ],
+      "createdAt": "2026-04-04T04:35:26.815Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d0f3f2d03bbefded9bd627",
+      "name": "Smart Space",
+      "createdBy": "69a950b1ec0975e84b7add82",
+      "tasks": [
+        {
+          "title": "Sahifalar",
+          "description": "",
+          "estimatedHours": 1,
+          "order": 0,
+          "_id": "69d0f3f2d03bbefded9bd628"
+        }
+      ],
+      "createdAt": "2026-04-04T11:20:19.000Z",
+      "__v": 0
+    }
+  ],
+  "taskfiles": [
+    {
+      "_id": "69aa50deeb6f01cdbd773a43",
+      "taskId": "69aa50deeb6f01cdbd773a3e",
+      "title": "photo_2026-03-06_08-57-29.jpg",
+      "fileUrl": "uploads/file-1772769502523-456835759.jpg",
+      "fileType": "jpg",
+      "createdAt": "2026-03-06T03:58:22.525Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b24c75376281f1fec12f75",
+      "taskId": "69b24152376281f1fec12f1d",
+      "title": "photo_2026-03-12_10-17-28.jpg",
+      "fileUrl": "uploads/file-1773292661683-397642878.jpg",
+      "fileType": "jpg",
+      "createdAt": "2026-03-12T05:17:41.685Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b7e000b8028fe4ee87cc02",
+      "taskId": "69b784cc39f0d7f2b2c05d37",
+      "title": "photo_2026-03-16_15-47-37.jpg",
+      "fileUrl": "uploads/file-1773658112367-678812067.jpg",
+      "fileType": "jpg",
+      "createdAt": "2026-03-16T10:48:32.375Z",
+      "__v": 0
+    }
+  ],
+  "daylogs": [
+    {
+      "_id": "69a950c50f75abf4e6dce26a",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-03T19:00:00.000Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-05T09:45:41.098Z",
+      "__v": 0
+    },
+    {
+      "_id": "69a951b50f75abf4e6dce293",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-05T09:49:40.106Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-05T09:49:41.223Z",
+      "__v": 0
+    },
+    {
+      "_id": "69aa5052eb6f01cdbd773a2a",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-06T03:55:57.023Z",
+      "totalHours": 7,
+      "createdAt": "2026-03-06T03:56:02.819Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ab9fdd4cf3f0a07e3b232d",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-07T03:47:40.056Z",
+      "totalHours": 5,
+      "createdAt": "2026-03-07T03:47:41.202Z",
+      "__v": 0
+    },
+    {
+      "_id": "69af9566481da992a7f050f0",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-10T03:52:03.822Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-10T03:52:06.191Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b0e6bd08b936dfbde406ef",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-11T03:51:23.904Z",
+      "totalHours": 6,
+      "createdAt": "2026-03-11T03:51:25.448Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b2337f376281f1fec12f06",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-12T03:31:09.685Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-12T03:31:11.775Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b38e7ce7d71579837b70a9",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-13T04:11:38.512Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-13T04:11:40.902Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b77e7f39f0d7f2b2c05d00",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-16T03:52:29.758Z",
+      "totalHours": 7,
+      "createdAt": "2026-03-16T03:52:31.004Z",
+      "__v": 0
+    },
+    {
+      "_id": "69b908df4ec22c62c04c6a10",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-17T07:55:09.828Z",
+      "totalHours": 5,
+      "createdAt": "2026-03-17T07:55:11.005Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ba3fb04ec22c62c04c6ad1",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-18T06:01:19.008Z",
+      "totalHours": 9,
+      "createdAt": "2026-03-18T06:01:20.074Z",
+      "__v": 0
+    },
+    {
+      "_id": "69bbc8f341233f219a0b0055",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-19T09:59:14.373Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-19T09:59:15.157Z",
+      "__v": 0
+    },
+    {
+      "_id": "69c0c9b374695bd6532cb652",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-23T05:03:45.853Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-23T05:03:47.130Z",
+      "__v": 0
+    },
+    {
+      "_id": "69c212dd532c72f78472390d",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-24T04:28:12.099Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-24T04:28:13.355Z",
+      "__v": 0
+    },
+    {
+      "_id": "69c3652823f5f39d4807d71c",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-25T04:31:35.506Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-25T04:31:36.759Z",
+      "__v": 0
+    },
+    {
+      "_id": "69c6036fcfca887b9e63e1fa",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-27T04:11:26.572Z",
+      "totalHours": 9,
+      "createdAt": "2026-03-27T04:11:27.691Z",
+      "__v": 0
+    },
+    {
+      "_id": "69c9fc878bebeebaa9dc5b91",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-30T04:31:01.996Z",
+      "totalHours": 8,
+      "createdAt": "2026-03-30T04:31:03.115Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cb5632dd838e4c1fc10909",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-03-31T05:05:53.146Z",
+      "totalHours": 9,
+      "createdAt": "2026-03-31T05:05:54.390Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cc95beb64dab29cc429ae3",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-01T03:49:16.911Z",
+      "totalHours": 10,
+      "createdAt": "2026-04-01T03:49:18.688Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cdf018e59d454e41fdb3e5",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-02T04:27:03.010Z",
+      "totalHours": 9,
+      "createdAt": "2026-04-02T04:27:04.476Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cfa507f9dfa5f724aa616f",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-03T11:31:18.822Z",
+      "totalHours": 8,
+      "createdAt": "2026-04-03T11:31:19.881Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d09531f1c307e7255e7606",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-04T04:36:00.443Z",
+      "totalHours": 6,
+      "createdAt": "2026-04-04T04:36:01.228Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d37ffd374752d70c2eddd1",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-06T09:42:20.808Z",
+      "totalHours": 8,
+      "createdAt": "2026-04-06T09:42:21.751Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d5d81c86e8b8d3bfa9a143",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-08T04:22:50.975Z",
+      "totalHours": 8,
+      "createdAt": "2026-04-08T04:22:52.222Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d72af6ba0c3d3e2fd075f3",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-09T04:28:37.350Z",
+      "totalHours": 7,
+      "createdAt": "2026-04-09T04:28:38.413Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d88b06ceb0ce8ab4dc33a5",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-10T05:30:44.588Z",
+      "totalHours": 8,
+      "createdAt": "2026-04-10T05:30:46.872Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d9c5f6f44e6977ef57da43",
+      "userId": "69df4c1f68b81fb2208f8c6a",
+      "date": "2026-04-11T03:54:29.001Z",
+      "totalHours": 0,
+      "createdAt": "2026-04-11T03:54:30.253Z",
+      "__v": 0
+    },
+    {
+      "_id": "69dc76691fbca6293e307318",
+      "userId": "69dc76551fbca6293e3072eb",
+      "date": "2026-04-13T04:51:52.431Z",
+      "totalHours": 0,
+      "createdAt": "2026-04-13T04:51:53.654Z",
+      "__v": 0
+    },
+    {
+      "_id": "69dcc9c2419263dd1e989bfd",
+      "userId": "69dcc6330e76cbce759b1f48",
+      "date": "2026-04-13T10:47:29.457Z",
+      "totalHours": 0,
+      "createdAt": "2026-04-13T10:47:30.789Z",
+      "__v": 0
+    }
+  ],
+  "tasks": [
+    {
+      "_id": "69a9534e0f75abf4e6dce3bf",
+      "dayLogId": "69a951b50f75abf4e6dce293",
+      "title": "https://hr.eman.uz/ Bu boy'icha ishlar",
+      "description": "Form bo'limi va barcha kichik hatolar to'g'irlanib chiqildi ! Seo logolari favicon seoga moslashtirilib chiqildi\n\nhttps://hr-page-rouge.vercel.app/",
+      "hours": 8,
+      "status": "completed",
+      "comment": "Yangilangan sayt natijasi \n\nhttps://hr-page-eight.vercel.app/",
+      "createdAt": "2026-03-05T09:56:30.022Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69a953ba0f75abf4e6dce3d8",
+      "dayLogId": "69a950c50f75abf4e6dce26a",
+      "title": "hr.eman.uz  Yangi dizayn qilish",
+      "description": "Dizayn ustida ishlanildi to'liq xolda butun dizayn almashdi eman.uz uning firma ranglarindan foydalangan holda yangi saytga jonlantirldi\n\nhttps://hr-page-eight.vercel.app/",
+      "hours": 8,
+      "status": "completed",
+      "comment": "Sayt juda chiroyli chiqdi va eng asosiy urgu form bo'limiga berildi",
+      "createdAt": "2026-03-05T09:58:18.751Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69aa50deeb6f01cdbd773a3e",
+      "dayLogId": "69aa5052eb6f01cdbd773a2a",
+      "title": "Smart Space -> qolib ketkan sahifalar",
+      "description": "Profile bo'limi qilindi",
+      "hours": 4,
+      "status": "completed",
+      "comment": "Eski holatini rasimi tashab qo'ydim",
+      "createdAt": "2026-03-06T03:58:22.490Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69aa6135eb6f01cdbd773a92",
+      "dayLogId": "69aa5052eb6f01cdbd773a2a",
+      "title": "smart - space -> navbar bo'limi",
+      "description": "navbar bo'limi to'liq holda qilindi yangilandi",
+      "hours": 1,
+      "status": "completed",
+      "comment": "juda chiroyli zamonaviy ko'rinishga keldi !",
+      "createdAt": "2026-03-06T05:08:05.813Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69aaabe3eb6f01cdbd773b89",
+      "dayLogId": "69aa5052eb6f01cdbd773a2a",
+      "title": "smart-space - Prilojeniya bo'limi ",
+      "description": "Prilajeniya sahifasida dizayn o'zgardi",
+      "hours": 2,
+      "status": "completed",
+      "comment": "Juda chiroyli chiqdi vetkani nomi application/application",
+      "createdAt": "2026-03-06T10:26:43.698Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69abef8a1c26e89654698b59",
+      "dayLogId": "69ab9fdd4cf3f0a07e3b232d",
+      "title": "smart-space->story book",
+      "description": "story booklarga test yozildi",
+      "hours": 3,
+      "status": "completed",
+      "comment": "Endi story booklar yaxshi tez ishlaydi va alohida oynada ochiladi port orqali",
+      "createdAt": "2026-03-07T09:27:38.463Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69abefdf1c26e89654698b62",
+      "dayLogId": "69ab9fdd4cf3f0a07e3b232d",
+      "title": "smart-space -> test",
+      "description": "unit testlar yozildi qo'shimcha testlardagi baglarni tog'irlab chiqdim ! \nkomponentlardagi baglar to'g'irlandi",
+      "hours": 2,
+      "status": "completed",
+      "comment": "endi testlar ham yaxshi natija beryampti saytimiz soatdak ishlaydi",
+      "createdAt": "2026-03-07T09:29:03.481Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69af9bd8481da992a7f05182",
+      "dayLogId": "69af9566481da992a7f050f0",
+      "title": "smart - space -> struktura sahifasi",
+      "description": "struktura sahifasini o'zgartirdim yanada yaxshi yanada yangiligan ko'rinish berishga harakat qildim",
+      "hours": 6,
+      "status": "completed",
+      "comment": "Страница стала гораздо более информативной и приятной визуально. Теперь она не просто отображает сухую структуру, а является полноценным интерактивным инструментом управления организацией.",
+      "createdAt": "2026-03-10T04:19:36.400Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69afbca2481da992a7f051fd",
+      "dayLogId": "69af9566481da992a7f050f0",
+      "title": "smart-space -> story ",
+      "description": "story-book yozidim dizayn kiritim yani mening kunim sahifasisida dizayn kiritildi",
+      "hours": 2,
+      "status": "completed",
+      "comment": "vetka -> maindan ketdi \"story/mydays-page\" deb nomlanadi",
+      "createdAt": "2026-03-10T06:39:30.618Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b0e70a08b936dfbde40703",
+      "dayLogId": "69b0e6bd08b936dfbde406ef",
+      "title": "smart-space-> story book davom etmoqda",
+      "description": "Story book yasavoman haliyam davom moy den chatlar bolimi",
+      "hours": 6,
+      "status": "completed",
+      "comment": "juda yaxshi chiqyapti ayniqsa dizayn o'zgartirish kiritsa qulay bo'ladi\nvetkani nomi -> story/mydays-page",
+      "createdAt": "2026-03-11T03:52:42.639Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b24152376281f1fec12f1d",
+      "dayLogId": "69b2337f376281f1fec12f06",
+      "title": "smart-space-> login bo'limi ",
+      "description": "Login bo'limini dizayni o'zgartirdim",
+      "hours": 4,
+      "status": "completed",
+      "comment": "Juda chiroyli zamonaviy dizayn bo'ldi!",
+      "createdAt": "2026-03-12T04:30:10.969Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b24187376281f1fec12f26",
+      "dayLogId": "69b2337f376281f1fec12f06",
+      "title": "smart-space-> register bo'limi",
+      "description": "register bo'limi zamonaviy dizayn o'zgardi validasiya qilindi chiroyli chiqdi qo'shimcha preoloder ham qilindi",
+      "hours": 4,
+      "status": "completed",
+      "comment": "Juda chiroyli",
+      "createdAt": "2026-03-12T04:31:03.379Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b38ebae7d71579837b70bd",
+      "dayLogId": "69b38e7ce7d71579837b70a9",
+      "title": "smart-space-> ketchen sahifasi",
+      "description": "Kitchen yani kuhniya sahifasini jonlantirishga harakat qildim! Va bir haftalik menu qismini ko'rsatish kerak boladi !",
+      "hours": 4,
+      "status": "completed",
+      "comment": "Natija juda chiroyli va tushunarli bo'lim bo'ldi",
+      "createdAt": "2026-03-13T04:12:42.977Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b3a823e7d71579837b70de",
+      "dayLogId": "69b38e7ce7d71579837b70a9",
+      "title": "Energi Partal-> start boshlanishi",
+      "description": "bu yangi loyiha! Qo'shimcha sahifa boshladim sahifani ichki sturkturalari qo'yib chiqdim",
+      "hours": 4,
+      "status": "completed",
+      "comment": "",
+      "createdAt": "2026-03-13T06:01:07.043Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b77eb239f0d7f2b2c05d14",
+      "dayLogId": "69b77e7f39f0d7f2b2c05d00",
+      "title": "smart-space-> hr-sahifaasi",
+      "description": "hr sahifasida kanban to'g'irladim chiroyli qilib qo'yildi",
+      "hours": 2,
+      "status": "completed",
+      "comment": "ishlashi yaxshi",
+      "createdAt": "2026-03-16T03:53:22.143Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b784cc39f0d7f2b2c05d37",
+      "dayLogId": "69b77e7f39f0d7f2b2c05d00",
+      "title": "smart-space-> kurs",
+      "description": "kurslar bo'limini admin panelda chiqarish juda chiroyli chiqdi",
+      "hours": 5,
+      "status": "completed",
+      "comment": "kurslarni hali ohirgacham tugatmadim",
+      "createdAt": "2026-03-16T04:19:24.602Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69b908ff4ec22c62c04c6a24",
+      "dayLogId": "69b908df4ec22c62c04c6a10",
+      "title": "smart-space-> Qolgan mayda ishlar",
+      "description": "qolgan mayda ishlar to'g'irlab chiqildi ayniqsa kurs va kutubhona sahifasida",
+      "hours": 5,
+      "status": "completed",
+      "createdAt": "2026-03-17T07:55:43.359Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69ba3fdd4ec22c62c04c6ae5",
+      "dayLogId": "69ba3fb04ec22c62c04c6ad1",
+      "title": "smart-space-> yangilik sahifasi ",
+      "description": "yangilik sahifasi api ulanish jarayonini qildim juda zo'r chiqdi kam ko'stlarini to'g'irlab chiqdim",
+      "hours": 4,
+      "status": "completed",
+      "comment": "Juda chiroyli chiqdi",
+      "createdAt": "2026-03-18T06:02:05.098Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69ba40134ec22c62c04c6af6",
+      "dayLogId": "69ba3fb04ec22c62c04c6ad1",
+      "title": "Smart-space-> kurs bo'limi",
+      "description": "kurs bo'limini api tayor ekan uni qilishga boshladim",
+      "hours": 5,
+      "status": "completed",
+      "createdAt": "2026-03-18T06:02:59.639Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69bbc92841233f219a0b0069",
+      "dayLogId": "69bbc8f341233f219a0b0055",
+      "title": "smart-space-> admin panel",
+      "description": "admin panel qismida toliq kurs bo'limini qildim va test bo'limini",
+      "hours": 8,
+      "status": "completed",
+      "comment": "juda chiroyli chiqdi admin paneldan turib bemalol kurslarni yoki testlarni qo'shsa bo'ladi",
+      "createdAt": "2026-03-19T10:00:08.153Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c0c9e574695bd6532cb666",
+      "dayLogId": "69c0c9b374695bd6532cb652",
+      "title": "smar-space-dashboard-dashboard",
+      "description": "admin panelda -> dashbord bo'limida aktivniy bo'lgan foydalanuvchilar chiqarish kere edi api bilan ulanib to'g'irlab qo'yish kerak!",
+      "hours": 5,
+      "status": "completed",
+      "createdAt": "2026-03-23T05:04:37.320Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c1209074695bd6532cb6ab",
+      "dayLogId": "69c0c9b374695bd6532cb652",
+      "title": "smart-space",
+      "description": "ho'sh testlar bolimi yani kurslarni tesatlari va yangilik bo'limidagi sk redaktor yani tekst redaktorini bagini hal qildim",
+      "hours": 3,
+      "status": "completed",
+      "createdAt": "2026-03-23T11:14:24.209Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c2133b532c72f78472393b",
+      "dayLogId": "69c212dd532c72f78472390d",
+      "title": "Smart-space-> kurslar va kutubhona bo'limi",
+      "description": "kutub hona va kurslar , kurlar testlari hammasini apilarini ulab chiqish kerak, Lekin hali ham jaroyon bo'lyapti ! Client yani ko'rinish qismi",
+      "hours": 8,
+      "status": "completed",
+      "comment": "Kurslar testlar barchalarini apilarini ko'rinish qismini client qismini ham qilinib chiqilyapti",
+      "createdAt": "2026-03-24T04:29:47.636Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c3655323f5f39d4807d730",
+      "dayLogId": "69c3652823f5f39d4807d71c",
+      "title": "smart-space-> kurs va testlar ",
+      "description": "kurs va testlar adminkaga davom etirvoman apilarni ulash bir biriga",
+      "hours": 6,
+      "status": "completed",
+      "comment": "Hozircha oshani to'girlab chiqvoman api",
+      "createdAt": "2026-03-25T04:32:19.261Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c3bd4d23f5f39d4807d77d",
+      "dayLogId": "69c3652823f5f39d4807d71c",
+      "title": "Smart-space-> biblioteka ",
+      "description": "bilblioteka bo'limi apilarni rasimlarni ulab chiqildi va ko'rinish saytda ko'rinadigan qilindi",
+      "hours": 2,
+      "status": "completed",
+      "createdAt": "2026-03-25T10:47:41.094Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c603abcfca887b9e63e20e",
+      "dayLogId": "69c6036fcfca887b9e63e1fa",
+      "title": "smart-portal-> test kurs sahifasi",
+      "description": "Endilkda foydalanuvchi tamonga ko'rsatilgan test natijalarini chiqarib berishim kerak to'grimi notog'rimi uni ham hisoblab balaarini chiqarib berishim kerak!",
+      "hours": 6,
+      "status": "completed",
+      "comment": "Jarayonda Xudo Xohlasa chiroyli chiqadi digan umidaman",
+      "createdAt": "2026-03-27T04:12:27.745Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69c654f7cfca887b9e63e329",
+      "dayLogId": "69c6036fcfca887b9e63e1fa",
+      "title": "smart-portal-> pageOptimizations",
+      "description": "optimizatsiyaga o'tdim",
+      "hours": 3,
+      "status": "completed",
+      "comment": "Maksimal darajada shafilarni tez ishlashiga kodlarni maksimal darajada qisqartirib testdan o'tqish yo'lini qildim hali yana jarayonda",
+      "createdAt": "2026-03-27T09:59:19.520Z",
+      "__v": 0,
+      "testingStatus": "completed"
+    },
+    {
+      "_id": "69ca03f861df50170ada8bfc",
+      "dayLogId": "69c9fc878bebeebaa9dc5b91",
+      "title": "Smart-Space-> Test bo'limi ",
+      "description": "Test bo'limida api bilan ishlash jarayonini ko'rib chiqib boglavoman",
+      "hours": 4,
+      "status": "completed",
+      "customer": {
+        "name": "Azizbek kobulov"
+      },
+      "testingStatus": "completed",
+      "comment": "",
+      "createdAt": "2026-03-30T05:02:48.576Z",
+      "__v": 0
+    },
+    {
+      "_id": "69ca1ade133410284c591859",
+      "dayLogId": "69c9fc878bebeebaa9dc5b91",
+      "title": "smart-space-> course bo'limi ",
+      "description": "admin panelda kurs redaktirovaniya bo'limi qilindi",
+      "hours": 4,
+      "status": "completed",
+      "customer": {
+        "name": "Azizbek kobulov"
+      },
+      "testingStatus": "completed",
+      "comment": "Juda Chiroyli chiqdi",
+      "createdAt": "2026-03-30T06:40:30.677Z",
+      "__v": 0
+    },
+    {
+      "_id": "69cb5651dd838e4c1fc1091d",
+      "dayLogId": "69cb5632dd838e4c1fc10909",
+      "title": "smart-space-> yangi profil bo'limi",
+      "hours": 9,
+      "status": "completed",
+      "customer": {
+        "name": "Azizbek kobulov"
+      },
+      "testingStatus": "completed",
+      "createdAt": "2026-03-31T05:06:25.758Z",
+      "__v": 0,
+      "comment": "test o'tdi yaxshi",
+      "description": "profil bo'limida yangi sahifa qilish kerak ! U yerda bizda ishlidiganlarni yangi bosqich o'tish haqidagi malimotlari chiqadi !"
+    },
+    {
+      "_id": "69cca4adb64dab29cc429af7",
+      "dayLogId": "69cc95beb64dab29cc429ae3",
+      "title": "ivans yangi loyiha",
+      "description": "Loyihani yangicha saytini dizaynini qilishimiz kerakr",
+      "hours": 9,
+      "status": "completed",
+      "customer": {
+        "name": "Azizbek kobulov"
+      },
+      "testingStatus": "completed",
+      "comment": "Hudo Xohlasa chiroyliroq qilishga harakat qilamiz !",
+      "createdAt": "2026-04-01T04:53:01.555Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d0f3a1d03bbefded9bd5b2",
+      "dayLogId": "69cdf018e59d454e41fdb3e5",
+      "projectId": "69d0f391d03bbefded9bd5ab",
+      "title": "Smart-space ",
+      "description": "Yangi sahifa qilindi",
+      "hours": 9,
+      "status": "completed",
+      "customer": {
+        "name": "Azizbek kobulov"
+      },
+      "testingStatus": "completed",
+      "createdAt": "2026-04-04T11:18:57.835Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d0f3d3d03bbefded9bd604",
+      "dayLogId": "69cfa507f9dfa5f724aa616f",
+      "projectId": "69d0f3bad03bbefded9bd5f3",
+      "title": "smart-space",
+      "description": "yangi loyihani ustida uishlandi",
+      "hours": 8,
+      "status": "completed",
+      "customer": {
+        "name": "Azizbek kobulov"
+      },
+      "testingStatus": "completed",
+      "createdAt": "2026-04-04T11:19:47.607Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d0f3fbd03bbefded9bd64a",
+      "dayLogId": "69d09531f1c307e7255e7606",
+      "projectId": "69d0f3fbd03bbefded9bd648",
+      "title": "Yangi sahifada qilingan kichik ishlar",
+      "description": "",
+      "hours": 6,
+      "status": "completed",
+      "testingStatus": "completed",
+      "createdAt": "2026-04-04T11:20:27.673Z",
+      "__v": 0,
+      "customer": {}
+    },
+    {
+      "_id": "69d38003374752d70c2eddee",
+      "dayLogId": "69d37ffd374752d70c2eddd1",
+      "projectId": "69d38003374752d70c2eddec",
+      "title": "Smart Spaceda Yangi sahifa",
+      "description": "Sahifani analitika va reyting bolimlarini ustida ishladim",
+      "hours": 8,
+      "status": "completed",
+      "testingStatus": "completed",
+      "createdAt": "2026-04-06T09:42:27.509Z",
+      "__v": 0,
+      "customer": {
+        "name": "Azizbek kobulov"
+      }
+    },
+    {
+      "_id": "69d5d82186e8b8d3bfa9a160",
+      "dayLogId": "69d5d81c86e8b8d3bfa9a143",
+      "projectId": "69d5d82186e8b8d3bfa9a15e",
+      "title": "Sahifalar",
+      "description": "Yangi sahifa Merchat sahifasida ishlar boldi",
+      "hours": 8,
+      "status": "completed",
+      "testingStatus": "completed",
+      "createdAt": "2026-04-08T04:22:57.505Z",
+      "__v": 0,
+      "customer": {
+        "name": "Azizbek kobulov"
+      }
+    },
+    {
+      "_id": "69d72afdba0c3d3e2fd07610",
+      "dayLogId": "69d72af6ba0c3d3e2fd075f3",
+      "projectId": "69d72afdba0c3d3e2fd0760e",
+      "title": "Sahifalar",
+      "description": "Biz Kichik sahiflarni to'g'irlash baglarni yoqotish",
+      "hours": 7,
+      "status": "completed",
+      "testingStatus": "completed",
+      "createdAt": "2026-04-09T04:28:45.286Z",
+      "__v": 0,
+      "customer": {}
+    },
+    {
+      "_id": "69d88b0bceb0ce8ab4dc33c2",
+      "dayLogId": "69d88b06ceb0ce8ab4dc33a5",
+      "projectId": "69d88b0bceb0ce8ab4dc33c0",
+      "title": "Sahifalar",
+      "description": "hr-page, coinPage-admin, buglar fix hr-page bo'limida",
+      "hours": 8,
+      "status": "completed",
+      "testingStatus": "completed",
+      "createdAt": "2026-04-10T05:30:51.626Z",
+      "__v": 0,
+      "customer": {
+        "name": "Azizbek kobulov"
+      }
+    }
+  ],
+  "startupprojects": [],
+  "projects": [
+    {
+      "_id": "69d0f391d03bbefded9bd5ab",
+      "dayLogId": "69cdf018e59d454e41fdb3e5",
+      "name": "Smart Space",
+      "templateId": null,
+      "createdAt": "2026-04-04T11:18:41.015Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d0f3bad03bbefded9bd5f3",
+      "dayLogId": "69cfa507f9dfa5f724aa616f",
+      "name": "Smart Space",
+      "templateId": null,
+      "createdAt": "2026-04-04T11:19:22.809Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d0f3fbd03bbefded9bd648",
+      "dayLogId": "69d09531f1c307e7255e7606",
+      "name": "Smart Space",
+      "templateId": "69d0f3f2d03bbefded9bd627",
+      "createdAt": "2026-04-04T11:20:27.672Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d38003374752d70c2eddec",
+      "dayLogId": "69d37ffd374752d70c2eddd1",
+      "name": "Smart Space",
+      "templateId": "69d0f3f2d03bbefded9bd627",
+      "createdAt": "2026-04-06T09:42:27.508Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d5d82186e8b8d3bfa9a15e",
+      "dayLogId": "69d5d81c86e8b8d3bfa9a143",
+      "name": "Smart Space",
+      "templateId": "69d0f3f2d03bbefded9bd627",
+      "createdAt": "2026-04-08T04:22:57.503Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d72afdba0c3d3e2fd0760e",
+      "dayLogId": "69d72af6ba0c3d3e2fd075f3",
+      "name": "Smart Space",
+      "templateId": "69d0f3f2d03bbefded9bd627",
+      "createdAt": "2026-04-09T04:28:45.284Z",
+      "__v": 0
+    },
+    {
+      "_id": "69d88b0bceb0ce8ab4dc33c0",
+      "dayLogId": "69d88b06ceb0ce8ab4dc33a5",
+      "name": "Smart Space",
+      "templateId": "69d0f3f2d03bbefded9bd627",
+      "createdAt": "2026-04-10T05:30:51.624Z",
+      "__v": 0
+    }
+  ],
+  "users": [
+    {
+      "_id": "69a950b1ec0975e84b7add82",
+      "name": "Aziz",
+      "email": "aziz@gmail.com",
+      "password": "$2b$12$y0HEsXGiug.Y.XAhEx11XOCYOyoP0lIm1.eBDjFYIq.OJUzlJZXRe",
+      "role": "admin",
+      "createdAt": "2026-03-05T09:45:21.626Z",
+      "__v": 0
+    },
+    {
+      "_id": "69df4c1f68b81fb2208f8c6a",
+      "name": "aziz",
+      "email": "aziz@aziz.com",
+      "password": "$2b$12$FZs5Y7HpWFWUlg9EzYAWGuJ.9S4ZXjErQIlmsLtFRVz2DIxpszARi",
+      "role": "worker",
+      "createdAt": "2026-04-15T08:28:15.023Z",
+      "__v": 0
+    },
+    {
+      "_id": "69df4c7068b81fb2208f8cba",
+      "name": "qwerty",
+      "email": "qwe@qwe.com",
+      "password": "$2b$12$U69auwFftWsJQARElg6E/.pAUukB9XbRTo/M9VdZXIojSTse1Ksfa",
+      "role": "projectManager",
+      "createdAt": "2026-04-15T08:29:36.511Z",
+      "__v": 0
+    }
+  ],
+  "boardprojects": [
+    {
+      "_id": "69d0f61f569c40d258228002",
+      "name": "Rost",
+      "description": "",
+      "status": "active",
+      "deadline": null,
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "tasks": [
+        {
+          "title": "Login sahifasi qilindi",
+          "description": "",
+          "status": "done",
+          "priority": "medium",
+          "hours": 2,
+          "customer": "Azizbek Ahmedov ",
+          "system": "Rost",
+          "assignedTo": "69df4c1f68b81fb2208f8c6a",
+          "dueDate": "2026-04-03T19:00:00.000Z",
+          "notes": "Qilib bo'lindi!",
+          "_id": "69d333b99afdc248a74efc8b",
+          "createdAt": "2026-04-06T04:16:57.245Z",
+          "updatedAt": "2026-04-08T14:23:57.212Z",
+          "isPaid": true
+        },
+        {
+          "title": "Скрытие курса через смену цвета (UI-решение",
+          "description": "",
+          "status": "done",
+          "priority": "medium",
+          "hours": 2,
+          "customer": "Azizbek Ahmedov ",
+          "system": "Rost",
+          "assignedTo": "69df4c1f68b81fb2208f8c6a",
+          "dueDate": "2026-03-26T19:00:00.000Z",
+          "notes": "",
+          "_id": "69d334049afdc248a74efca2",
+          "createdAt": "2026-04-06T04:18:12.773Z",
+          "updatedAt": "2026-04-08T14:23:57.645Z",
+          "isPaid": true
+        },
+        {
+          "title": "Скрытие курса (Поле «Курс»)",
+          "description": "",
+          "status": "done",
+          "priority": "medium",
+          "hours": 1,
+          "customer": "Azizbek Ahmedov ",
+          "system": "Rost",
+          "assignedTo": "69df4c1f68b81fb2208f8c6a",
+          "dueDate": "2026-03-27T19:00:00.000Z",
+          "notes": "",
+          "_id": "69d334429afdc248a74efcb6",
+          "createdAt": "2026-04-06T04:19:14.712Z",
+          "updatedAt": "2026-04-08T14:23:05.993Z",
+          "isPaid": true
+        },
+        {
+          "title": "состовлена Тз по новому проекту Rost",
+          "description": "",
+          "status": "done",
+          "priority": "medium",
+          "hours": 4,
+          "customer": "Azizbek Ahmedov ",
+          "system": "Rost",
+          "assignedTo": "69df4c1f68b81fb2208f8c6a",
+          "dueDate": "2026-04-04T19:00:00.000Z",
+          "notes": "",
+          "_id": "69d334729afdc248a74efce4",
+          "createdAt": "2026-04-06T04:20:02.926Z",
+          "updatedAt": "2026-04-08T14:23:59.917Z",
+          "isPaid": false
+        },
+        {
+          "title": "Основная задача теперь звучит так: Это чисто UI-решение для удобства менеджера",
+          "description": "",
+          "status": "done",
+          "priority": "medium",
+          "hours": 1,
+          "customer": "Azizbek Ahmedov ",
+          "system": "Rost",
+          "assignedTo": "69df4c1f68b81fb2208f8c6a",
+          "dueDate": "2026-03-28T19:00:00.000Z",
+          "notes": "",
+          "_id": "69d334a89afdc248a74efd1b",
+          "createdAt": "2026-04-06T04:20:56.613Z",
+          "updatedAt": "2026-04-06T13:12:47.545Z",
+          "isPaid": false
+        },
+        {
+          "title": "Kalonkalarni API orqali ulash",
+          "description": "",
+          "status": "done",
+          "priority": "medium",
+          "hours": 1,
+          "isPaid": false,
+          "customer": "Azizbek Ahmedov ",
+          "system": "Rost",
+          "assignedTo": "69df4c1f68b81fb2208f8c6a",
+          "dueDate": "2026-04-05T19:00:00.000Z",
+          "notes": "",
+          "_id": "69d35ff9374752d70c2edd77",
+          "createdAt": "2026-04-06T07:25:45.750Z",
+          "updatedAt": "2026-04-08T14:13:50.622Z"
+        }
+      ],
+      "createdAt": "2026-04-04T11:29:35.624Z",
+      "updatedAt": "2026-04-15T09:15:14.190Z",
+      "__v": 11,
+      "clients": []
+    },
+    {
+      "_id": "69dcc974419263dd1e989b51",
+      "name": "rost",
+      "description": "sadasdasd",
+      "status": "active",
+      "deadline": null,
+      "createdBy": "69dc76551fbca6293e3072eb",
+      "clients": [],
+      "tasks": [],
+      "createdAt": "2026-04-13T10:46:12.932Z",
+      "updatedAt": "2026-04-13T10:46:12.932Z",
+      "__v": 0
+    },
+    {
+      "_id": "69df546468b81fb2208f8fcc",
+      "name": "Dashboard",
+      "description": "Dashbord qilish kerak 1c ulangan holda",
+      "status": "active",
+      "deadline": null,
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "clients": [],
+      "tasks": [],
+      "createdAt": "2026-04-15T09:03:32.108Z",
+      "updatedAt": "2026-04-15T09:03:32.108Z",
+      "__v": 0
+    },
+    {
+      "_id": "69df54c268b81fb2208f9019",
+      "name": "Smart Space",
+      "description": "",
+      "status": "active",
+      "deadline": null,
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "clients": [],
+      "tasks": [],
+      "createdAt": "2026-04-15T09:05:06.488Z",
+      "updatedAt": "2026-04-15T09:05:06.488Z",
+      "__v": 0
+    },
+    {
+      "_id": "69df56e2e739827c97c72d09",
+      "name": "FixFlow",
+      "description": "",
+      "status": "active",
+      "deadline": null,
+      "createdBy": "69df4c1f68b81fb2208f8c6a",
+      "clients": [],
+      "tasks": [
+        {
+          "title": "Tz Tuzish kerak",
+          "description": "Fix Flow Boyicha TZ Ichki kodlar bo'yicha tuzuldi",
+          "status": "done",
+          "priority": "medium",
+          "hours": 1,
+          "isPaid": false,
+          "customer": "Aziz Ahmedov",
+          "system": "FixFlow",
+          "assignedTo": null,
+          "dueDate": "2026-04-14T19:00:00.000Z",
+          "notes": "",
+          "_id": "69df5708e739827c97c72d1a",
+          "files": [],
+          "createdAt": "2026-04-15T09:14:48.629Z",
+          "updatedAt": "2026-04-15T09:16:10.511Z"
+        },
+        {
+          "title": "Chiroyli tz qilish kerak FixFlow",
+          "description": "Ko'rsatish uchun",
+          "status": "done",
+          "priority": "medium",
+          "hours": 2,
+          "isPaid": false,
+          "customer": "Aziz Ahmedov",
+          "system": "FixFlow",
+          "assignedTo": null,
+          "dueDate": "2026-04-09T19:00:00.000Z",
+          "notes": "",
+          "_id": "69df574be739827c97c72d41",
+          "files": [],
+          "createdAt": "2026-04-15T09:15:55.312Z",
+          "updatedAt": "2026-04-15T09:15:55.312Z"
+        }
+      ],
+      "createdAt": "2026-04-15T09:14:10.054Z",
+      "updatedAt": "2026-04-15T09:16:10.511Z",
+      "__v": 2
+    }
+  ]
+}

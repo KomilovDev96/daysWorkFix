@@ -472,7 +472,7 @@ const DayLogDetailsPage = () => {
                                                         {task.files.map(file => (
                                                             <Space key={file._id} size={4}>
                                                                 <Tag icon={<UploadOutlined />} color="processing">
-                                                                    <a href={`http://localhost:5000/${file.fileUrl}`} target="_blank" rel="noopener noreferrer">
+                                                                    <a href={`/${file.fileUrl}`} target="_blank" rel="noopener noreferrer">
                                                                         {file.title}
                                                                     </a>
                                                                 </Tag>

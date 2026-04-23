@@ -1,6 +1,10 @@
 import React, { useState, useRef } from 'react';
 import {
+<<<<<<< HEAD
     Card, Tabs, Table, Button, Form, Input, Select,
+=======
+    Card, Tabs, Table, Button, Modal, Form, Input, Select, AutoComplete,
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
     DatePicker, InputNumber, Tag, Space, Typography, Popconfirm,
     Badge, Spin, message, Tooltip, Row, Col, Empty, Avatar,
     Segmented, Divider, Drawer, Upload, Image, List,
@@ -17,6 +21,7 @@ import TaskCommentsDrawer  from '../../shared/ui/TaskCommentsDrawer';
 import ExportTasksButton   from '../../shared/ui/ExportTasksButton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+<<<<<<< HEAD
 import {
     fetchTasks, createTask, updateTask, deleteTask, fetchTaskProjects,
     addComment, fetchComments,
@@ -24,6 +29,9 @@ import {
 } from '../../shared/api/managedTasksApi';
 
 const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/+$/, '').replace('/api', '');
+=======
+import { fetchTasks, createTask, updateTask, deleteTask, fetchTaskProjects, createTaskProject, fetchManagers } from '../../shared/api/managedTasksApi';
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -393,12 +401,17 @@ const STATUS_LABEL_MAP = {
     cancelled:   'Отменено',
 };
 
+<<<<<<< HEAD
 const SelfTaskDrawer = ({ open, onClose, onSave, initial, projects }) => {
     const [form]         = Form.useForm();
     const [dateMode,     setDateMode]     = useState('today');
     const [commentText,  setCommentText]  = useState('');
     const [addingCmt,    setAddingCmt]    = useState(false);
     const [uploadingFile,setUploadingFile]= useState(false);
+=======
+const SelfTaskModal = ({ open, onClose, onSave, initial, projects, managers }) => {
+    const [form] = Form.useForm();
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
 
     React.useEffect(() => {
         if (open) {
@@ -560,7 +573,20 @@ const SelfTaskDrawer = ({ open, onClose, onSave, initial, projects }) => {
                         options={(projects || []).map((p) => ({ value: p._id, label: p.name }))}
                     />
                 </Form.Item>
+<<<<<<< HEAD
 
+=======
+                <Form.Item name="manualAssignee" label="Исполнитель">
+                    <AutoComplete
+                        placeholder="Выберите менеджера или введите имя"
+                        allowClear
+                        filterOption={(input, option) =>
+                            (option?.value ?? '').toLowerCase().includes(input.toLowerCase())
+                        }
+                        options={(managers || []).map((m) => ({ value: m.name }))}
+                    />
+                </Form.Item>
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
                 <Row gutter={12}>
                     <Col span={12}>
                         <Form.Item name="status" label="Статус" rules={[{ required: true }]}>
@@ -741,6 +767,11 @@ const SelfTasksTab = () => {
         queryFn:  fetchTaskProjects,
     });
 
+    const { data: managers = [] } = useQuery({
+        queryKey: ['managers'],
+        queryFn:  fetchManagers,
+    });
+
     const selfTasks = (data?.tasks ?? []).filter((t) => t.isSelfTask);
     const invalidate = () => qc.invalidateQueries({ queryKey: ['my-self-tasks'] });
 
@@ -811,10 +842,21 @@ const SelfTasksTab = () => {
                 : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
         },
         {
+<<<<<<< HEAD
             title: 'Дата', dataIndex: 'dueDate', key: 'dueDate', width: 110,
             render: (v) => v
                 ? <Tag color={dayjs(v).isSame(dayjs(), 'day') ? 'green' : 'default'}>{dayjs(v).format('DD.MM.YYYY')}</Tag>
                 : '—',
+=======
+            title: 'Исполнитель', dataIndex: 'manualAssignee', key: 'manualAssignee', width: 140,
+            render: (v) => v
+                ? <Tag icon={<UserOutlined />} color="blue">{v}</Tag>
+                : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
+        },
+        {
+            title: 'Дедлайн', dataIndex: 'dueDate', key: 'dueDate', width: 120,
+            render: (v) => v ? dayjs(v).format('DD.MM.YYYY') : '—',
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
         },
         {
             title: 'Часы', key: 'hours', width: 90, align: 'center',
@@ -880,6 +922,7 @@ const SelfTasksTab = () => {
                 onSave={handleSave}
                 initial={editTask}
                 projects={projects}
+                managers={managers}
             />
         </>
     );

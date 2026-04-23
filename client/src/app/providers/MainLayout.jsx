@@ -127,10 +127,18 @@ const MainLayout = () => {
                     height: 64, margin: 16,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
+<<<<<<< HEAD
                     {collapsed
                         ? <img src="/weeko-logo-icon.svg" alt="W" style={{ height: 32 }} />
                         : <img src="/weeko-logo.svg" alt="Weeko" style={{ height: 30, maxWidth: 130 }} />
                     }
+=======
+                    <img
+                        src="/logo.png"
+                        alt="DaysWorkFix"
+                        style={{ maxHeight: 48, maxWidth: '100%', objectFit: 'contain' }}
+                    />
+>>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
                 </div>
 
                 {settingsLoading && needsPerms ? (

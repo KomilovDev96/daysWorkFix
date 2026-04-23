@@ -57,6 +57,9 @@ const managedTaskSchema = new mongoose.Schema(
         // Задача созданная самим воркером для себя
         isSelfTask: { type: Boolean, default: false },
 
+        // Исполнитель для self-task воркера: имя менеджера из списка или произвольный текст
+        manualAssignee: { type: String, default: '', trim: true },
+
         estimatedHours: { type: Number, default: 0, min: 0 },
         actualHours:    { type: Number, default: 0, min: 0 },
 
