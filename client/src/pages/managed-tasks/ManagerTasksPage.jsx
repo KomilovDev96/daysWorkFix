@@ -3,7 +3,7 @@ import {
     Card, Button, Modal, Form, Input, Select, DatePicker,
     InputNumber, Switch, Tag, Space, Typography, Tooltip,
     Drawer, Table, Empty, Spin, message, Badge, Popconfirm,
-    Row, Col, Statistic, Avatar,
+    Row, Col, Statistic, Avatar, Segmented, Divider, List, Upload,
 } from 'antd';
 import {
     PlusOutlined, EditOutlined, DeleteOutlined, FireOutlined,
@@ -12,7 +12,13 @@ import {
     FolderOutlined, FolderOpenOutlined, AppstoreOutlined,
     CommentOutlined, UserOutlined, FilterOutlined,
     PlayCircleOutlined, DownOutlined, UpOutlined,
+    TableOutlined, ProjectOutlined, BarChartOutlined,
+    SendOutlined, PaperClipOutlined, UploadOutlined,
+    FileImageOutlined, FilePdfOutlined, FileOutlined, EyeOutlined,
 } from '@ant-design/icons';
+import GanttView    from './views/GanttView';
+import CalendarView from './views/CalendarView';
+import TableView    from './views/TableView';
 import TaskCommentsDrawer from '../../shared/ui/TaskCommentsDrawer';
 import ExportTasksButton  from '../../shared/ui/ExportTasksButton';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -24,6 +30,8 @@ import {
     fetchTasks, createTask, updateTask, deleteTask,
     fetchWorkers, fetchAvailability,
     fetchTaskProjects, createTaskProject,
+    addComment, fetchComments,
+    fetchTaskFiles, uploadTaskFile, deleteTaskFile,
 } from '../../shared/api/managedTasksApi';
 
 const { Title, Text } = Typography;
@@ -681,6 +689,7 @@ const ManagerTasksPage = () => {
     const [filterMine,      setFilterMine]      = useState(false);
     const [selectedProject, setSelectedProject] = useState(null);
     const [showDone,        setShowDone]        = useState(false);
+    const [viewMode,        setViewMode]        = useState('kanban');
 
     // Запросы
     const params = useMemo(() => {
@@ -784,6 +793,17 @@ const ManagerTasksPage = () => {
                         : 'Задачи'}
                 </Title>
                 <Space wrap>
+                    {/* Переключатель видов */}
+                    <Segmented
+                        value={viewMode}
+                        onChange={setViewMode}
+                        options={[
+                            { value: 'kanban',   icon: <AppstoreOutlined />,  label: 'Kanban'    },
+                            { value: 'table',    icon: <TableOutlined />,     label: 'Таблица'   },
+                            { value: 'gantt',    icon: <BarChartOutlined />,  label: 'Gantt'     },
+                            { value: 'calendar', icon: <CalendarOutlined />,  label: 'Календарь' },
+                        ]}
+                    />
                     <Button
                         icon={<FilterOutlined />}
                         type={filterMine ? 'primary' : 'default'}
@@ -847,7 +867,7 @@ const ManagerTasksPage = () => {
                 </Col>
             </Row>
 
-            {/* Канбан задач */}
+            {/* Область задач — переключаемые виды */}
             {isLoading ? (
                 <div style={{ textAlign: 'center', padding: 40 }}><Spin /></div>
             ) : activeTasks.length === 0 && doneTasks.length === 0 ? (
@@ -858,63 +878,96 @@ const ManagerTasksPage = () => {
                 } style={{ padding: 40 }} />
             ) : (
                 <>
-                    {/* Активные колонки */}
-                    <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8, alignItems: 'flex-start' }}>
-                        {KANBAN_STATUSES.map((status) => (
-                            <ManagerKanbanColumn
-                                key={status.key}
-                                status={status}
-                                tasks={byStatus[status.key] || []}
+                    {/* ── Gantt ── */}
+                    {viewMode === 'gantt' && (
+                        <Card size="small">
+                            <GanttView tasks={allTasks} onEdit={openEdit} />
+                        </Card>
+                    )}
+
+                    {/* ── Calendar ── */}
+                    {viewMode === 'calendar' && (
+                        <Card size="small">
+                            <CalendarView tasks={allTasks} onEdit={openEdit} />
+                        </Card>
+                    )}
+
+                    {/* ── Table ── */}
+                    {viewMode === 'table' && (
+                        <Card size="small">
+                            <TableView
+                                tasks={allTasks}
                                 currentUserId={currentUser?._id}
                                 onEdit={openEdit}
                                 onDelete={(id) => deleteMut.mutate(id)}
-                                onAddChild={openAddChild}
                                 onApprove={(id) => approveMut.mutate(id)}
                                 onReject={(id)  => rejectMut.mutate(id)}
                                 onComment={(t)  => setCommentTask(t)}
                             />
-                        ))}
-                    </div>
+                        </Card>
+                    )}
 
-                    {/* Секция выполненных */}
-                    {doneTasks.length > 0 && (
-                        <div style={{ marginTop: 8 }}>
-                            <Button
-                                type="link" size="small"
-                                icon={showDone ? <UpOutlined /> : <DownOutlined />}
-                                onClick={() => setShowDone((v) => !v)}
-                                style={{ padding: 0, color: '#8c8c8c', fontSize: 12 }}
-                            >
-                                {showDone ? 'Скрыть выполненные' : `Показать выполненные и отменённые (${doneTasks.length})`}
-                            </Button>
-                            {showDone && (
-                                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                                    {doneTasks.map((t) => (
-                                        <div key={t._id} style={{
-                                            background: '#fafafa', border: '1px solid #e0e0e0',
-                                            borderRadius: 6, padding: '6px 12px', fontSize: 12,
-                                            display: 'flex', alignItems: 'center', gap: 8, maxWidth: 340,
-                                        }}>
-                                            <CheckCircleOutlined style={{ color: t.status === 'cancelled' ? '#ff4d4f' : '#52c41a' }} />
-                                            <Text style={{ fontSize: 12, color: '#555', flex: 1 }} ellipsis={{ tooltip: t.title }}>
-                                                {t.title}
-                                            </Text>
-                                            {t.assignedTo?.length > 0 && (
-                                                <Text type="secondary" style={{ fontSize: 11, flexShrink: 0 }}>
-                                                    {t.assignedTo[0].name}
-                                                </Text>
-                                            )}
-                                            <Tag style={{ margin: 0, fontSize: 10 }}
-                                                color={t.status === 'cancelled' ? 'error' : 'success'}>
-                                                {t.status === 'cancelled' ? 'Отменено' : 'Выполнено'}
-                                            </Tag>
-                                            <Button size="small" icon={<EditOutlined />}
-                                                onClick={() => openEdit(t)} type="text" style={{ padding: '0 4px' }} />
+                    {/* ── Kanban ── */}
+                    {viewMode === 'kanban' && (
+                        <>
+                            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8, alignItems: 'flex-start' }}>
+                                {KANBAN_STATUSES.map((status) => (
+                                    <ManagerKanbanColumn
+                                        key={status.key}
+                                        status={status}
+                                        tasks={byStatus[status.key] || []}
+                                        currentUserId={currentUser?._id}
+                                        onEdit={openEdit}
+                                        onDelete={(id) => deleteMut.mutate(id)}
+                                        onAddChild={openAddChild}
+                                        onApprove={(id) => approveMut.mutate(id)}
+                                        onReject={(id)  => rejectMut.mutate(id)}
+                                        onComment={(t)  => setCommentTask(t)}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Секция выполненных */}
+                            {doneTasks.length > 0 && (
+                                <div style={{ marginTop: 8 }}>
+                                    <Button
+                                        type="link" size="small"
+                                        icon={showDone ? <UpOutlined /> : <DownOutlined />}
+                                        onClick={() => setShowDone((v) => !v)}
+                                        style={{ padding: 0, color: '#8c8c8c', fontSize: 12 }}
+                                    >
+                                        {showDone ? 'Скрыть выполненные' : `Показать выполненные и отменённые (${doneTasks.length})`}
+                                    </Button>
+                                    {showDone && (
+                                        <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                            {doneTasks.map((t) => (
+                                                <div key={t._id} style={{
+                                                    background: '#fafafa', border: '1px solid #e0e0e0',
+                                                    borderRadius: 6, padding: '6px 12px', fontSize: 12,
+                                                    display: 'flex', alignItems: 'center', gap: 8, maxWidth: 340,
+                                                }}>
+                                                    <CheckCircleOutlined style={{ color: t.status === 'cancelled' ? '#ff4d4f' : '#52c41a' }} />
+                                                    <Text style={{ fontSize: 12, color: '#555', flex: 1 }} ellipsis={{ tooltip: t.title }}>
+                                                        {t.title}
+                                                    </Text>
+                                                    {t.assignedTo?.length > 0 && (
+                                                        <Text type="secondary" style={{ fontSize: 11, flexShrink: 0 }}>
+                                                            {t.assignedTo[0].name}
+                                                        </Text>
+                                                    )}
+                                                    <Tag style={{ margin: 0, fontSize: 10 }}
+                                                        color={t.status === 'cancelled' ? 'error' : 'success'}>
+                                                        {t.status === 'cancelled' ? 'Отменено' : 'Выполнено'}
+                                                    </Tag>
+                                                    <Button size="small" icon={<EditOutlined />}
+                                                        onClick={() => openEdit(t)} type="text" style={{ padding: '0 4px' }} />
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
                             )}
-                        </div>
+                        </>
                     )}
                 </>
             )}
@@ -952,7 +1005,467 @@ const ManagerTasksPage = () => {
                 open={!!commentTask}
                 onClose={() => setCommentTask(null)}
             />
+
+            {/* Блок личных задач менеджера */}
+            <Card
+                size="small"
+                title={
+                    <Space>
+                        <UserOutlined style={{ color: '#6ba932' }} />
+                        <span>Мои личные задачи</span>
+                    </Space>
+                }
+                style={{ marginTop: 8 }}
+            >
+                <ManagerSelfTasksSection />
+            </Card>
         </Space>
+    );
+};
+
+// ── Константы для self-задач менеджера ────────────────────────────────────────
+
+const SELF_STATUS_OPTIONS = [
+    { value: 'pending',     label: 'Ожидает'      },
+    { value: 'in_progress', label: 'В процессе'   },
+    { value: 'testing',     label: 'Тестирование' },
+    { value: 'completed',   label: 'Выполнено'    },
+    { value: 'cancelled',   label: 'Отменено'     },
+];
+
+const SELF_STATUS_COLOR = {
+    pending:     'default',
+    in_progress: 'processing',
+    testing:     'warning',
+    completed:   'success',
+    cancelled:   'error',
+};
+
+const API_BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000')
+    .replace(/\/+$/, '').replace('/api', '');
+
+// ── Drawer для создания/редактирования личной задачи менеджера ────────────────
+
+const ManagerSelfTaskDrawer = ({ open, onClose, onSave, initial, projects }) => {
+    const [form]          = Form.useForm();
+    const [dateMode,      setDateMode]      = useState('today');
+    const [commentText,   setCommentText]   = useState('');
+    const [addingCmt,     setAddingCmt]     = useState(false);
+    const [uploadingFile, setUploadingFile] = useState(false);
+
+    React.useEffect(() => {
+        if (open) {
+            if (initial) {
+                form.setFieldsValue({
+                    ...initial,
+                    project:   initial.project?._id || initial.project || null,
+                    startDate: initial.startDate ? dayjs(initial.startDate) : null,
+                    dueDate:   initial.dueDate   ? dayjs(initial.dueDate)   : null,
+                });
+                const isToday = initial.dueDate && dayjs(initial.dueDate).isSame(dayjs(), 'day');
+                setDateMode(isToday || !initial.dueDate ? 'today' : 'other');
+            } else {
+                form.resetFields();
+                form.setFieldsValue({ type: 'daily', estimatedHours: 1, status: 'in_progress' });
+                setDateMode('today');
+            }
+            setCommentText('');
+        } else {
+            form.resetFields();
+        }
+    }, [open, initial]);
+
+    const { data: taskWithComments, refetch: refetchComments } = useQuery({
+        queryKey: ['self-task-comments', initial?._id],
+        queryFn:  () => fetchComments(initial._id),
+        enabled:  open && !!initial?._id,
+    });
+    const comments = taskWithComments?.comments || [];
+
+    const { data: taskFiles = [], refetch: refetchFiles } = useQuery({
+        queryKey: ['self-task-files', initial?._id],
+        queryFn:  () => fetchTaskFiles(initial._id),
+        enabled:  open && !!initial?._id,
+    });
+
+    const handleAddComment = async () => {
+        if (!commentText.trim() || !initial?._id) return;
+        setAddingCmt(true);
+        try {
+            await addComment(initial._id, commentText.trim());
+            setCommentText('');
+            refetchComments();
+        } catch {
+            message.error('Ошибка при добавлении комментария');
+        } finally {
+            setAddingCmt(false);
+        }
+    };
+
+    const handleFileUpload = async ({ file, onSuccess, onError }) => {
+        if (!initial?._id) return;
+        setUploadingFile(true);
+        try {
+            await uploadTaskFile(initial._id, file);
+            refetchFiles();
+            onSuccess('ok');
+            message.success('Файл загружен');
+        } catch {
+            message.error('Ошибка загрузки файла');
+            onError(new Error('upload failed'));
+        } finally {
+            setUploadingFile(false);
+        }
+    };
+
+    const handleDeleteFile = async (fileId) => {
+        try {
+            await deleteTaskFile(fileId);
+            refetchFiles();
+            message.success('Файл удалён');
+        } catch {
+            message.error('Ошибка удаления файла');
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            const vals = await form.validateFields();
+            const date = dateMode === 'today' ? dayjs() : (vals.customDate || dayjs());
+            onSave({
+                ...vals,
+                isSelfTask: true,
+                project:    vals.project || null,
+                startDate:  !initial ? date.startOf('day').toISOString() : vals.startDate?.toISOString(),
+                dueDate:    !initial ? date.endOf('day').toISOString()   : vals.dueDate?.toISOString(),
+            });
+        } catch {}
+    };
+
+    const isImage = (ft) => ['jpg','jpeg','png','gif','webp'].includes(ft?.toLowerCase());
+    const getFileIcon = (ft) => {
+        if (isImage(ft)) return <FileImageOutlined style={{ color: '#1677ff', fontSize: 16 }} />;
+        if (ft === 'pdf') return <FilePdfOutlined  style={{ color: '#ff4d4f', fontSize: 16 }} />;
+        return <FileOutlined style={{ fontSize: 16 }} />;
+    };
+
+    return (
+        <Drawer
+            open={open}
+            onClose={onClose}
+            placement="right"
+            width={620}
+            title={
+                <Space>
+                    <UserOutlined style={{ color: '#6ba932' }} />
+                    {initial ? 'Редактировать мою задачу' : 'Новая личная задача'}
+                </Space>
+            }
+            footer={
+                <div style={{ textAlign: 'right' }}>
+                    <Space>
+                        <Button onClick={onClose}>Отмена</Button>
+                        <Button type="primary" onClick={handleSave}>
+                            {initial ? 'Сохранить' : 'Создать'}
+                        </Button>
+                    </Space>
+                </div>
+            }
+            destroyOnHidden
+        >
+            <Form form={form} layout="vertical">
+                {!initial && (
+                    <Form.Item label={<b>На какой день?</b>} style={{ marginBottom: 12 }}>
+                        <Segmented
+                            block
+                            value={dateMode}
+                            onChange={setDateMode}
+                            options={[
+                                { label: '📅 На сегодня',     value: 'today' },
+                                { label: '📆 На другой день', value: 'other' },
+                            ]}
+                        />
+                        {dateMode === 'other' && (
+                            <Form.Item name="customDate" noStyle rules={[{ required: true, message: 'Выберите дату' }]}>
+                                <DatePicker style={{ width: '100%', marginTop: 8 }} format="DD.MM.YYYY" placeholder="Выберите дату" />
+                            </Form.Item>
+                        )}
+                    </Form.Item>
+                )}
+
+                <Divider style={{ margin: '0 0 12px' }} />
+
+                <Form.Item name="title" label="Название задачи" rules={[{ required: true, message: 'Введите название' }]}>
+                    <Input placeholder="Что нужно сделать?" />
+                </Form.Item>
+
+                <Form.Item name="client" label="Заказчик / Клиент">
+                    <Input placeholder="Название компании или имя клиента" prefix={<UserOutlined style={{ color: '#aaa' }} />} />
+                </Form.Item>
+
+                <Form.Item name="project" label="Проект (необязательно)">
+                    <Select placeholder="Без проекта" allowClear
+                        options={(projects || []).map((p) => ({ value: p._id, label: p.name }))} />
+                </Form.Item>
+
+                <Row gutter={12}>
+                    <Col span={12}>
+                        <Form.Item name="status" label="Статус" rules={[{ required: true }]}>
+                            <Select options={SELF_STATUS_OPTIONS} />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="type" label="Тип" rules={[{ required: true }]}>
+                            <Select options={[
+                                { value: 'daily',   label: 'Дневная'   },
+                                { value: 'hourly',  label: 'Часовая'   },
+                                { value: 'weekly',  label: 'Недельная' },
+                                { value: 'monthly', label: 'Месячная'  },
+                            ]} />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                <Row gutter={12}>
+                    <Col span={12}>
+                        <Form.Item name="estimatedHours" label="Часы (план)" rules={[{ required: true, message: 'Укажите часы' }]}>
+                            <InputNumber min={0} step={0.5} style={{ width: '100%' }} placeholder="0" />
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Form.Item name="actualHours" label="Часы (факт)">
+                            <InputNumber min={0} step={0.5} style={{ width: '100%' }} placeholder="0" />
+                        </Form.Item>
+                    </Col>
+                </Row>
+
+                {initial && (
+                    <Row gutter={12}>
+                        <Col span={12}>
+                            <Form.Item name="startDate" label="Начало">
+                                <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="dueDate" label="Дедлайн">
+                                <DatePicker style={{ width: '100%' }} format="DD.MM.YYYY" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                )}
+
+                <Form.Item name="description" label="Детали задачи">
+                    <Input.TextArea rows={2} placeholder="Подробное описание..." />
+                </Form.Item>
+            </Form>
+
+            {/* Комментарии */}
+            {initial && (
+                <>
+                    <Divider orientation="left" style={{ marginTop: 8 }}>
+                        <Space size={4}><CommentOutlined /><span>Комментарии{comments.length > 0 ? ` (${comments.length})` : ''}</span></Space>
+                    </Divider>
+                    <div style={{ maxHeight: 180, overflowY: 'auto', marginBottom: 12 }}>
+                        {comments.length === 0 ? (
+                            <Empty description="Нет комментариев" image={Empty.PRESENTED_IMAGE_SIMPLE} style={{ margin: '8px 0' }} />
+                        ) : (
+                            <List size="small" dataSource={comments} renderItem={(c) => (
+                                <List.Item style={{ padding: '6px 0' }}>
+                                    <div style={{ width: '100%' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                                            <Text strong style={{ fontSize: 12 }}>{c.author?.name || 'Вы'}</Text>
+                                            <Text type="secondary" style={{ fontSize: 11 }}>{dayjs(c.createdAt).format('DD.MM HH:mm')}</Text>
+                                        </div>
+                                        <Text style={{ fontSize: 12 }}>{c.text}</Text>
+                                    </div>
+                                </List.Item>
+                            )} />
+                        )}
+                    </div>
+                    <Space.Compact style={{ width: '100%', marginBottom: 16 }}>
+                        <Input
+                            placeholder="Добавить комментарий..."
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            onPressEnter={handleAddComment}
+                        />
+                        <Button type="primary" icon={<SendOutlined />} loading={addingCmt} onClick={handleAddComment} />
+                    </Space.Compact>
+
+                    {/* Файлы */}
+                    <Divider orientation="left" style={{ marginTop: 0 }}>
+                        <Space size={4}><PaperClipOutlined /><span>Файлы{taskFiles.length > 0 ? ` (${taskFiles.length})` : ''}</span></Space>
+                    </Divider>
+                    <Upload customRequest={handleFileUpload} showUploadList={false} disabled={uploadingFile}>
+                        <Button icon={<UploadOutlined />} loading={uploadingFile} size="small" style={{ marginBottom: 10 }}>
+                            Загрузить файл
+                        </Button>
+                    </Upload>
+                    {taskFiles.length > 0 && (
+                        <List size="small" dataSource={taskFiles} renderItem={(f) => (
+                            <List.Item style={{ padding: '4px 0' }}
+                                actions={[
+                                    <Tooltip title="Открыть">
+                                        <Button size="small" icon={<EyeOutlined />} type="link"
+                                            onClick={() => window.open(`${API_BASE}/${f.fileUrl}`, '_blank')} />
+                                    </Tooltip>,
+                                    <Popconfirm title="Удалить файл?" onConfirm={() => handleDeleteFile(f._id)} okText="Да" cancelText="Нет">
+                                        <Button size="small" danger icon={<DeleteOutlined />} type="text" />
+                                    </Popconfirm>,
+                                ]}
+                            >
+                                <Space size={6}>
+                                    {getFileIcon(f.fileType)}
+                                    <Text style={{ fontSize: 12 }}>{f.title || f.fileUrl?.split('/').pop()}</Text>
+                                </Space>
+                            </List.Item>
+                        )} />
+                    )}
+                </>
+            )}
+        </Drawer>
+    );
+};
+
+// ── Блок личных задач менеджера ───────────────────────────────────────────────
+
+const ManagerSelfTasksSection = () => {
+    const qc       = useQueryClient();
+    const [modal,      setModal]      = useState(false);
+    const [editTask,   setEditTask]   = useState(null);
+    const [viewFilter, setViewFilter] = useState('active');
+
+    const { data, isLoading } = useQuery({
+        queryKey: ['manager-self-tasks'],
+        queryFn:  () => fetchTasks({ selfOnly: 'true' }),
+    });
+    const { data: projects = [] } = useQuery({
+        queryKey: ['task-projects'],
+        queryFn:  fetchTaskProjects,
+    });
+
+    const selfTasks = data?.tasks ?? [];
+    const invalidate = () => qc.invalidateQueries({ queryKey: ['manager-self-tasks'] });
+
+    const createMut = useMutation({
+        mutationFn: createTask,
+        onSuccess:  () => { message.success('Задача создана'); invalidate(); setModal(false); },
+        onError:    (e) => message.error(e.response?.data?.message || 'Ошибка'),
+    });
+    const updateMut = useMutation({
+        mutationFn: ({ id, body }) => updateTask(id, body),
+        onSuccess:  () => { message.success('Обновлено'); invalidate(); setModal(false); },
+        onError:    (e) => message.error(e.response?.data?.message || 'Ошибка'),
+    });
+    const deleteMut = useMutation({
+        mutationFn: deleteTask,
+        onSuccess:  () => { message.success('Удалено'); invalidate(); },
+        onError:    (e) => message.error(e.response?.data?.message || 'Ошибка'),
+    });
+
+    const openEdit   = (task) => { setEditTask(task); setModal(true); };
+    const openCreate = ()     => { setEditTask(null); setModal(true); };
+    const handleSave = (vals) => {
+        if (editTask) updateMut.mutate({ id: editTask._id, body: vals });
+        else          createMut.mutate(vals);
+    };
+
+    const filtered = selfTasks.filter((t) => {
+        if (viewFilter === 'active')    return t.status !== 'completed' && t.status !== 'cancelled';
+        if (viewFilter === 'completed') return t.status === 'completed';
+        return true;
+    });
+
+    const completedCount = selfTasks.filter((t) => t.status === 'completed').length;
+    const activeCount    = selfTasks.filter((t) => t.status !== 'completed' && t.status !== 'cancelled').length;
+
+    const columns = [
+        {
+            title: 'Задача', dataIndex: 'title', key: 'title',
+            render: (v, r) => (
+                <div>
+                    <Text strong style={{ fontSize: 13 }}>{v}</Text>
+                    {r.client && <div><Text type="secondary" style={{ fontSize: 11 }}><UserOutlined /> {r.client}</Text></div>}
+                    {r.description && <div><Text type="secondary" style={{ fontSize: 11 }} ellipsis={{ tooltip: r.description }}>{r.description}</Text></div>}
+                </div>
+            ),
+        },
+        {
+            title: 'Статус', dataIndex: 'status', key: 'status', width: 140,
+            render: (v) => <Badge status={SELF_STATUS_COLOR[v]} text={STATUS_LABEL[v]} />,
+        },
+        {
+            title: 'Проект', key: 'project', width: 130,
+            render: (_, r) => r.project?.name
+                ? <Tag icon={<FolderOutlined />} color="purple">{r.project.name}</Tag>
+                : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
+        },
+        {
+            title: 'Дата', dataIndex: 'dueDate', key: 'dueDate', width: 110,
+            render: (v) => v
+                ? <Tag color={dayjs(v).isSame(dayjs(), 'day') ? 'green' : 'default'}>{dayjs(v).format('DD.MM.YYYY')}</Tag>
+                : '—',
+        },
+        {
+            title: 'Часы', key: 'hours', width: 90, align: 'center',
+            render: (_, r) => (
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                    {r.actualHours || 0}/{r.estimatedHours || 0}ч
+                </Text>
+            ),
+        },
+        {
+            title: 'Комм.', key: 'comments', width: 60, align: 'center',
+            render: (_, r) => r.comments?.length > 0
+                ? <Badge count={r.comments.length} color="#6ba932" style={{ fontSize: 10 }} />
+                : <Text type="secondary">—</Text>,
+        },
+        {
+            title: '', key: 'action', width: 60,
+            render: (_, r) => (
+                <Popconfirm title="Удалить задачу?" onConfirm={(e) => { e.stopPropagation(); deleteMut.mutate(r._id); }}
+                    onCancel={(e) => e.stopPropagation()} okText="Да" cancelText="Нет">
+                    <Button size="small" danger icon={<DeleteOutlined />} onClick={(e) => e.stopPropagation()} />
+                </Popconfirm>
+            ),
+        },
+    ];
+
+    return (
+        <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+                    Добавить задачу
+                </Button>
+                <Segmented
+                    value={viewFilter}
+                    onChange={setViewFilter}
+                    options={[
+                        { label: `Активные (${activeCount})`,       value: 'active'    },
+                        { label: `Завершённые (${completedCount})`, value: 'completed' },
+                        { label: 'Все',                             value: 'all'       },
+                    ]}
+                />
+            </div>
+            <Spin spinning={isLoading}>
+                <Table
+                    dataSource={filtered}
+                    columns={columns}
+                    rowKey="_id"
+                    size="small"
+                    pagination={{ pageSize: 20 }}
+                    locale={{ emptyText: 'Нет задач. Добавьте первую.' }}
+                    onRow={(r) => ({ onClick: () => openEdit(r), style: { cursor: 'pointer' } })}
+                />
+            </Spin>
+            <ManagerSelfTaskDrawer
+                open={modal}
+                onClose={() => { setModal(false); setEditTask(null); }}
+                onSave={handleSave}
+                initial={editTask}
+                projects={projects}
+            />
+        </>
     );
 };
 

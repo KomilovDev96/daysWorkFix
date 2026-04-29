@@ -35,19 +35,23 @@ const buildTree = (tasks, parentId = null) => {
 
 // Получить задачи (дерево)
 exports.getTasks = catchAsync(async (req, res) => {
-    const { workerId, managerId, type, isHot, projectId, onlyMine } = req.query;
+    const { workerId, managerId, type, isHot, projectId, onlyMine, selfOnly } = req.query;
     const user = req.user;
 
     const filter = {};
 
-    if (user.role === 'worker') {
+    // selfOnly=true — только личные задачи текущего пользователя (для менеджера и воркера)
+    if (selfOnly === 'true') {
+        filter.isSelfTask = true;
+        filter.createdBy  = user._id;
+    } else if (user.role === 'worker') {
         filter.$or = [
             { assignedTo: user._id },
             { createdBy: user._id, isSelfTask: true },
         ];
     } else if (user.role === 'projectManager') {
-        // По умолчанию — все задачи менеджеров (кроме self-задач воркеров)
-        // onlyMine=true — только свои задачи
+        // По умолчанию — задачи менеджеров без self-задач воркеров
+        // self-задачи менеджеров в основной доске не показываем (они в отдельном блоке)
         filter.isSelfTask = { $ne: true };
         if (onlyMine === 'true') filter.createdBy = user._id;
         if (workerId) filter.assignedTo = workerId;
@@ -85,9 +89,7 @@ exports.createTask = catchAsync(async (req, res, next) => {
     if (user.role === 'worker' && !isSelfTask)
         return next(new AppError('Воркер может создавать только собственные задачи', 403));
 
-    // Manager не может создавать isSelfTask
-    if (user.role === 'projectManager' && isSelfTask)
-        return next(new AppError('Менеджер создаёт задачи для воркеров', 403));
+    // (менеджеры тоже могут создавать свои личные задачи)
 
     const task = await ManagedTask.create({
         title,
@@ -130,30 +132,18 @@ exports.updateTask = catchAsync(async (req, res, next) => {
     if (!isWorker && !canModify(task, req.user))
         return next(new AppError('Нет прав для редактирования этой задачи', 403));
 
-<<<<<<< HEAD
-    // Воркер не может поставить completed/cancelled — только менеджер/admin
-    // Исключение: личные задачи (isSelfTask) — воркер управляет ими сам
-    if (isWorker && !task.isSelfTask && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
-=======
     // Воркер не может поставить completed/cancelled, КРОМЕ своих личных задач (isSelfTask, созданных им самим)
     const isOwnSelfTask = task.isSelfTask && String(task.createdBy?._id || task.createdBy) === String(req.user._id);
     if (isWorker && !isOwnSelfTask && req.body.status && !WORKER_ALLOWED_STATUSES.includes(req.body.status))
->>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
         return next(new AppError('Воркер не может установить этот статус. Ожидайте одобрения менеджера.', 403));
 
     const allowed = ['title', 'description', 'status', 'isHot',
                      'estimatedHours', 'actualHours', 'startDate', 'dueDate',
-<<<<<<< HEAD
-                     'assignedTo', 'project', 'client'];
-    // Воркер может менять только статус и фактические часы (но для личных задач — все поля)
-    const workerAllowed = task.isSelfTask ? allowed : ['status', 'actualHours'];
-=======
                      'assignedTo', 'project', 'client', 'manualAssignee'];
     // Воркер может менять только статус, часы и (для своих) исполнителя и основные поля
     const workerAllowed = isOwnSelfTask
         ? ['title', 'description', 'status', 'estimatedHours', 'actualHours', 'startDate', 'dueDate', 'project', 'manualAssignee']
         : ['status', 'actualHours'];
->>>>>>> d949b68d0478922950aa0fae21446194ab2b47d1
     const fields = isWorker ? workerAllowed : allowed;
 
     fields.forEach((f) => { if (req.body[f] !== undefined) task[f] = req.body[f]; });
