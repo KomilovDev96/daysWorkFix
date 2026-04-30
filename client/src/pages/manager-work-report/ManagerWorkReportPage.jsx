@@ -12,6 +12,7 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { fetchManagerStats, fetchAvailability, fetchWorkers } from '../../shared/api/managedTasksApi';
+import ExportTasksButton from '../../shared/ui/ExportTasksButton';
 import 'dayjs/locale/ru';
 import localizedFormat from 'dayjs/plugin/localizedFormat';
 dayjs.extend(localizedFormat);
@@ -193,10 +194,6 @@ const MyReportTab = () => {
     const tasks    = data?.tasks    ?? [];
     const workers  = data?.workers  ?? [];
     const byType   = data?.byType   ?? {};
-    const byStatus = data?.byStatus ?? {};
-
-    const completePct = totals.total > 0
-        ? Math.round((totals.completed / totals.total) * 100) : 0;
 
     const taskColumns = [
         {
@@ -238,13 +235,16 @@ const MyReportTab = () => {
         <Spin spinning={isLoading}>
             <Space direction="vertical" style={{ width: '100%' }} size="middle">
 
-                {/* Фильтр по дате */}
-                <RangePicker
-                    value={range}
-                    onChange={(d) => setRange(d || [])}
-                    format="DD.MM.YYYY"
-                    allowClear={false}
-                />
+                {/* Фильтр по дате + экспорт */}
+                <Space wrap>
+                    <RangePicker
+                        value={range}
+                        onChange={(d) => setRange(d || [])}
+                        format="DD.MM.YYYY"
+                        allowClear={false}
+                    />
+                    <ExportTasksButton />
+                </Space>
 
                 {/* Карточки статистики */}
                 <Row gutter={[12, 12]}>

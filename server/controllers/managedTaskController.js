@@ -561,8 +561,9 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
     // Период (строка)
     const fmtDate = (s) => {
         if (!s) return '';
-        const [y, m, d] = s.split('-');
-        return `${d}.${m}.${y}`;
+        const date = new Date(s);
+        if (Number.isNaN(date.getTime())) return '';
+        return date.toLocaleDateString('ru-RU');
     };
     const period = startDate && endDate
         ? `${fmtDate(startDate)} — ${fmtDate(endDate)}`
@@ -613,7 +614,8 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
             )
             .join('\n') || '—';
 
-        const totalHours = dateTasks.reduce((s, t) => s + (t.actualHours || 0), 0);
+        const totalEstimatedHours = dateTasks.reduce((s, t) => s + (t.estimatedHours || 0), 0);
+        const hours = `${totalEstimatedHours}ч`;
 
         // Заказчик:
         // - воркер: автоматически имена менеджеров, которые назначили задачи
@@ -640,7 +642,7 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
             titles,
             details,
             comments,
-            hours:    totalHours,
+            hours,
             period,
             client:   clientVal,
         });
@@ -665,7 +667,7 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
         const row = sheet.addRow({
             user: user.name, date: '—', count: 0,
             titles: 'Нет выполненных задач за период', details: '—',
-            comments: '—', hours: 0, period, client: client || '—',
+            comments: '—', hours: 0, period, client: '—',
         });
         row.eachCell((cell) => {
             cell.alignment = { wrapText: true, vertical: 'top' };
