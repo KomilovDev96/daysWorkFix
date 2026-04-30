@@ -550,20 +550,17 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
         .populate({ path: 'comments.author',  select: 'name' })
         .sort({ updatedAt: 1 });
 
-    // Группировка по дате завершения
-    const byDate = {};
-    tasks.forEach((t) => {
-        const d = new Date(t.updatedAt).toISOString().split('T')[0];
-        if (!byDate[d]) byDate[d] = [];
-        byDate[d].push(t);
-    });
-
     // Период (строка)
-    const fmtDate = (s) => {
-        if (!s) return '';
-        const date = new Date(s);
+    const fmtDate = (value) => {
+        if (!value) return '';
+        const date = new Date(value);
         if (Number.isNaN(date.getTime())) return '';
-        return date.toLocaleDateString('ru-RU');
+        return new Intl.DateTimeFormat('ru-RU', {
+            timeZone: 'Asia/Tashkent',
+            day:      '2-digit',
+            month:    '2-digit',
+            year:     'numeric',
+        }).format(date);
     };
     const period = startDate && endDate
         ? `${fmtDate(startDate)} — ${fmtDate(endDate)}`
@@ -600,54 +597,38 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
     });
     headerRow.height = 28;
 
-    // Строки данных
+    // Строки данных: одна задача = одна строка, как в таблице на экране
     let rowIdx = 2;
-    Object.entries(byDate).forEach(([date, dateTasks]) => {
-        const titles   = dateTasks.map((t) => t.title).join('\n');
-        const details  = dateTasks.map((t) => t.description || '—').join('\n');
-
-        const comments = dateTasks
-            .flatMap((t) =>
-                (t.comments || []).map((c) =>
-                    `[${t.title}] ${c.author?.name || 'Аноним'}: ${c.text}`
-                )
-            )
+    tasks.forEach((task) => {
+        const comments = (task.comments || [])
+            .map((c) => `${c.author?.name || 'Аноним'}: ${c.text}`)
             .join('\n') || '—';
 
-        const totalEstimatedHours = dateTasks.reduce((s, t) => s + (t.estimatedHours || 0), 0);
-        const hours = `${totalEstimatedHours}ч`;
+        const hours = `${task.estimatedHours || 0}ч`;
 
         // Заказчик:
         // - воркер: автоматически имена менеджеров, которые назначили задачи
         // - менеджер: поле client, хранящееся в задаче (заполняется при создании)
         let clientVal;
         if (user.role === 'worker') {
-            const mgrs = [...new Set(
-                dateTasks.map((t) => t.createdBy?.name).filter(Boolean)
-            )];
-            clientVal = mgrs.join(', ') || '—';
+            clientVal = task.createdBy?.name || '—';
         } else {
-            // Для менеджера берём client из задач (может быть у каждой свой)
-            const clients = [...new Set(
-                dateTasks.map((t) => t.client).filter(Boolean)
-            )];
-            clientVal = clients.join(', ') || '—';
+            clientVal = task.client || '—';
         }
 
-        const [y, m, d] = date.split('-');
         const row = sheet.addRow({
             user:     user.name,
-            date:     `${d}.${m}.${y}`,
-            count:    dateTasks.length,
-            titles,
-            details,
+            date:     fmtDate(task.dueDate || task.updatedAt),
+            count:    1,
+            titles:   task.title,
+            details:  task.description || '—',
             comments,
             hours,
             period,
             client:   clientVal,
         });
 
-        row.height = Math.max(30, dateTasks.length * 18);
+        row.height = Math.max(30, Math.ceil(String(task.description || '').length / 45) * 18);
         row.eachCell((cell) => {
             cell.alignment = { wrapText: true, vertical: 'top' };
             cell.border    = {
@@ -663,7 +644,7 @@ exports.exportMyTasks = catchAsync(async (req, res) => {
     });
 
     // Если нет данных — одна пустая строка
-    if (Object.keys(byDate).length === 0) {
+    if (tasks.length === 0) {
         const row = sheet.addRow({
             user: user.name, date: '—', count: 0,
             titles: 'Нет выполненных задач за период', details: '—',
