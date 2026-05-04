@@ -128,6 +128,38 @@ const createBucketsSheet = (workbook, sheetName, buckets) => {
     styleHeader(worksheet);
 };
 
+exports.generateGeneralReport = async (rows) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Общий отчет');
+
+    worksheet.columns = [
+        { header: '№',                  key: 'num',          width: 6  },
+        { header: 'Организация',        key: 'organization', width: 16 },
+        { header: 'Заказчик',           key: 'customer',     width: 28 },
+        { header: 'Проект',             key: 'project',      width: 28 },
+        { header: 'Описание задачи',    key: 'description',  width: 55 },
+        { header: 'Исполнитель',        key: 'executor',     width: 25 },
+        { header: 'Затраченное время',  key: 'hours',        width: 20 },
+    ];
+
+    setWrapForColumns(worksheet, ['description']);
+
+    rows.forEach((row, index) => {
+        worksheet.addRow({
+            num:          index + 1,
+            organization: 'EMAN',
+            customer:     row.customer     || '—',
+            project:      row.project      || '—',
+            description:  row.description  || '',
+            executor:     row.executor     || '—',
+            hours:        row.hours        || 0,
+        });
+    });
+
+    styleHeader(worksheet);
+    return workbook;
+};
+
 exports.generateAnalyticsReport = async (analytics) => {
     const workbook = new ExcelJS.Workbook();
 

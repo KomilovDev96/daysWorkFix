@@ -1021,31 +1021,25 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         });
 
     const reportData = [];
-    const periodLabel = `${startDate || 'All'} - ${endDate || 'All'}`;
 
     logs.forEach((log) => {
-        if (!log.projects || log.projects.length === 0) {
-            reportData.push({
-                user: log.userId,
-                date: log.date,
-                projectName: '—',
-                tasks: [],
-                totalHours: log.totalHours,
-                period: periodLabel,
-            });
-            return;
-        }
+        const executor = log.userId?.name || '—';
+        const date = log.date;
+
+        if (!log.projects || log.projects.length === 0) return;
 
         log.projects.forEach((project) => {
             const projectTasks = project.tasks || [];
-            const projectHours = projectTasks.reduce((sum, t) => sum + (Number(t.hours) || 0), 0);
-            reportData.push({
-                user: log.userId,
-                date: log.date,
-                projectName: project.name,
-                tasks: projectTasks,
-                totalHours: Number(projectHours.toFixed(2)),
-                period: periodLabel,
+            projectTasks.forEach((task) => {
+                reportData.push({
+                    date,
+                    legalEntity: task.customer?.externalId || '',
+                    customer:    task.customer?.name       || '',
+                    project:     project.name              || '—',
+                    description: task.description          || task.title || '',
+                    executor,
+                    hours:       Number(task.hours)        || 0,
+                });
             });
         });
     });
@@ -1062,33 +1056,32 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         ];
     }
     const managedTasks = await ManagedTask.find(managedFilter)
-        .populate('createdBy', 'name email')
+        .populate('createdBy', 'name')
+        .populate('assignedTo', 'name')
         .populate('project', 'name')
         .sort({ dueDate: -1 });
 
     managedTasks.forEach((task) => {
         const hours = task.actualHours || task.estimatedHours || 0;
+        const executor = task.assignedTo?.length
+            ? task.assignedTo.map((u) => u.name).join(', ')
+            : task.createdBy?.name || '—';
+
         reportData.push({
-            user:        task.createdBy || { name: '—', email: '—' },
             date:        task.dueDate,
-            projectName: task.project?.name || '—',
-            tasks: [{
-                title:         task.title,
-                description:   task.description || '',
-                hours,
-                comment:       task.isSelfTask ? '[Личная задача]' : '[От менеджера]',
-                customer:      task.client ? { name: task.client } : null,
-                testingStatus: 'completed',
-            }],
-            totalHours: hours,
-            period:     periodLabel,
+            legalEntity: '',
+            customer:    task.client || '',
+            project:     task.project?.name || '—',
+            description: task.description  || task.title || '',
+            executor,
+            hours,
         });
     });
 
     // Сортируем по дате — свежие сверху
     reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    const workbook = await excelService.generateReport(reportData);
+    const workbook = await excelService.generateGeneralReport(reportData);
 
     res.setHeader(
         'Content-Type',
