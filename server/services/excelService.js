@@ -140,6 +140,7 @@ exports.generateGeneralReport = async (rows) => {
         { header: 'Описание задачи',    key: 'description',  width: 55 },
         { header: 'Исполнитель',        key: 'executor',     width: 25 },
         { header: 'Затраченное время',  key: 'hours',        width: 20 },
+        { header: 'Дата',               key: 'date',         width: 14 },
     ];
 
     setWrapForColumns(worksheet, ['description']);
@@ -153,6 +154,7 @@ exports.generateGeneralReport = async (rows) => {
             description:  row.description  || '',
             executor:     row.executor     || '—',
             hours:        row.hours        || 0,
+            date:         row.date ? new Date(row.date).toLocaleDateString('ru-RU') : '—',
         });
     });
 
