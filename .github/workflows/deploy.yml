@@ -1,4 +1,4 @@
-name: Deploy to Server
+name: Deploy to Production
 
 on:
   push:
@@ -18,22 +18,35 @@ jobs:
           port: 22
           script: |
             set -e
-            cd /root/daysWorkfix
+
+            APP=/root/daysWorkfix
+            cd "$APP"
+
+            echo "===== Pulling latest code ====="
             git fetch --all
             git reset --hard origin/main
 
-            echo "--- Installing server deps ---"
-            cd /root/daysWorkfix/server
+            echo "===== Server: install deps ====="
+            cd "$APP/server"
             npm ci --omit=dev
 
-            echo "--- Installing client deps & building ---"
-            cd /root/daysWorkfix/client
+            echo "===== Client: install + build ====="
+            cd "$APP/client"
             npm ci
             npm run build
 
-            echo "--- Restarting PM2 ---"
-            cd /root/daysWorkfix/server
-            pm2 reload daysworkfix-server || pm2 start server.js --name daysworkfix-server --update-env
+            echo "===== Migrations (idempotent) ====="
+            cd "$APP/server"
+            node fixIndexes.js || echo "fixIndexes skipped"
+            node seedKnowledge.js || echo "seedKnowledge skipped"
+
+            echo "===== Reload pm2 ====="
+            pm2 reload daysworkfix-server --update-env
             pm2 save
 
-            echo "--- Done ---"
+            echo "===== Health checks ====="
+            sleep 3
+            curl -fsS http://localhost:5000/ >/dev/null && echo "API: OK"
+            curl -fsS http://localhost:11434/api/tags >/dev/null && echo "Ollama: OK"
+
+            echo "===== Done ====="
