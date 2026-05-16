@@ -1,0 +1,20 @@
+{
+    email {$ACME_EMAIL}
+}
+
+{$SITE_ADDRESS} {
+    encode zstd gzip
+
+    # API + загруженные файлы → Node server
+    handle /api/* {
+        reverse_proxy api:5001
+    }
+    handle /uploads/* {
+        reverse_proxy api:5001
+    }
+
+    # Всё остальное → статика (nginx с собранным React)
+    handle {
+        reverse_proxy web:80
+    }
+}

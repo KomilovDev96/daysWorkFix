@@ -15,6 +15,7 @@ router.post('/users',     protect, authController.createUser);
 router.get('/users',      protect, authController.getAllUsers);
 router.patch('/users/:id', protect, authController.updateUser);
 router.delete('/users/:id', protect, authController.deleteUser);
+router.post('/users/:id/regenerate-link-code', protect, authController.regenerateLinkCode);
 
 // Список воркеров (для менеджера/admin)
 router.get('/workers',    protect, authController.getWorkers);

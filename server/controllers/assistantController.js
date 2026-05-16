@@ -3,6 +3,7 @@ const Project = require('../models/Project');
 const User = require('../models/User');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const ollamaService = require('../services/ollamaService');
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const LEGACY_HF_BASE_URL = 'https://api-inference.huggingface.co/models/';
@@ -860,4 +861,75 @@ ${matched.externalId ? `- ID: ${matched.externalId}` : ''}
             usedModel: aiResult.usedModel,
         },
     });
+});
+
+
+// ── Ollama: парсинг рабочих сообщений из Telegram-бота ───────────────────────
+exports.parseTaskMessage = catchAsync(async (req, res, next) => {
+    const { text } = req.body || {};
+    if (!text || typeof text !== 'string') {
+        return next(new AppError('Поле "text" обязательно', 400));
+    }
+
+    const parsed = await ollamaService.parseTaskMessage(text);
+    res.status(200).json({ status: 'success', data: { parsed } });
+});
+
+exports.ollamaHealth = catchAsync(async (req, res) => {
+    const health = await ollamaService.healthCheck();
+    res.status(200).json({ status: 'success', data: health });
+});
+
+// ── База знаний ассистента ───────────────────────────────────────────────────
+const AssistantKnowledge = require('../models/AssistantKnowledge');
+
+exports.getKnowledge = catchAsync(async (req, res) => {
+    const knowledge = await AssistantKnowledge.getOrCreate();
+    res.status(200).json({ status: 'success', data: { knowledge } });
+});
+
+exports.updateKnowledge = catchAsync(async (req, res, next) => {
+    if (req.user.role !== 'admin') {
+        return next(new AppError('Только администратор может редактировать базу знаний', 403));
+    }
+    const knowledge = await AssistantKnowledge.getOrCreate();
+    const { projectName, greeting, about, developer, createdAt, features } = req.body || {};
+
+    if (projectName !== undefined) knowledge.projectName = projectName;
+    if (greeting !== undefined)    knowledge.greeting = greeting;
+    if (about !== undefined)       knowledge.about = about;
+    if (createdAt !== undefined)   knowledge.createdAt = createdAt;
+    if (Array.isArray(features))   knowledge.features = features.filter((f) => typeof f === 'string' && f.trim());
+    if (developer && typeof developer === 'object') {
+        knowledge.developer = {
+            name: developer.name ?? knowledge.developer?.name ?? '',
+            role: developer.role ?? knowledge.developer?.role ?? '',
+            site: developer.site ?? knowledge.developer?.site ?? '',
+        };
+    }
+    knowledge.updatedAt = new Date();
+    await knowledge.save();
+    res.status(200).json({ status: 'success', data: { knowledge } });
+});
+
+exports.askAssistant = catchAsync(async (req, res, next) => {
+    const { text } = req.body || {};
+    if (!text || typeof text !== 'string') {
+        return next(new AppError('Поле "text" обязательно', 400));
+    }
+    const knowledge = await AssistantKnowledge.getOrCreate();
+
+    let teamContext = '';
+    if (['admin', 'projectManager'].includes(req.user.role)) {
+        const { buildTeamContext } = require('../services/teamContextService');
+        teamContext = await buildTeamContext({ role: req.user.role, userId: req.user._id });
+    }
+
+    const answer = await ollamaService.answerQuestion(text, {
+        knowledge: knowledge.toObject(),
+        teamContext,
+        role: req.user.role,
+        userName: req.user.name,
+    });
+    res.status(200).json({ status: 'success', data: { answer } });
 });

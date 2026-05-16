@@ -80,19 +80,46 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'success', data: { user } });
 });
 
+const generateLinkCode = async () => {
+    for (let i = 0; i < 10; i += 1) {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const exists = await User.exists({ telegramLinkCode: code });
+        if (!exists) return code;
+    }
+    throw new AppError('Не удалось сгенерировать уникальный код, попробуйте снова', 500);
+};
+
 // Admin — создать пользователя
 exports.createUser = catchAsync(async (req, res, next) => {
     if (req.user.role !== 'admin')
         return next(new AppError('Только администратор может создавать пользователей', 403));
+
+    const telegramLinkCode = await generateLinkCode();
 
     const user = await User.create({
         name:     req.body.name,
         email:    req.body.email,
         password: req.body.password,
         role:     req.body.role || 'worker',
+        telegramLinkCode,
     });
     user.password = undefined;
-    res.status(201).json({ status: 'success', data: { user } });
+    res.status(201).json({ status: 'success', data: { user, telegramLinkCode } });
+});
+
+// Admin — перегенерировать код для Telegram
+exports.regenerateLinkCode = catchAsync(async (req, res, next) => {
+    if (req.user.role !== 'admin')
+        return next(new AppError('Только администратор может перегенерировать код', 403));
+
+    const user = await User.findById(req.params.id);
+    if (!user) return next(new AppError('Пользователь не найден', 404));
+
+    user.telegramLinkCode = await generateLinkCode();
+    user.telegramId = null;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({ status: 'success', data: { telegramLinkCode: user.telegramLinkCode } });
 });
 
 // Admin — обновить любого; остальные — только себя

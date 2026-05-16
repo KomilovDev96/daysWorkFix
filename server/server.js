@@ -5,6 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorMiddleware');
+const { startTelegramBot } = require('./services/telegramBot');
 
 // Load env vars
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -55,6 +56,7 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+    startTelegramBot();
 });
 
 // Handle unhandled promise rejections

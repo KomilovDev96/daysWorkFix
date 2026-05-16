@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import {
     Typography, Card, Form, Input, Select, Button,
-    Table, Space, Tag, Drawer, Popconfirm, message, Divider
+    Table, Space, Tag, Drawer, Popconfirm, message, Divider,
+    Modal, Result
 } from 'antd';
 import {
     UserAddOutlined, TeamOutlined, MailOutlined,
     LockOutlined, IdcardOutlined, EditOutlined,
-    DeleteOutlined
+    DeleteOutlined, CopyOutlined, ReloadOutlined
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../../shared/api/apiClient';
@@ -16,6 +17,7 @@ const { Title, Text } = Typography;
 const UsersPage = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [credentialsModal, setCredentialsModal] = useState(null);
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
 
@@ -35,13 +37,41 @@ const UsersPage = () => {
 
     const registerMutation = useMutation({
         mutationFn: (userData) => apiClient.post('/auth/users', userData),
-        onSuccess: () => {
+        onSuccess: (res, variables) => {
             queryClient.invalidateQueries(['users-full-list']);
             setIsModalVisible(false);
             form.resetFields();
-            message.success('Новый пользователь успешно зарегистрирован');
+            const code = res.data?.data?.telegramLinkCode;
+            const user = res.data?.data?.user;
+            setCredentialsModal({
+                name: user?.name || variables.name,
+                email: user?.email || variables.email,
+                password: variables.password,
+                role: user?.role || variables.role,
+                telegramLinkCode: code,
+            });
         },
         onError: (err) => message.error(err.response?.data?.message || 'Ошибка регистрации'),
+    });
+
+    const regenerateMutation = useMutation({
+        mutationFn: (id) => apiClient.post(`/auth/users/${id}/regenerate-link-code`),
+        onSuccess: (res, id) => {
+            queryClient.invalidateQueries(['users-full-list']);
+            const code = res.data?.data?.telegramLinkCode;
+            Modal.success({
+                title: 'Новый код для Telegram',
+                content: (
+                    <div>
+                        <p>Передай этот код пользователю. Старая привязка Telegram сброшена.</p>
+                        <Typography.Title level={2} copyable style={{ textAlign: 'center', letterSpacing: 4 }}>
+                            {code}
+                        </Typography.Title>
+                    </div>
+                ),
+            });
+        },
+        onError: (err) => message.error(err.response?.data?.message || 'Ошибка'),
     });
 
     const updateMutation = useMutation({
@@ -99,6 +129,15 @@ const UsersPage = () => {
             },
         },
         {
+            title: 'Telegram',
+            key: 'telegram',
+            render: (_, record) => {
+                if (record.telegramId) return <Tag color="cyan">привязан</Tag>;
+                if (record.telegramLinkCode) return <Tag color="gold">код: {record.telegramLinkCode}</Tag>;
+                return <Tag color="default">нет</Tag>;
+            },
+        },
+        {
             title: 'Действия',
             key: 'actions',
             render: (_, record) => (
@@ -109,6 +148,14 @@ const UsersPage = () => {
                         type="link"
                     >
                         Изм.
+                    </Button>
+                    <Button
+                        icon={<ReloadOutlined />}
+                        type="link"
+                        loading={regenerateMutation.isPending}
+                        onClick={() => regenerateMutation.mutate(record._id)}
+                    >
+                        TG-код
                     </Button>
                     <Popconfirm
                         title="Удалить пользователя?"
@@ -234,6 +281,42 @@ const UsersPage = () => {
                     </Form.Item>
                 </Form>
             </Drawer>
+
+            <Modal
+                open={!!credentialsModal}
+                title="🎉 Пользователь создан"
+                onCancel={() => setCredentialsModal(null)}
+                footer={[
+                    <Button key="close" type="primary" onClick={() => setCredentialsModal(null)}>
+                        Готово
+                    </Button>,
+                ]}
+                width={520}
+            >
+                {credentialsModal && (
+                    <div>
+                        <p style={{ color: '#888' }}>
+                            Передай эти данные пользователю. Пароль и Telegram-код больше нигде не появятся — сохрани их сейчас.
+                        </p>
+                        <Card size="small" style={{ marginTop: 12 }}>
+                            <p><strong>Имя:</strong> {credentialsModal.name}</p>
+                            <p><strong>Email:</strong> <Text copyable>{credentialsModal.email}</Text></p>
+                            <p><strong>Пароль:</strong> <Text copyable>{credentialsModal.password}</Text></p>
+                            <p><strong>Роль:</strong> {credentialsModal.role}</p>
+                        </Card>
+                        <Divider />
+                        <div style={{ textAlign: 'center' }}>
+                            <Text type="secondary">Код для привязки Telegram-бота:</Text>
+                            <Title level={1} copyable style={{ letterSpacing: 8, marginTop: 8 }}>
+                                {credentialsModal.telegramLinkCode}
+                            </Title>
+                            <Text type="secondary">
+                                Отправь этот код боту <Text code>@daysworkfixbot</Text> для привязки.
+                            </Text>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     );
 };

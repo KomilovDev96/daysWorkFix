@@ -23,6 +23,14 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'projectManager', 'worker', 'guest'],
         default: 'worker',
     },
+    telegramId: {
+        type: String,
+        default: null,
+    },
+    telegramLinkCode: {
+        type: String,
+        default: null,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
@@ -40,6 +48,15 @@ userSchema.pre('save', async function () {
 userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
+
+userSchema.index(
+    { telegramId: 1 },
+    { unique: true, partialFilterExpression: { telegramId: { $type: 'string' } } }
+);
+userSchema.index(
+    { telegramLinkCode: 1 },
+    { unique: true, partialFilterExpression: { telegramLinkCode: { $type: 'string' } } }
+);
 
 const User = mongoose.model('User', userSchema);
 
