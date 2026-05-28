@@ -737,7 +737,8 @@ const requestHuggingFaceInsight = async (prompt) => {
 };
 
 exports.getPeriodReport = catchAsync(async (req, res, next) => {
-    const { startDate, endDate, userId } = req.query;
+    const { startDate, endDate, userId, projectName, kind } = req.query;
+    const kindFilter = kind === 'work' || kind === 'external' ? kind : null;
 
     if (!startDate || !endDate) {
         return next(new AppError('Please provide startDate and endDate', 400));
@@ -748,6 +749,12 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
     }
 
     const effectiveUserId = resolveRequestedUserId(req, userId);
+    const projectFilterList = (Array.isArray(projectName) ? projectName : (projectName ? [projectName] : []))
+        .flatMap((p) => String(p).split(','))
+        .map((p) => p.trim())
+        .filter(Boolean);
+    const projectFilterSet = new Set(projectFilterList.map((p) => p.toLowerCase()));
+    const projectMatches = (name) => name && projectFilterSet.has(name.toString().trim().toLowerCase());
 
     const query = {
         date: { $gte: new Date(startDate), $lte: new Date(endDate) }
@@ -757,12 +764,12 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
         query.userId = effectiveUserId;
     }
 
-    const logs = await DayLog.find(query).populate('userId', 'name email');
-
-    const totalHours = logs.reduce((acc, log) => acc + log.totalHours, 0);
-    const daysWorked = logs.length;
-    const logIds = logs.map((l) => l._id);
-    const totalTasks = await Task.countDocuments({ dayLogId: { $in: logIds } });
+    let logs = await DayLog.find(query)
+        .populate('userId', 'name email')
+        .populate({
+            path: 'projects',
+            populate: { path: 'tasks' },
+        });
 
     // Также подтягиваем выполненные ManagedTask за период (личные + назначенные)
     const managedFilter = {
@@ -775,11 +782,100 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
             { createdBy: effectiveUserId, isSelfTask: true },
         ];
     }
-    const managedTasks = await ManagedTask.find(managedFilter)
+    let managedTasks = await ManagedTask.find(managedFilter)
         .populate('createdBy', 'name email')
         .populate('project', 'name')
         .sort({ dueDate: -1 });
 
+    // Собираем список доступных проектов в периоде (до применения фильтра)
+    const projectNamesSet = new Set();
+    logs.forEach((log) => {
+        (log.projects || []).forEach((p) => {
+            if (p?.name) projectNamesSet.add(p.name.trim());
+        });
+    });
+    managedTasks.forEach((t) => {
+        if (t.project?.name) projectNamesSet.add(t.project.name.trim());
+    });
+    const availableProjects = Array.from(projectNamesSet).sort((a, b) => a.localeCompare(b, 'ru'));
+
+    // Применяем фильтр по проектам и/или kind (если задан)
+    if (projectFilterList.length > 0 || kindFilter) {
+        logs = logs
+            .map((log) => {
+                const filteredProjects = (log.projects || []).map((p) => {
+                    if (projectFilterList.length > 0 && !projectMatches(p.name)) return null;
+                    const filteredTasks = (p.tasks || []).filter((t) => !kindFilter || (t.kind || 'work') === kindFilter);
+                    if (filteredTasks.length === 0) return null;
+                    p.tasks = filteredTasks;
+                    return p;
+                }).filter(Boolean);
+                if (filteredProjects.length === 0) return null;
+                const remainingHours = filteredProjects.reduce(
+                    (sum, p) => sum + (p.tasks || []).reduce((s, t) => s + (Number(t.hours) || 0), 0),
+                    0,
+                );
+                log.totalHours = remainingHours;
+                log.projects   = filteredProjects;
+                return log;
+            })
+            .filter(Boolean);
+
+        if (projectFilterList.length > 0) {
+            managedTasks = managedTasks.filter((t) => projectMatches(t.project?.name));
+        }
+        if (kindFilter === 'external') {
+            // ManagedTask считаем рабочими; при фильтре external их прячем
+            managedTasks = [];
+        }
+    }
+
+    const logIds = logs.map((l) => l._id);
+    const taskCountFilter = { dayLogId: { $in: logIds } };
+    if (projectFilterList.length > 0) {
+        const matchingProjects = await Project.find({
+            dayLogId: { $in: logIds },
+            $or: projectFilterList.map((n) => ({
+                name: new RegExp(`^${n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+            })),
+        }).select('_id');
+        taskCountFilter.projectId = { $in: matchingProjects.map((p) => p._id) };
+    }
+    const totalTasks = await Task.countDocuments(taskCountFilter);
+
+    // Подтягиваем «сиротские» Task (без projectId — например, записи бота) и приклеиваем
+    // их к соответствующему DayLog в виде log.orphanTasks. Учитываем kind-фильтр.
+    let orphansByLog = new Map();
+    if (logIds.length > 0 && projectFilterList.length === 0) {
+        const orphans = await Task.find({
+            dayLogId: { $in: logIds },
+            $or: [{ projectId: null }, { projectId: { $exists: false } }],
+        }).lean();
+        orphans.forEach((t) => {
+            if (kindFilter && (t.kind || 'work') !== kindFilter) return;
+            const key = String(t.dayLogId);
+            if (!orphansByLog.has(key)) orphansByLog.set(key, []);
+            orphansByLog.get(key).push(t);
+        });
+    }
+
+    // Сериализуем logs в plain-объекты и добавляем orphanTasks + dayHours.
+    // Часы считаем по факту из populated данных, чтобы не зависеть от агрегатного DayLog.totalHours
+    // (он включает все Task — поэтому смешивание с orphanHours давало двойной счёт).
+    const logsOut = logs.map((log) => {
+        const obj = log.toObject({ virtuals: true });
+        obj.orphanTasks = orphansByLog.get(String(log._id)) || [];
+        const projectHours = (obj.projects || []).reduce(
+            (sum, p) => sum + (p.tasks || []).reduce((s, t) => s + (Number(t.hours) || 0), 0),
+            0,
+        );
+        const orphanHours = obj.orphanTasks.reduce((s, t) => s + (Number(t.hours) || 0), 0);
+        obj.dayHoursTotal = projectHours + orphanHours;
+        return obj;
+    });
+
+    const totalHours = logsOut.reduce((acc, log) => acc + (log.dayHoursTotal || 0), 0);
+    const daysWorked = logsOut.length;
     const managedHours = managedTasks.reduce((s, t) => s + (t.actualHours || t.estimatedHours || 0), 0);
 
     res.status(200).json({
@@ -788,9 +884,10 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
             totalTasks,
             totalHours,
             daysWorked,
-            logs,
+            logs: logsOut,
             managedTasks,
             managedHours,
+            availableProjects,
         }
     });
 });
@@ -992,7 +1089,8 @@ exports.exportAnalyticsExcel = catchAsync(async (req, res, next) => {
 });
 
 exports.exportExcel = catchAsync(async (req, res, next) => {
-    const { startDate, endDate, userId } = req.query;
+    const { startDate, endDate, userId, projectName, kind } = req.query;
+    const kindFilter = kind === 'work' || kind === 'external' ? kind : null;
 
     if ((startDate && !endDate) || (!startDate && endDate)) {
         return next(new AppError('Please provide both startDate and endDate for date filtering', 400));
@@ -1003,6 +1101,13 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
     }
 
     const effectiveUserId = resolveRequestedUserId(req, userId);
+    const projectFilterList = (Array.isArray(projectName) ? projectName : (projectName ? [projectName] : []))
+        .flatMap((p) => String(p).split(','))
+        .map((p) => p.trim())
+        .filter(Boolean);
+    const projectFilterSet = new Set(projectFilterList.map((p) => p.toLowerCase()));
+    const projectMatches = (name) => name && projectFilterSet.has(name.toString().trim().toLowerCase());
+    const hasProjectFilter = projectFilterList.length > 0;
 
     const query = {};
     if (startDate && endDate) {
@@ -1021,28 +1126,67 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         });
 
     const reportData = [];
+    const collectedTaskIds = new Set();
 
     logs.forEach((log) => {
-        const executor = log.userId?.name || '—';
+        const defaultExecutor = log.userId?.name || '—';
         const date = log.date;
 
-        if (!log.projects || log.projects.length === 0) return;
-
-        log.projects.forEach((project) => {
-            const projectTasks = project.tasks || [];
-            projectTasks.forEach((task) => {
+        (log.projects || []).forEach((project) => {
+            if (hasProjectFilter && !projectMatches(project.name)) return;
+            (project.tasks || []).forEach((task) => {
+                if (kindFilter && (task.kind || 'work') !== kindFilter) return;
+                collectedTaskIds.add(String(task._id));
                 reportData.push({
                     date,
-                    legalEntity: task.customer?.externalId || '',
-                    customer:    task.customer?.name       || '',
-                    project:     project.name              || '—',
-                    description: task.description          || task.title || '',
-                    executor,
-                    hours:       Number(task.hours)        || 0,
+                    legalEntity:   task.customer?.externalId || '',
+                    customer:      task.customer?.name       || '',
+                    project:       project.name              || '—',
+                    description:   task.description          || task.title || '',
+                    executor:      task.executor             || defaultExecutor,
+                    hours:         Number(task.hours)        || 0,
+                    status:        task.status               || 'pending',
+                    kind:          task.kind                 || 'work',
+                    paymentStatus: task.payment?.status      || '',
+                    amount:        task.payment?.amount      || 0,
+                    currency:      task.payment?.currency    || '',
                 });
             });
         });
     });
+
+    // Сиротские Task без Project (например, созданные ботом).
+    // При активном фильтре по проекту — они никогда не подойдут (project='—'), пропускаем.
+    if (!hasProjectFilter) {
+        const logIds = logs.map((l) => l._id);
+        if (logIds.length > 0) {
+            const orphanTasks = await Task.find({
+                dayLogId: { $in: logIds },
+                $or: [{ projectId: null }, { projectId: { $exists: false } }],
+            });
+            const logById = new Map(logs.map((l) => [String(l._id), l]));
+            orphanTasks.forEach((task) => {
+                if (collectedTaskIds.has(String(task._id))) return;
+                if (kindFilter && (task.kind || 'work') !== kindFilter) return;
+                const log = logById.get(String(task.dayLogId));
+                if (!log) return;
+                reportData.push({
+                    date:          log.date,
+                    legalEntity:   task.customer?.externalId || '',
+                    customer:      task.customer?.name       || '',
+                    project:       '—',
+                    description:   task.description          || task.title || '',
+                    executor:      task.executor             || log.userId?.name || '—',
+                    hours:         Number(task.hours)        || 0,
+                    status:        task.status               || 'pending',
+                    kind:          task.kind                 || 'work',
+                    paymentStatus: task.payment?.status      || '',
+                    amount:        task.payment?.amount      || 0,
+                    currency:      task.payment?.currency    || '',
+                });
+            });
+        }
+    }
 
     // Добавляем выполненные ManagedTask за тот же период
     const managedFilter = {
@@ -1055,28 +1199,40 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
             { createdBy: effectiveUserId, isSelfTask: true },
         ];
     }
-    const managedTasks = await ManagedTask.find(managedFilter)
+    let managedTasks = await ManagedTask.find(managedFilter)
         .populate('createdBy', 'name')
         .populate('assignedTo', 'name')
         .populate('project', 'name')
         .sort({ dueDate: -1 });
 
-    managedTasks.forEach((task) => {
-        const hours = task.actualHours || task.estimatedHours || 0;
-        const executor = task.assignedTo?.length
-            ? task.assignedTo.map((u) => u.name).join(', ')
-            : task.createdBy?.name || '—';
+    if (hasProjectFilter) {
+        managedTasks = managedTasks.filter((t) => projectMatches(t.project?.name));
+    }
 
-        reportData.push({
-            date:        task.dueDate,
-            legalEntity: '',
-            customer:    task.client || '',
-            project:     task.project?.name || '—',
-            description: task.description  || task.title || '',
-            executor,
-            hours,
+    // ManagedTask считаем рабочими (kind=work); если фильтр = external — их пропускаем
+    if (kindFilter !== 'external') {
+        managedTasks.forEach((task) => {
+            const hours = task.actualHours || task.estimatedHours || 0;
+            const executor = task.assignedTo?.length
+                ? task.assignedTo.map((u) => u.name).join(', ')
+                : task.createdBy?.name || '—';
+
+            reportData.push({
+                date:          task.dueDate,
+                legalEntity:   '',
+                customer:      task.client || '',
+                project:       task.project?.name || '—',
+                description:   task.description  || task.title || '',
+                executor,
+                hours,
+                status:        task.status,
+                kind:          'work',
+                paymentStatus: '',
+                amount:        0,
+                currency:      '',
+            });
         });
-    });
+    }
 
     // Сортируем по дате — свежие сверху
     reportData.sort((a, b) => new Date(b.date) - new Date(a.date));

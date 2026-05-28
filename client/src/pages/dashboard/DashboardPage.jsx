@@ -72,12 +72,15 @@ const DashboardPage = () => {
             title: 'Дата',
             dataIndex: 'date',
             key: 'date',
+            sorter: (a, b) => new Date(a.date) - new Date(b.date),
+            defaultSortOrder: 'descend',
             render: (date) => dayjs(date).format('YYYY-MM-DD'),
         },
         {
             title: 'Всего часов',
             dataIndex: 'totalHours',
             key: 'totalHours',
+            sorter: (a, b) => (a.totalHours || 0) - (b.totalHours || 0),
             render: (hours) => <Tag color="blue">{hours} ч</Tag>,
         },
         {
@@ -140,6 +143,7 @@ const DashboardPage = () => {
                     rowKey="_id"
                     loading={isLoading}
                     bordered
+                    pagination={{ pageSize: 20, showSizeChanger: true, pageSizeOptions: [10, 20, 50, 100] }}
                 />
 
                 <Drawer

@@ -83,13 +83,17 @@ exports.getTask = catchAsync(async (req, res, next) => {
 exports.createTask = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { title, description, type, parentId, assignedTo, isHot,
-            estimatedHours, startDate, dueDate, isSelfTask, project, client, manualAssignee } = req.body;
+            estimatedHours, actualHours, status, startDate, dueDate,
+            isSelfTask, project, client, manualAssignee } = req.body;
 
     // Worker может создавать только свои задачи
     if (user.role === 'worker' && !isSelfTask)
         return next(new AppError('Воркер может создавать только собственные задачи', 403));
 
-    // (менеджеры тоже могут создавать свои личные задачи)
+    // Воркер может ставить только разрешённые статусы у НЕ-личных задач.
+    // Для isSelfTask разрешены любые валидные статусы из enum модели.
+    const VALID_STATUSES = ['pending', 'in_progress', 'testing', 'completed', 'cancelled'];
+    const initialStatus = status && VALID_STATUSES.includes(status) ? status : 'pending';
 
     const task = await ManagedTask.create({
         title,
@@ -102,6 +106,8 @@ exports.createTask = catchAsync(async (req, res, next) => {
         isHot:          isHot || false,
         isSelfTask:     isSelfTask || false,
         estimatedHours: estimatedHours || 0,
+        actualHours:    actualHours    || 0,
+        status:         initialStatus,
         startDate:      startDate || null,
         dueDate:        dueDate   || null,
         client:         client    || '',

@@ -34,6 +34,22 @@ const taskSchema = new mongoose.Schema({
         enum: ['pending', 'completed', 'failed'],
         default: 'pending',
     },
+    executor: {
+        type: String,
+        trim: true,
+        default: '',
+    },
+    kind: {
+        type: String,
+        enum: ['work', 'external'],
+        default: 'work',
+    },
+    payment: {
+        status:   { type: String, enum: ['paid', 'unpaid'], default: 'unpaid' },
+        amount:   { type: Number, default: 0, min: 0 },
+        currency: { type: String, default: 'UZS', trim: true },
+        paidAt:   { type: Date,   default: null },
+    },
     customer: {
         name: {
             type: String,

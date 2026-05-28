@@ -4,16 +4,23 @@ const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:7b';
 const SYSTEM_PROMPT = `Ты — извлекатель данных из коротких рабочих сообщений на русском/узбекском/английском.
 Получив свободный текст о выполненной задаче, верни СТРОГО валидный JSON со следующими полями:
 {
-  "title": string,                 // краткое название задачи (до 80 символов)
-  "description": string|null,      // подробности, если есть; иначе null
-  "hours": number,                 // потраченное время в часах (десятичное, напр. 1.5)
-  "customer": string|null,         // имя/название заказчика, если упомянут; иначе null
-  "executor": string|null,         // имя исполнителя, если упомянут (если "я"/"сам" — оставь null)
-  "date": string|null              // дата в формате YYYY-MM-DD, если указана (вчера/сегодня — вычисли); иначе null
+  "title": string,                  // краткое название задачи (до 80 символов)
+  "description": string|null,       // подробности, если есть; иначе null
+  "hours": number,                  // потраченное время в часах (десятичное, напр. 1.5)
+  "customer": string|null,          // имя/название заказчика, если упомянут; иначе null
+  "executor": string|null,          // имя исполнителя, если упомянут (если "я"/"сам" — оставь null)
+  "project": string|null,           // название проекта/системы/продукта (SmartSpace, SAP, лендинг X); иначе null
+  "kind": "work" | "external",      // "халтура", "со стороны", "левый", "для друга", "калым", "на стороне", "side-проект" => "external"; обычная рабочая задача => "work"
+  "payment": "paid" | "unpaid" | null, // "оплатили","заплатили","оплачено","paid" => "paid"; "не оплачено","ждёт оплаты","в долг","unpaid" => "unpaid"; если не упомянуто и kind=work — null; если kind=external и не упомянуто — "unpaid"
+  "amount": number | null,          // сумма если упомянута: "500к" => 500000, "200 000 сум" => 200000, "50$" => 50; иначе null
+  "currency": "UZS" | "USD" | "RUB" | null, // валюта если упомянута ("сум","$","руб"); иначе null
+  "date": string|null               // дата в формате YYYY-MM-DD, если указана (вчера/сегодня — вычисли); иначе null
 }
 Правила:
 - Время: "30 минут" => 0.5, "час" => 1, "2 ч 30 мин" => 2.5, "полчаса" => 0.5.
-- Не придумывай данных, которых нет в тексте — ставь null.
+- Не путай проект и заказчика: проект — это конкретный продукт/система, заказчик — компания или человек, для которого это делается.
+- "к" в конце числа = тысячи (500к => 500000).
+- Не придумывай данных, которых нет в тексте — ставь null. По умолчанию kind = "work".
 - Никаких пояснений, никаких markdown, ТОЛЬКО JSON-объект.`;
 
 async function callOllama({ system, user, format, temperature = 0.1 }) {
@@ -64,12 +71,24 @@ async function parseTaskMessage(text, { now = new Date() } = {}) {
         parsed = JSON.parse(match[0]);
     }
 
+    const kind = parsed.kind === 'external' ? 'external' : 'work';
+    let payment = parsed.payment === 'paid' ? 'paid'
+                : parsed.payment === 'unpaid' ? 'unpaid'
+                : null;
+    // По умолчанию для внешних задач, если оплата не упомянута — считаем "unpaid"
+    if (kind === 'external' && payment === null) payment = 'unpaid';
+
     return {
         title: typeof parsed.title === 'string' ? parsed.title.trim() : '',
         description: parsed.description ? String(parsed.description).trim() : null,
         hours: Number(parsed.hours) || 0,
         customer: parsed.customer ? String(parsed.customer).trim() : null,
         executor: parsed.executor ? String(parsed.executor).trim() : null,
+        project: parsed.project ? String(parsed.project).trim() : null,
+        kind,
+        payment,
+        amount: Number.isFinite(Number(parsed.amount)) ? Number(parsed.amount) : 0,
+        currency: ['UZS', 'USD', 'RUB'].includes(parsed.currency) ? parsed.currency : 'UZS',
         date: parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : null,
     };
 }

@@ -63,8 +63,9 @@ const managedTaskSchema = new mongoose.Schema(
         estimatedHours: { type: Number, default: 0, min: 0 },
         actualHours:    { type: Number, default: 0, min: 0 },
 
-        startDate: { type: Date, default: null },
-        dueDate:   { type: Date, default: null },
+        startDate:   { type: Date, default: null },
+        dueDate:     { type: Date, default: null },
+        completedAt: { type: Date, default: null },
 
         comments: [
             {
@@ -86,6 +87,17 @@ managedTaskSchema.virtual('children', {
     ref:          'ManagedTask',
     localField:   '_id',
     foreignField: 'parentId',
+});
+
+// Автоматически проставляем/сбрасываем completedAt при смене статуса
+managedTaskSchema.pre('save', async function () {
+    if (this.isModified('status')) {
+        if (this.status === 'completed' && !this.completedAt) {
+            this.completedAt = new Date();
+        } else if (this.status !== 'completed' && this.completedAt) {
+            this.completedAt = null;
+        }
+    }
 });
 
 module.exports = mongoose.model('ManagedTask', managedTaskSchema);

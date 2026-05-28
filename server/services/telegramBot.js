@@ -2,9 +2,12 @@ const { Telegraf, Markup } = require('telegraf');
 const User = require('../models/User');
 const DayLog = require('../models/DayLog');
 const Task = require('../models/Task');
+const Project = require('../models/Project');
 const AssistantKnowledge = require('../models/AssistantKnowledge');
 const ollamaService = require('./ollamaService');
 const { buildTeamContext } = require('./teamContextService');
+
+const SELF_EXECUTOR_RE = /^(я|сам|я\s*сам|myself|me|o['‘]?zim|ozim|men)$/i;
 
 const QUESTION_RE = /\?\s*$/;
 const QUESTION_WORDS = /^(кто|что|как|когда|где|почему|зачем|сколько|расскажи|объясни|опиши|можешь|умеешь|поможешь|помоги|умеет|может|whoami)/i;
@@ -33,16 +36,73 @@ const pendingDrafts = new Map();
 
 const findUserByTelegramId = (tgId) => User.findOne({ telegramId: String(tgId) });
 
-const formatPreview = (p) => {
+const resolveExecutor = (parsed, user) => {
+    const raw = parsed.executor;
+    if (!raw || SELF_EXECUTOR_RE.test(raw.trim())) return user.name;
+    return raw.trim();
+};
+
+const fmtAmount = (amount, currency) => {
+    if (!amount) return '';
+    const s = Number(amount).toLocaleString('ru-RU');
+    return `${s} ${currency || 'UZS'}`;
+};
+
+const formatPreview = (p, executorName) => {
+    const kindLabel = p.kind === 'external' ? '🌍 Внешняя' : '💼 Рабочая';
+    const paymentLabel = p.kind === 'external'
+        ? (p.payment === 'paid' ? '💰 Оплачено' : '⌛ Не оплачено')
+        : null;
+    const amountLine = p.kind === 'external' && p.amount > 0
+        ? `💵 *Сумма:* ${fmtAmount(p.amount, p.currency)}`
+        : null;
+
     const lines = [
         `📌 *Задача:* ${p.title || '—'}`,
         `⏱ *Время:* ${p.hours} ч`,
         p.customer ? `👤 *Заказчик:* ${p.customer}` : null,
-        p.executor ? `🛠 *Исполнитель:* ${p.executor}` : null,
+        p.project ? `📁 *Проект:* ${p.project}` : null,
+        executorName ? `🛠 *Исполнитель:* ${executorName}` : null,
         `📅 *Дата:* ${p.date || 'сегодня'}`,
+        `🏷 *Тип:* ${kindLabel}`,
+        paymentLabel,
+        amountLine,
+        `✅ *Статус:* Завершено`,
         p.description ? `📝 ${p.description}` : null,
     ].filter(Boolean);
     return lines.join('\n');
+};
+
+const buildDraftKeyboard = (draftId, parsed) => {
+    const rows = [
+        [
+            Markup.button.callback(
+                parsed.kind === 'external' ? '✅ 🌍 Внешняя' : '🌍 Внешняя',
+                `kind:${draftId}:external`,
+            ),
+            Markup.button.callback(
+                parsed.kind === 'work' ? '✅ 💼 Рабочая' : '💼 Рабочая',
+                `kind:${draftId}:work`,
+            ),
+        ],
+    ];
+    if (parsed.kind === 'external') {
+        rows.push([
+            Markup.button.callback(
+                parsed.payment === 'paid' ? '✅ 💰 Оплачено' : '💰 Оплачено',
+                `pay:${draftId}:paid`,
+            ),
+            Markup.button.callback(
+                parsed.payment === 'unpaid' ? '✅ ⌛ Не оплачено' : '⌛ Не оплачено',
+                `pay:${draftId}:unpaid`,
+            ),
+        ]);
+    }
+    rows.push([
+        Markup.button.callback('✅ Сохранить', `save:${draftId}`),
+        Markup.button.callback('❌ Отмена',    `cancel:${draftId}`),
+    ]);
+    return Markup.inlineKeyboard(rows);
 };
 
 const saveTask = async ({ user, parsed }) => {
@@ -58,12 +118,44 @@ const saveTask = async ({ user, parsed }) => {
         dayLog = await DayLog.create({ userId: user._id, date: dateStart });
     }
 
+    // Резолвим / создаём Project, если он упомянут
+    let projectId = null;
+    if (parsed.project) {
+        const name = parsed.project.trim();
+        let project = await Project.findOne({
+            dayLogId: dayLog._id,
+            name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i'),
+        });
+        if (!project) {
+            project = await Project.create({ dayLogId: dayLog._id, name });
+        }
+        projectId = project._id;
+    }
+
+    const executor = resolveExecutor(parsed, user);
+    // Если исполнитель совпадает с самим пользователем — оставляем поле пустым,
+    // в отчётах оно дозаполнится из User.name (DayLog.userId).
+    const executorField = executor === user.name ? '' : executor;
+
+    const kind = parsed.kind === 'external' ? 'external' : 'work';
+    const paymentStatus = parsed.payment === 'paid' ? 'paid' : 'unpaid';
+
     const task = await Task.create({
         dayLogId: dayLog._id,
+        projectId,
         title: parsed.title || 'Без названия',
         description: parsed.description || undefined,
         hours: parsed.hours || 0,
+        status: 'completed',
+        executor: executorField,
         customer: parsed.customer ? { name: parsed.customer } : undefined,
+        kind,
+        payment: {
+            status:   paymentStatus,
+            amount:   Number(parsed.amount) || 0,
+            currency: parsed.currency || 'UZS',
+            paidAt:   paymentStatus === 'paid' ? new Date() : null,
+        },
     });
 
     return { dayLog, task };
@@ -177,17 +269,15 @@ function createBot(token) {
             }
 
             const draftId = `${ctx.from.id}:${ctx.message.message_id}`;
-            pendingDrafts.set(draftId, { userId: user._id, parsed, createdAt: Date.now() });
+            const executorName = resolveExecutor(parsed, user);
+            pendingDrafts.set(draftId, { userId: user._id, parsed, createdAt: Date.now(), chatId: ctx.chat.id, messageId: waiting.message_id });
 
             await ctx.telegram.editMessageText(
                 ctx.chat.id, waiting.message_id, undefined,
-                `Готов сохранить?\n\n${formatPreview(parsed)}`,
+                `Готов сохранить?\n\n${formatPreview(parsed, executorName)}`,
                 {
                     parse_mode: 'Markdown',
-                    ...Markup.inlineKeyboard([
-                        Markup.button.callback('✅ Сохранить', `save:${draftId}`),
-                        Markup.button.callback('❌ Отмена', `cancel:${draftId}`),
-                    ]),
+                    ...buildDraftKeyboard(draftId, parsed),
                 }
             );
         } catch (err) {
@@ -197,6 +287,48 @@ function createBot(token) {
                 `⚠️ Ошибка обработки: ${err.message}`
             );
         }
+    });
+
+    bot.action(/^kind:(.+):(work|external)$/, async (ctx) => {
+        const draftId = ctx.match[1];
+        const newKind = ctx.match[2];
+        const draft = pendingDrafts.get(draftId);
+        await ctx.answerCbQuery();
+        if (!draft) return;
+
+        draft.parsed.kind = newKind;
+        if (newKind === 'external' && draft.parsed.payment !== 'paid') {
+            draft.parsed.payment = 'unpaid';
+        }
+        if (newKind === 'work') {
+            draft.parsed.payment = null;
+        }
+        pendingDrafts.set(draftId, draft);
+
+        const user = await User.findById(draft.userId);
+        const executorName = user ? resolveExecutor(draft.parsed, user) : '';
+        await ctx.editMessageText(
+            `Готов сохранить?\n\n${formatPreview(draft.parsed, executorName)}`,
+            { parse_mode: 'Markdown', ...buildDraftKeyboard(draftId, draft.parsed) },
+        );
+    });
+
+    bot.action(/^pay:(.+):(paid|unpaid)$/, async (ctx) => {
+        const draftId = ctx.match[1];
+        const newPay = ctx.match[2];
+        const draft = pendingDrafts.get(draftId);
+        await ctx.answerCbQuery();
+        if (!draft) return;
+
+        draft.parsed.payment = newPay;
+        pendingDrafts.set(draftId, draft);
+
+        const user = await User.findById(draft.userId);
+        const executorName = user ? resolveExecutor(draft.parsed, user) : '';
+        await ctx.editMessageText(
+            `Готов сохранить?\n\n${formatPreview(draft.parsed, executorName)}`,
+            { parse_mode: 'Markdown', ...buildDraftKeyboard(draftId, draft.parsed) },
+        );
     });
 
     bot.action(/^save:(.+)$/, async (ctx) => {
@@ -211,8 +343,9 @@ function createBot(token) {
         try {
             const { task } = await saveTask({ user, parsed: draft.parsed });
             pendingDrafts.delete(draftId);
+            const executorName = resolveExecutor(draft.parsed, user);
             await ctx.editMessageText(
-                `✅ Сохранено!\n\n${formatPreview(draft.parsed)}\n\nID задачи: \`${task._id}\``,
+                `✅ Сохранено!\n\n${formatPreview(draft.parsed, executorName)}\n\nID задачи: \`${task._id}\``,
                 { parse_mode: 'Markdown' }
             );
         } catch (err) {

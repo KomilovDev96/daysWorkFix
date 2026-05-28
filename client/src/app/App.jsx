@@ -7,6 +7,7 @@ import { store } from './providers/store';
 import { QueryProvider } from './providers/QueryProvider';
 import MainLayout from './providers/MainLayout';
 import ProtectedRoute from '../shared/lib/ProtectedRoute';
+import ErrorBoundary from '../shared/ui/ErrorBoundary';
 
 import LoginPage           from '../pages/login/LoginPage';
 import DashboardPage       from '../pages/dashboard/DashboardPage';
@@ -66,6 +67,7 @@ const App = () => (
         >
             <QueryProvider>
                 <BrowserRouter>
+                    <ErrorBoundary>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
 
@@ -122,6 +124,7 @@ const App = () => (
 
                         <Route path="*" element={<Navigate to="/login" replace />} />
                     </Routes>
+                    </ErrorBoundary>
                 </BrowserRouter>
             </QueryProvider>
         </ConfigProvider>

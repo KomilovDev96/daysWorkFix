@@ -18,3 +18,21 @@ body {
 .ant-btn-primary {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+/* Подсветка строк задач (WorkerTasksPage, ReportsPage) */
+.task-row-done > td {
+  background-color: #f6ffed !important;
+  color: #999;
+}
+.task-row-done > td .ant-typography {
+  color: #999 !important;
+}
+.task-row-overdue > td {
+  background-color: #fff1f0 !important;
+}
+.task-row-overdue:hover > td {
+  background-color: #ffe7e6 !important;
+}
+.task-row-hot > td {
+  box-shadow: inset 3px 0 0 #ff4d4f;
+}

@@ -128,6 +128,18 @@ const createBucketsSheet = (workbook, sheetName, buckets) => {
     styleHeader(worksheet);
 };
 
+const STATUS_LABEL_RU = {
+    pending:       'Ожидает',
+    in_progress:   'В работе',
+    testing:       'Тестирование',
+    completed:     'Завершено',
+    cancelled:     'Отменено',
+    failed:        'Провалено',
+};
+
+const KIND_LABEL_RU    = { work: 'Рабочая', external: 'Внешняя' };
+const PAYMENT_LABEL_RU = { paid: 'Оплачено', unpaid: 'Не оплачено' };
+
 exports.generateGeneralReport = async (rows) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Общий отчет');
@@ -139,13 +151,24 @@ exports.generateGeneralReport = async (rows) => {
         { header: 'Проект',             key: 'project',      width: 28 },
         { header: 'Описание задачи',    key: 'description',  width: 55 },
         { header: 'Исполнитель',        key: 'executor',     width: 25 },
-        { header: 'Затраченное время',  key: 'hours',        width: 20 },
+        { header: 'Затраченное время',  key: 'hours',        width: 18 },
+        { header: 'Тип',                key: 'kind',         width: 12 },
+        { header: 'Оплата',             key: 'payment',      width: 14 },
+        { header: 'Сумма',              key: 'amount',       width: 16 },
+        { header: 'Статус',             key: 'status',       width: 16 },
         { header: 'Дата',               key: 'date',         width: 14 },
     ];
 
     setWrapForColumns(worksheet, ['description']);
 
     rows.forEach((row, index) => {
+        const kindLabel = KIND_LABEL_RU[row.kind] || 'Рабочая';
+        const isExternal = row.kind === 'external';
+        const paymentLabel = isExternal ? (PAYMENT_LABEL_RU[row.paymentStatus] || '—') : '—';
+        const amountText   = isExternal && Number(row.amount) > 0
+            ? `${Number(row.amount).toLocaleString('ru-RU')} ${row.currency || 'UZS'}`
+            : '—';
+
         worksheet.addRow({
             num:          index + 1,
             organization: 'EMAN',
@@ -154,6 +177,10 @@ exports.generateGeneralReport = async (rows) => {
             description:  row.description  || '',
             executor:     row.executor     || '—',
             hours:        row.hours        || 0,
+            kind:         kindLabel,
+            payment:      paymentLabel,
+            amount:       amountText,
+            status:       STATUS_LABEL_RU[row.status] || '—',
             date:         row.date ? new Date(row.date).toLocaleDateString('ru-RU') : '—',
         });
     });
