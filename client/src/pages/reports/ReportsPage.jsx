@@ -1,15 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Typography, Card, Form, DatePicker, Select, Button,
-    Table, Space, Tag, message, Badge, Drawer, Descriptions, Empty,
+    Table, Space, Tag, message, Drawer, Descriptions, Empty, Segmented, Row, Col, Statistic,
+    Input, InputNumber, Popconfirm, Modal, AutoComplete,
 } from 'antd';
 import {
     FilterOutlined, FileExcelOutlined,
     UserOutlined, CalendarOutlined, CheckCircleOutlined,
-    ClockCircleOutlined, BookOutlined,
-    FolderOutlined, RobotOutlined, DollarOutlined,
+    ClockCircleOutlined, FolderOutlined, RobotOutlined, DollarOutlined,
+    HourglassOutlined, EditOutlined, SaveOutlined, DeleteOutlined, CloseOutlined,
+    PlusOutlined, SettingOutlined, DownOutlined, UpOutlined,
 } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import apiClient from '../../shared/api/apiClient';
 import dayjs from 'dayjs';
@@ -17,8 +19,139 @@ import dayjs from 'dayjs';
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
+const PRESETS = [
+    { key: 'today',  label: 'Сегодня',     range: () => [dayjs(), dayjs()] },
+    { key: 'yesterday', label: 'Вчера',    range: () => [dayjs().subtract(1, 'day'), dayjs().subtract(1, 'day')] },
+    { key: 'week',   label: 'Эта неделя',  range: () => [dayjs().startOf('isoWeek'), dayjs()] },
+    { key: 'month',  label: 'Этот месяц',  range: () => [dayjs().startOf('month'), dayjs()] },
+    { key: '30d',    label: '30 дней',     range: () => [dayjs().subtract(30, 'day'), dayjs()] },
+];
+
+const STATUS_LABEL = {
+    pending:     { text: 'Запланировано', color: 'orange', icon: <HourglassOutlined /> },
+    completed:   { text: 'Завершено',     color: 'green',  icon: <CheckCircleOutlined /> },
+    failed:      { text: 'Провалено',     color: 'red',    icon: null },
+    in_progress: { text: 'В работе',      color: 'blue',   icon: null },
+    testing:     { text: 'Тест',          color: 'purple', icon: null },
+};
+
+const KIND_LABEL = { work: '💼 Рабочая', external: '🌍 Внешняя' };
+
 const ReportsPage = () => {
     const [drawerRow, setDrawerRow] = useState(null);
+    const [showAdvanced, setShowAdvanced] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editForm] = Form.useForm();
+    const [createForm] = Form.useForm();
+    const [advForm] = Form.useForm();
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        if (drawerRow && editMode) {
+            editForm.setFieldsValue({
+                title:        drawerRow.title || '',
+                description:  drawerRow.description || '',
+                hours:        drawerRow.hours || 0,
+                customer:     drawerRow.customer?.name || '',
+                status:       drawerRow.status || 'completed',
+                kind:         drawerRow.kind || 'work',
+                paymentStatus: drawerRow.payment?.status || 'unpaid',
+            });
+        }
+    }, [drawerRow, editMode, editForm]);
+
+    const closeDrawer = () => {
+        setDrawerRow(null);
+        setEditMode(false);
+    };
+
+    const updateMutation = useMutation({
+        mutationFn: async ({ id, patch }) => {
+            const { data } = await apiClient.patch(`/tasks/${id}`, patch);
+            return data.data.task;
+        },
+        onSuccess: (updated) => {
+            message.success('Задача обновлена');
+            queryClient.invalidateQueries({ queryKey: ['report'] });
+            queryClient.invalidateQueries({ queryKey: ['upcoming-pending'] });
+            setDrawerRow((r) => r ? { ...r, ...updated, customer: updated.customer } : r);
+            setEditMode(false);
+        },
+        onError: (err) => {
+            message.error('Не удалось обновить: ' + (err?.response?.data?.message || err.message));
+        },
+    });
+
+    const createMutation = useMutation({
+        mutationFn: async (payload) => {
+            const { data } = await apiClient.post('/tasks/quick', payload);
+            return data.data;
+        },
+        onSuccess: ({ task }) => {
+            const codeMsg = task.shortCode ? ` (код #${task.shortCode})` : '';
+            message.success(`Задача создана${codeMsg}`);
+            queryClient.invalidateQueries({ queryKey: ['report'] });
+            queryClient.invalidateQueries({ queryKey: ['upcoming-pending'] });
+            setCreateOpen(false);
+            createForm.resetFields();
+        },
+        onError: (err) => {
+            message.error('Не удалось создать: ' + (err?.response?.data?.message || err.message));
+        },
+    });
+
+    const onCreateSubmit = () => {
+        createForm.validateFields().then((vals) => {
+            createMutation.mutate({
+                date:        vals.date ? vals.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
+                title:       vals.title,
+                description: vals.description,
+                hours:       Number(vals.hours) || 0,
+                status:      vals.status,
+                kind:        vals.kind,
+                customer:    vals.customer,
+                projectName: vals.project,
+                payment:     vals.paymentStatus,
+            });
+        });
+    };
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id) => apiClient.delete(`/tasks/${id}`),
+        onSuccess: () => {
+            message.success('Задача удалена');
+            queryClient.invalidateQueries({ queryKey: ['report'] });
+            queryClient.invalidateQueries({ queryKey: ['upcoming-pending'] });
+            closeDrawer();
+        },
+        onError: (err) => {
+            message.error('Не удалось удалить: ' + (err?.response?.data?.message || err.message));
+        },
+    });
+
+    const onEditSave = () => {
+        editForm.validateFields().then((vals) => {
+            const patch = {
+                title: vals.title,
+                description: vals.description,
+                hours: Number(vals.hours) || 0,
+                status: vals.status,
+                kind: vals.kind,
+                customer: vals.customer ? { name: vals.customer } : null,
+            };
+            if (vals.kind === 'external') {
+                patch.payment = {
+                    ...(drawerRow.payment || {}),
+                    status: vals.paymentStatus,
+                    paidAt: vals.paymentStatus === 'paid'
+                        ? (drawerRow.payment?.paidAt || new Date())
+                        : null,
+                };
+            }
+            updateMutation.mutate({ id: drawerRow._id, patch });
+        });
+    };
 
     const [filters, setFilters] = useState({
         startDate:    dayjs().startOf('month').format('YYYY-MM-DD'),
@@ -26,6 +159,8 @@ const ReportsPage = () => {
         userId:       null,
         projectNames: [],
         kind:         'all',
+        status:       'all',
+        payment:      'all',
     });
 
     const user    = useSelector((state) => state.auth.user);
@@ -40,12 +175,16 @@ const ReportsPage = () => {
         enabled: isAdmin,
     });
 
-    const buildParams = (apiEndDate) => {
-        const { startDate, userId, projectNames, kind } = filters;
+    const buildParams = (apiEndDate, { includeFilters = false } = {}) => {
+        const { startDate, userId, projectNames, kind, status, payment } = filters;
         const params = new URLSearchParams({ startDate, endDate: apiEndDate });
         if (userId) params.set('userId', userId);
         (projectNames || []).forEach((p) => params.append('projectName', p));
         if (kind && kind !== 'all') params.set('kind', kind);
+        if (includeFilters) {
+            if (status && status !== 'all') params.set('status', status);
+            if (payment && payment !== 'all') params.set('payment', payment);
+        }
         return params;
     };
 
@@ -58,11 +197,25 @@ const ReportsPage = () => {
         },
     });
 
-    const exportExcel = async () => {
+    // Запланированные впереди (показываем ВСЕГДА — независимо от фильтра периода)
+    const { data: upcomingReport } = useQuery({
+        queryKey: ['upcoming-pending', filters.userId],
+        queryFn:  async () => {
+            const startDate = dayjs().format('YYYY-MM-DD');
+            const endDate   = dayjs().add(90, 'day').format('YYYY-MM-DD');
+            const params = new URLSearchParams({ startDate, endDate });
+            if (filters.userId) params.set('userId', filters.userId);
+            const { data } = await apiClient.get(`/reports/period?${params.toString()}`);
+            return data.data;
+        },
+    });
+
+const exportExcel = async () => {
         try {
             const { startDate, endDate, projectNames } = filters;
             const apiEndDate = dayjs(endDate).add(1, 'day').format('YYYY-MM-DD');
-            const response = await apiClient.get(`/reports/export?${buildParams(apiEndDate).toString()}`, { responseType: 'blob' });
+            // includeFilters=true — Excel-экспорт уважает статус/оплату
+            const response = await apiClient.get(`/reports/export?${buildParams(apiEndDate, { includeFilters: true }).toString()}`, { responseType: 'blob' });
             const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const link = document.createElement('a');
             link.href  = window.URL.createObjectURL(blob);
@@ -79,80 +232,171 @@ const ReportsPage = () => {
         }
     };
 
+    const applyPreset = (key) => {
+        const preset = PRESETS.find((p) => p.key === key);
+        if (!preset) return;
+        const [from, to] = preset.range();
+        setFilters((f) => ({ ...f, startDate: from.format('YYYY-MM-DD'), endDate: to.format('YYYY-MM-DD') }));
+    };
+
+    const activePreset = useMemo(() => {
+        const start = dayjs(filters.startDate);
+        const end   = dayjs(filters.endDate);
+        for (const p of PRESETS) {
+            const [from, to] = p.range();
+            if (start.isSame(from, 'day') && end.isSame(to, 'day')) return p.key;
+        }
+        return null;
+    }, [filters.startDate, filters.endDate]);
+
     const onFilterSubmit = (values) => {
-        setFilters({
+        setFilters((f) => ({
+            ...f,
             startDate:    values.dateRange[0].format('YYYY-MM-DD'),
             endDate:      values.dateRange[1].format('YYYY-MM-DD'),
             userId:       values.userId       || null,
             projectNames: values.projectNames || [],
             kind:         values.kind         || 'all',
-        });
+            status:       values.status       || 'all',
+            payment:      values.payment      || 'all',
+        }));
     };
 
-    // Собираем плоский список Task внутри DayLog (проектные + сиротские/бот)
-    const collectLogTasks = (log) => {
-        const tasks = [];
-        (log.projects || []).forEach((p) => {
-            (p.tasks || []).forEach((t) => tasks.push({ ...t, projectName: p.name }));
-        });
-        (log.orphanTasks || []).forEach((t) => tasks.push({ ...t, projectName: null }));
-        return tasks;
-    };
-
-    // Объединяем DayLog записи и выполненные ManagedTask в одну таблицу
-    const combinedRows = useMemo(() => {
+    // Все данные (для счётчиков) — без status-фильтра. Включает текущий период + upcoming pending.
+    const allRows = useMemo(() => {
         const rows = [];
-
-        // DayLog записи
-        (report?.logs || []).forEach((log) => {
-            const innerTasks = collectLogTasks(log);
-            rows.push({
-                _id:       log._id,
-                date:      log.date,
-                userName:  log.userId?.name || '—',
-                email:     log.userId?.email || '—',
-                hours:     log.dayHoursTotal ?? log.totalHours ?? 0,
-                title:     null,
-                kind:      'log',   // дневной лог
-                innerTasks,
+        const pushFromReport = (rep, sourceTag) => {
+            (rep?.logs || []).forEach((log) => {
+                const userName  = log.userId?.name  || user?.name  || '—';
+                const userEmail = log.userId?.email || user?.email || '—';
+                (log.projects || []).forEach((p) => {
+                    (p.tasks || []).forEach((t) => rows.push({
+                        ...t, _id: t._id, date: log.date,
+                        userName, userEmail,
+                        projectName: p.name, source: 'log',
+                    }));
+                });
+                (log.orphanTasks || []).forEach((t) => rows.push({
+                    ...t, _id: t._id, date: log.date,
+                    userName, userEmail,
+                    projectName: null, source: 'bot',
+                }));
+            });
+            (rep?.managedTasks || []).forEach((t) => {
+                rows.push({
+                    _id: t._id,
+                    date: t.dueDate || t.createdAt,
+                    userName:  t.createdBy?.name  || user?.name  || '—',
+                    userEmail: t.createdBy?.email || user?.email || '—',
+                    title: t.title,
+                    description: t.description,
+                    hours: t.actualHours || t.estimatedHours || 0,
+                    status: t.status,
+                    customer: t.client ? { name: t.client } : null,
+                    kind: 'work',
+                    projectName: t.project?.name || null,
+                    source: 'managed',
+                    isSelf: t.isSelfTask,
+                });
+            });
+        };
+        pushFromReport(report);
+        // Подмерджим pending из upcoming-выборки, которых ещё нет в основном списке
+        const seen = new Set(rows.map((r) => String(r._id)));
+        (upcomingReport?.logs || []).forEach((log) => {
+            const userName  = log.userId?.name  || user?.name  || '—';
+            const userEmail = log.userId?.email || user?.email || '—';
+            (log.projects || []).forEach((p) => {
+                (p.tasks || []).forEach((t) => {
+                    if (t.status === 'pending' && !seen.has(String(t._id))) {
+                        rows.push({ ...t, _id: t._id, date: log.date, userName, userEmail, projectName: p.name, source: 'log' });
+                        seen.add(String(t._id));
+                    }
+                });
+            });
+            (log.orphanTasks || []).forEach((t) => {
+                if (t.status === 'pending' && !seen.has(String(t._id))) {
+                    rows.push({ ...t, _id: t._id, date: log.date, userName, userEmail, projectName: null, source: 'bot' });
+                    seen.add(String(t._id));
+                }
             });
         });
-
-        // Выполненные задачи
-        (report?.managedTasks || []).forEach((task) => {
-            rows.push({
-                _id:      task._id,
-                date:     task.dueDate,
-                userName: task.createdBy?.name || user?.name || '—',
-                email:    task.createdBy?.email || user?.email || '—',
-                hours:    task.actualHours || task.estimatedHours || 0,
-                title:    task.title,
-                client:   task.client,
-                isSelf:   task.isSelfTask,
-                kind:     'task',  // задача
-            });
-        });
-
-        // Сортируем по дате — свежие сверху
         rows.sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf());
         return rows;
-    }, [report, user]);
+    }, [report, upcomingReport, user]);
 
-    // Колонки таблицы внутренних Task (раскрытие DayLog-строки)
-    const KIND_LABEL = { work: '💼 Рабочая', external: '🌍 Внешняя' };
-    const PAY_LABEL  = { paid: '💰 Оплачено', unpaid: '⌛ Не оплачено' };
-    const STATUS_LABEL = { pending: 'Ожидает', in_progress: 'В работе', testing: 'Тест', completed: 'Завершено', failed: 'Провалено' };
+    // С учётом status- и payment-фильтров (для таблицы)
+    const flatTasks = useMemo(() => {
+        let out = allRows;
+        if (filters.status !== 'all') {
+            out = out.filter((r) => r.status === filters.status);
+        }
+        if (filters.payment !== 'all') {
+            out = out.filter((r) => {
+                if (r.kind !== 'external') return false;
+                return (r.payment?.status || 'unpaid') === filters.payment;
+            });
+        }
+        return out;
+    }, [allRows, filters.status, filters.payment]);
 
-    const innerColumns = [
+    // Сводка считается из allRows — чтобы числа не зависели от текущего фильтра
+    const summary = useMemo(() => {
+        const todayKey = dayjs().format('YYYY-MM-DD');
+        const today = allRows.filter((t) => dayjs(t.date).format('YYYY-MM-DD') === todayKey);
+        const todayDone = today.filter((t) => t.status === 'completed');
+        const todayPlanned = today.filter((t) => t.status === 'pending');
+        const periodDone = allRows.filter((t) => t.status === 'completed');
+        const periodPlanned = allRows.filter((t) => t.status === 'pending');
+        return {
+            todayDoneCount: todayDone.length,
+            todayDoneHours: todayDone.reduce((s, t) => s + (Number(t.hours) || 0), 0),
+            todayPlannedCount: todayPlanned.length,
+            periodTotalHours: allRows.reduce((s, t) => s + (Number(t.hours) || 0), 0),
+            periodDoneCount: periodDone.length,
+            periodPlannedCount: periodPlanned.length,
+            periodTasksCount: allRows.length,
+        };
+    }, [allRows]);
+
+    const columns = [
         {
-            title: 'Задача', dataIndex: 'title', key: 'title',
-            render: (v, r) => (
-                <Space direction="vertical" size={0}>
-                    <Space size={6}>
-                        <Text strong style={{ fontSize: 13 }}>{v || '—'}</Text>
-                        {r.kind === 'external' && <Tag color="orange" style={{ margin: 0 }}>Внешняя</Tag>}
+            title: 'Дата',
+            key: 'date',
+            width: 130,
+            render: (_, r) => {
+                const d = dayjs(r.date);
+                const isToday = d.isSame(dayjs(), 'day');
+                const isTomorrow = d.isSame(dayjs().add(1, 'day'), 'day');
+                const isYesterday = d.isSame(dayjs().subtract(1, 'day'), 'day');
+                return (
+                    <Space direction="vertical" size={0}>
+                        <Space size={4}>
+                            <CalendarOutlined />
+                            <Text style={{ fontSize: 13 }}>{d.format('DD.MM.YYYY')}</Text>
+                        </Space>
+                        {isToday && <Tag color="green" style={{ margin: 0, fontSize: 10 }}>сегодня</Tag>}
+                        {isTomorrow && <Tag color="blue" style={{ margin: 0, fontSize: 10 }}>завтра</Tag>}
+                        {isYesterday && <Tag style={{ margin: 0, fontSize: 10 }}>вчера</Tag>}
                     </Space>
-                    {r.description && <Text type="secondary" style={{ fontSize: 11 }}>{r.description}</Text>}
+                );
+            },
+        },
+        ...(isAdmin ? [{
+            title: 'Сотрудник', key: 'user', width: 160,
+            render: (_, r) => <Space size={4}><UserOutlined />{r.userName}</Space>,
+        }] : []),
+        {
+            title: 'Задача', key: 'title',
+            render: (_, r) => (
+                <Space direction="vertical" size={0}>
+                    <Text strong style={{ fontSize: 13 }}>{r.title || '—'}</Text>
+                    {r.description && (
+                        <Text type="secondary" style={{ fontSize: 11 }} ellipsis={{ tooltip: r.description }}>
+                            {r.description.length > 80 ? r.description.slice(0, 80) + '…' : r.description}
+                        </Text>
+                    )}
+                    {r.source === 'bot' && <Tag icon={<RobotOutlined />} color="default" style={{ marginTop: 2, fontSize: 10 }}>из бота</Tag>}
                 </Space>
             ),
         },
@@ -160,278 +404,622 @@ const ReportsPage = () => {
             title: 'Проект', key: 'projectName', width: 160,
             render: (_, r) => r.projectName
                 ? <Tag icon={<FolderOutlined />} color="purple">{r.projectName}</Tag>
-                : <Tag icon={<RobotOutlined />}>из бота</Tag>,
+                : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
         },
         {
-            title: 'Заказчик/Исполнитель', key: 'cust', width: 200,
-            render: (_, r) => (
-                <Space direction="vertical" size={0}>
-                    {r.customer?.name && <Text style={{ fontSize: 12 }}><UserOutlined /> {r.customer.name}</Text>}
-                    {r.executor && <Text type="secondary" style={{ fontSize: 11 }}>🛠 {r.executor}</Text>}
-                </Space>
-            ),
+            title: 'Заказчик', key: 'customer', width: 140,
+            render: (_, r) => r.customer?.name
+                ? <Space size={4}><UserOutlined style={{ color: '#888' }} /><Text style={{ fontSize: 12 }}>{r.customer.name}</Text></Space>
+                : <Text type="secondary" style={{ fontSize: 12 }}>—</Text>,
         },
         {
-            title: 'Часы', dataIndex: 'hours', key: 'hours', width: 80, align: 'center',
-            render: (v) => <Tag color="blue">{v}ч</Tag>,
+            title: 'Часы', key: 'hours', width: 90, align: 'center', sorter: (a, b) => (a.hours || 0) - (b.hours || 0),
+            render: (_, r) => <Tag color="blue"><ClockCircleOutlined /> {r.hours || 0}ч</Tag>,
         },
         {
-            title: 'Тип/Оплата', key: 'kind', width: 180,
+            title: 'Тип', key: 'kind', width: 110,
             render: (_, r) => {
-                if (r.kind !== 'external') return <Text type="secondary">{KIND_LABEL.work}</Text>;
-                const amount = r.payment?.amount ? `${Number(r.payment.amount).toLocaleString('ru-RU')} ${r.payment.currency || 'UZS'}` : null;
+                if (r.kind !== 'external') return <Text type="secondary" style={{ fontSize: 12 }}>{KIND_LABEL.work}</Text>;
                 return (
                     <Space direction="vertical" size={2}>
-                        <Text>{KIND_LABEL.external}</Text>
-                        <Tag color={r.payment?.status === 'paid' ? 'green' : 'orange'} style={{ margin: 0 }}>
-                            {PAY_LABEL[r.payment?.status] || PAY_LABEL.unpaid}
+                        <Text style={{ fontSize: 12 }}>{KIND_LABEL.external}</Text>
+                        <Tag color={r.payment?.status === 'paid' ? 'green' : 'orange'} style={{ margin: 0, fontSize: 10 }}>
+                            {r.payment?.status === 'paid' ? '💰 Оплачено' : '⌛ Не оплачено'}
                         </Tag>
-                        {amount && <Text style={{ fontSize: 11 }}><DollarOutlined /> {amount}</Text>}
+                        {r.shortCode && <Tag style={{ margin: 0, fontSize: 10 }}>#{r.shortCode}</Tag>}
                     </Space>
                 );
             },
         },
         {
-            title: 'Статус', dataIndex: 'status', key: 'status', width: 100,
-            render: (v) => <Tag color={v === 'completed' ? 'green' : 'default'}>{STATUS_LABEL[v] || v}</Tag>,
-        },
-    ];
-
-
-    const columns = [
-        {
-            title: 'Пользователь',
-            key: 'userName',
-            render: (_, r) => <Space><UserOutlined />{r.userName}</Space>,
-        },
-        {
-            title: 'Дата',
-            key: 'date',
-            render: (_, r) => (
-                <Space>
-                    <CalendarOutlined />
-                    {dayjs(r.date).format('DD.MM.YYYY')}
-                    {dayjs(r.date).isSame(dayjs(), 'day') && (
-                        <Tag color="green" style={{ margin: 0, fontSize: 10 }}>сегодня</Tag>
-                    )}
-                </Space>
-            ),
-        },
-        {
-            title: 'Запись',
-            key: 'title',
+            title: 'Статус', key: 'status', width: 140,
+            filters: [
+                { text: '✅ Завершено',     value: 'completed' },
+                { text: '⏳ Запланировано', value: 'pending' },
+            ],
+            onFilter: (value, r) => r.status === value,
             render: (_, r) => {
-                if (r.kind === 'task') {
-                    return (
-                        <Space direction="vertical" size={0}>
-                            <Space size={4}>
-                                <CheckCircleOutlined style={{ color: '#22C55E' }} />
-                                <Text strong style={{ fontSize: 13 }}>{r.title}</Text>
-                                <Tag color={r.isSelf ? 'green' : 'purple'} style={{ fontSize: 10 }}>
-                                    {r.isSelf ? 'Личная' : 'От менеджера'}
-                                </Tag>
-                            </Space>
-                            {r.client && (
-                                <Text type="secondary" style={{ fontSize: 11 }}>
-                                    <UserOutlined /> {r.client}
-                                </Text>
-                            )}
-                        </Space>
-                    );
-                }
-                const count = r.innerTasks?.length || 0;
-                return (
-                    <Space size={4}>
-                        <BookOutlined style={{ color: '#1677ff' }} />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                            Дневной лог {count > 0 ? `— ${count} запис${count === 1 ? 'ь' : count < 5 ? 'и' : 'ей'}` : '(пусто)'}
-                        </Text>
-                    </Space>
-                );
+                const s = STATUS_LABEL[r.status] || { text: r.status || '—', color: 'default', icon: null };
+                return <Tag color={s.color} icon={s.icon}>{s.text}</Tag>;
             },
-        },
-        {
-            title: 'Часы',
-            key: 'hours',
-            width: 100,
-            align: 'center',
-            render: (_, r) => (
-                <Tag color={r.kind === 'task' ? 'green' : 'blue'}>
-                    <ClockCircleOutlined /> {r.hours} ч
-                </Tag>
-            ),
-        },
-        {
-            title: 'Email',
-            key: 'email',
-            render: (_, r) => <Text type="secondary" style={{ fontSize: 12 }}>{r.email}</Text>,
         },
     ];
 
-    const totalHours   = (report?.totalHours   || 0) + (report?.managedHours || 0);
-    const doneCount    = report?.managedTasks?.length || 0;
+    const todayDateStr = dayjs().format('DD.MM.YYYY');
 
     return (
         <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                <Title level={2}>Центр отчетов</Title>
-                <Button
-                    type="primary"
-                    icon={<FileExcelOutlined />}
-                    onClick={exportExcel}
-                    size="large"
-                    style={{ backgroundColor: '#217346' }}
-                    disabled={!combinedRows.length}
-                >
-                    Экспорт в Excel
-                </Button>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
+                <Title level={2} style={{ margin: 0 }}>Центр отчётов</Title>
+                <Space>
+                    <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => {
+                            createForm.resetFields();
+                            createForm.setFieldsValue({
+                                date:   dayjs(),
+                                hours:  1,
+                                status: 'completed',
+                                kind:   'work',
+                                paymentStatus: 'unpaid',
+                            });
+                            setCreateOpen(true);
+                        }}
+                    >
+                        Новая задача
+                    </Button>
+                    <Button
+                        icon={<FileExcelOutlined />}
+                        onClick={exportExcel}
+                        style={{ backgroundColor: '#217346', color: '#fff' }}
+                        disabled={!flatTasks.length}
+                    >
+                        Экспорт в Excel
+                    </Button>
+                </Space>
             </div>
 
-            <Card bordered={false} style={{ marginBottom: 24, boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                <Form
-                    layout="inline"
-                    onFinish={onFilterSubmit}
-                    initialValues={{
-                        dateRange:    [dayjs(filters.startDate), dayjs(filters.endDate)],
-                        userId:       filters.userId,
-                        projectNames: filters.projectNames,
-                        kind:         filters.kind,
-                    }}
-                >
-                    <Form.Item name="dateRange" label="Период">
-                        <RangePicker />
-                    </Form.Item>
-                    {isAdmin && (
-                        <Form.Item name="userId" label="Сотрудник" style={{ minWidth: 200 }}>
-                            <Select placeholder="Все" allowClear loading={usersLoading}>
-                                {users?.map((u) => (
-                                    <Select.Option key={u._id} value={u._id}>{u.name}</Select.Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                    )}
-                    <Form.Item name="kind" label="Тип" style={{ minWidth: 180 }}>
-                        <Select
-                            options={[
-                                { value: 'all',      label: 'Все' },
-                                { value: 'work',     label: '💼 Рабочие' },
-                                { value: 'external', label: '🌍 Внешние' },
-                            ]}
-                        />
-                    </Form.Item>
-                    <Form.Item name="projectNames" label="Проекты" style={{ minWidth: 260 }}>
-                        <Select
-                            mode="multiple"
-                            placeholder="Все проекты"
-                            allowClear
-                            showSearch
-                            maxTagCount="responsive"
-                            options={(report?.availableProjects || []).map((p) => ({ value: p, label: p }))}
-                            notFoundContent={reportLoading ? 'Загрузка…' : 'Нет проектов в периоде'}
-                        />
-                    </Form.Item>
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
-                            Фильтровать
-                        </Button>
-                    </Form.Item>
-                </Form>
+            {/* Friendly today summary */}
+            <Card
+                bordered={false}
+                style={{
+                    marginBottom: 16,
+                    background: 'linear-gradient(135deg, #f0f9ff 0%, #ecfdf5 100%)',
+                    border: '1px solid #d1fae5',
+                }}
+            >
+                <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                    <Text type="secondary" style={{ fontSize: 12 }}>Сегодня · {todayDateStr}</Text>
+                    <Space size="large" wrap>
+                        <Space size={6}>
+                            <CheckCircleOutlined style={{ color: '#22C55E', fontSize: 18 }} />
+                            <Text strong style={{ fontSize: 16 }}>
+                                Выполнено: {summary.todayDoneCount} {summary.todayDoneCount === 1 ? 'задача' : summary.todayDoneCount < 5 ? 'задачи' : 'задач'}
+                            </Text>
+                            {summary.todayDoneHours > 0 && (
+                                <Text type="secondary" style={{ fontSize: 14 }}>· {summary.todayDoneHours}ч</Text>
+                            )}
+                        </Space>
+                        {summary.todayPlannedCount > 0 && (
+                            <Space size={6}>
+                                <HourglassOutlined style={{ color: '#f59e0b', fontSize: 18 }} />
+                                <Text strong style={{ fontSize: 16 }}>
+                                    Запланировано: {summary.todayPlannedCount}
+                                </Text>
+                            </Space>
+                        )}
+                        {summary.todayDoneCount === 0 && summary.todayPlannedCount === 0 && (
+                            <Text type="secondary">Сегодня записей пока нет 🌤</Text>
+                        )}
+                    </Space>
+                </Space>
             </Card>
 
-            {/* Статистика */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
-                <Card size="small" style={{ textAlign: 'center' }}>
-                    <Text type="secondary">Всего часов</Text>
-                    <Title level={3} style={{ marginTop: 8 }}>{totalHours}</Title>
-                </Card>
-                <Card size="small" style={{ textAlign: 'center' }}>
-                    <Text type="secondary">Дней зафиксировано</Text>
-                    <Title level={3} style={{ marginTop: 8 }}>{report?.daysWorked || 0}</Title>
-                </Card>
-                <Card size="small" style={{ textAlign: 'center' }}>
-                    <Text type="secondary">Выполнено задач</Text>
-                    <Title level={3} style={{ marginTop: 8, color: '#22C55E' }}>{doneCount}</Title>
-                </Card>
-                <Card size="small" style={{ textAlign: 'center' }}>
-                    <Text type="secondary">Часов по задачам</Text>
-                    <Title level={3} style={{ marginTop: 8, color: '#1677ff' }}>{report?.managedHours || 0}</Title>
-                </Card>
-            </div>
+            {/* Quick presets + range picker */}
+            <Card
+                bordered={false}
+                style={{ marginBottom: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+                styles={{ body: { padding: 16 } }}
+            >
+                {/* Верхняя строка: пресеты + range + кнопка фильтров */}
+                <div style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 12,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+                        <Text type="secondary" style={{ fontWeight: 500 }}>Период:</Text>
+                        <Segmented
+                            value={activePreset || undefined}
+                            options={PRESETS.map((p) => ({ label: p.label, value: p.key }))}
+                            onChange={applyPreset}
+                        />
+                        <RangePicker
+                            value={[dayjs(filters.startDate), dayjs(filters.endDate)]}
+                            onChange={(vals) => {
+                                if (!vals) return;
+                                setFilters((f) => ({
+                                    ...f,
+                                    startDate: vals[0].format('YYYY-MM-DD'),
+                                    endDate:   vals[1].format('YYYY-MM-DD'),
+                                }));
+                            }}
+                            format="DD.MM.YYYY"
+                            allowClear={false}
+                        />
+                    </div>
+                    <Button
+                        icon={<SettingOutlined />}
+                        onClick={() => setShowAdvanced((s) => !s)}
+                        type={showAdvanced ? 'primary' : 'default'}
+                        ghost={showAdvanced}
+                    >
+                        {showAdvanced ? 'Скрыть фильтры' : 'Больше фильтров'}
+                        {showAdvanced ? <UpOutlined style={{ fontSize: 10, marginLeft: 4 }} /> : <DownOutlined style={{ fontSize: 10, marginLeft: 4 }} />}
+                    </Button>
+                </div>
 
-            {/* Единая таблица: логи + задачи */}
-            <Table
-                columns={columns}
-                dataSource={combinedRows}
-                rowKey="_id"
-                loading={reportLoading}
-                pagination={{ pageSize: 20 }}
-                bordered
-                rowClassName={(r) => r.kind === 'task' ? 'task-row-done' : ''}
-                onRow={(r) => ({
-                    onClick: () => setDrawerRow(r),
-                    style:   { cursor: 'pointer' },
-                })}
-            />
+                {/* Расширенные фильтры — сетка */}
+                {showAdvanced && (
+                    <>
+                        <div style={{
+                            height: 1,
+                            background: '#f0f0f0',
+                            margin: '16px 0',
+                        }} />
+                        <Form
+                            form={advForm}
+                            layout="vertical"
+                            onFinish={onFilterSubmit}
+                            initialValues={{
+                                dateRange:    [dayjs(filters.startDate), dayjs(filters.endDate)],
+                                userId:       filters.userId,
+                                projectNames: filters.projectNames,
+                                kind:         filters.kind,
+                                status:       filters.status,
+                                payment:      filters.payment,
+                            }}
+                        >
+                            <Row gutter={[16, 0]}>
+                                {isAdmin && (
+                                    <Col xs={24} sm={12} md={8} lg={6}>
+                                        <Form.Item name="userId" label="Сотрудник">
+                                            <Select placeholder="Все" allowClear loading={usersLoading}>
+                                                {users?.map((u) => (
+                                                    <Select.Option key={u._id} value={u._id}>{u.name}</Select.Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                )}
+                                <Col xs={12} sm={12} md={8} lg={4}>
+                                    <Form.Item name="kind" label="Тип">
+                                        <Select
+                                            options={[
+                                                { value: 'all',      label: 'Все типы' },
+                                                { value: 'work',     label: '💼 Рабочие' },
+                                                { value: 'external', label: '🌍 Внешние' },
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={12} sm={12} md={8} lg={5}>
+                                    <Form.Item name="status" label="Статус">
+                                        <Select
+                                            options={[
+                                                { value: 'all',       label: 'Все статусы' },
+                                                { value: 'completed', label: '✅ Завершено' },
+                                                { value: 'pending',   label: '⏳ Запланировано' },
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={12} sm={12} md={8} lg={5}>
+                                    <Form.Item name="payment" label="Оплата">
+                                        <Select
+                                            options={[
+                                                { value: 'all',    label: 'Все' },
+                                                { value: 'paid',   label: '💰 Оплачено' },
+                                                { value: 'unpaid', label: '⌛ Не оплачено' },
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={12} lg={isAdmin ? 24 : 10}>
+                                    <Form.Item name="projectNames" label="Проекты">
+                                        <Select
+                                            mode="multiple"
+                                            placeholder="Все проекты"
+                                            allowClear
+                                            showSearch
+                                            maxTagCount="responsive"
+                                            options={(report?.availableProjects || []).map((p) => ({ value: p, label: p }))}
+                                            notFoundContent={reportLoading ? 'Загрузка…' : 'Нет проектов в периоде'}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={12} md={12} lg={10}>
+                                    <Form.Item name="dateRange" label="Свой период">
+                                        <RangePicker format="DD.MM.YYYY" style={{ width: '100%' }} />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                                <Button
+                                    onClick={() => {
+                                        advForm.resetFields();
+                                        setFilters((f) => ({
+                                            ...f,
+                                            userId: null, projectNames: [], kind: 'all', status: 'all', payment: 'all',
+                                        }));
+                                    }}
+                                >
+                                    Сбросить
+                                </Button>
+                                <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
+                                    Применить
+                                </Button>
+                            </div>
+                        </Form>
+                    </>
+                )}
+            </Card>
+
+            {/* Stat cards — clickable as status filters */}
+            <Row gutter={[16, 16]} style={{ marginBottom: 16 }}>
+                <Col xs={12} sm={6}>
+                    <Card
+                        size="small"
+                        hoverable
+                        onClick={() => setFilters((f) => ({ ...f, status: 'all' }))}
+                        style={{
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            border: filters.status === 'all' ? '2px solid #1677ff' : undefined,
+                        }}
+                    >
+                        <Statistic
+                            title="Всего часов за период"
+                            value={summary.periodTotalHours}
+                            valueStyle={{ color: '#1677ff' }}
+                            suffix="ч"
+                        />
+                    </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                    <Card
+                        size="small"
+                        hoverable
+                        onClick={() => setFilters((f) => ({ ...f, status: 'completed' }))}
+                        style={{
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            border: filters.status === 'completed' ? '2px solid #22C55E' : undefined,
+                        }}
+                    >
+                        <Statistic
+                            title={<Space size={4}>Сделано задач <Text type="secondary" style={{ fontSize: 11 }}>(клик — фильтр)</Text></Space>}
+                            value={summary.periodDoneCount}
+                            valueStyle={{ color: '#22C55E' }}
+                            prefix={<CheckCircleOutlined />}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                    <Card
+                        size="small"
+                        hoverable
+                        onClick={() => setFilters((f) => ({ ...f, status: 'pending' }))}
+                        style={{
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            border: filters.status === 'pending' ? '2px solid #f59e0b' : undefined,
+                        }}
+                    >
+                        <Statistic
+                            title={<Space size={4}>Запланировано <Text type="secondary" style={{ fontSize: 11 }}>(клик — фильтр)</Text></Space>}
+                            value={summary.periodPlannedCount}
+                            valueStyle={{ color: '#f59e0b' }}
+                            prefix={<HourglassOutlined />}
+                        />
+                    </Card>
+                </Col>
+                <Col xs={12} sm={6}>
+                    <Card size="small" style={{ textAlign: 'center' }}>
+                        <Statistic
+                            title="Дней зафиксировано"
+                            value={report?.daysWorked || 0}
+                        />
+                    </Card>
+                </Col>
+            </Row>
+
+            {/* Active filter indicators */}
+            {(filters.status !== 'all' || filters.payment !== 'all') && (
+                <div style={{ marginBottom: 12 }}>
+                    <Space wrap>
+                        {filters.status !== 'all' && (
+                            <Tag
+                                color={filters.status === 'completed' ? 'green' : 'orange'}
+                                closable
+                                onClose={() => setFilters((f) => ({ ...f, status: 'all' }))}
+                                style={{ fontSize: 13, padding: '4px 10px' }}
+                            >
+                                Статус: {filters.status === 'completed' ? '✅ Завершённые' : '⏳ Запланированные (за все даты)'}
+                            </Tag>
+                        )}
+                        {filters.payment !== 'all' && (
+                            <Tag
+                                color={filters.payment === 'paid' ? 'green' : 'volcano'}
+                                closable
+                                onClose={() => setFilters((f) => ({ ...f, payment: 'all' }))}
+                                style={{ fontSize: 13, padding: '4px 10px' }}
+                            >
+                                Оплата: {filters.payment === 'paid' ? '💰 Оплачено' : '⌛ Не оплачено'} (только внешние)
+                            </Tag>
+                        )}
+                        <Text type="secondary" style={{ fontSize: 12 }}>
+                            · Excel при экспорте отразит эти же фильтры
+                        </Text>
+                    </Space>
+                </div>
+            )}
+
+            {/* Table */}
+            <Card bordered={false} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <Table
+                    columns={columns}
+                    dataSource={flatTasks}
+                    rowKey="_id"
+                    loading={reportLoading}
+                    pagination={{ pageSize: 25, showSizeChanger: true, showTotal: (n) => `Всего: ${n}` }}
+                    size="middle"
+                    locale={{ emptyText: <Empty description="За выбранный период задач нет" image={Empty.PRESENTED_IMAGE_SIMPLE} /> }}
+                    onRow={(r) => ({
+                        onClick: () => setDrawerRow(r),
+                        style:   { cursor: 'pointer' },
+                    })}
+                />
+            </Card>
 
             <Drawer
                 open={!!drawerRow}
-                onClose={() => setDrawerRow(null)}
+                onClose={closeDrawer}
                 placement="right"
-                width="70%"
+                width="50%"
                 title={
                     drawerRow ? (
                         <Space>
                             <CalendarOutlined />
                             {dayjs(drawerRow.date).format('DD.MM.YYYY')}
-                            <Text type="secondary" style={{ fontSize: 13 }}>· {drawerRow.userName}</Text>
+                            <Text type="secondary" style={{ fontSize: 13 }}>· {drawerRow.title || '—'}</Text>
                         </Space>
                     ) : null
                 }
+                extra={drawerRow && drawerRow.source !== 'managed' && (
+                    editMode ? (
+                        <Space>
+                            <Button onClick={() => setEditMode(false)} icon={<CloseOutlined />}>Отмена</Button>
+                            <Button type="primary" onClick={onEditSave} loading={updateMutation.isPending} icon={<SaveOutlined />}>
+                                Сохранить
+                            </Button>
+                        </Space>
+                    ) : (
+                        <Space>
+                            <Button onClick={() => setEditMode(true)} icon={<EditOutlined />}>Редактировать</Button>
+                            <Popconfirm
+                                title="Удалить задачу?"
+                                description="Это действие нельзя отменить."
+                                okText="Удалить"
+                                okType="danger"
+                                cancelText="Отмена"
+                                onConfirm={() => deleteMutation.mutate(drawerRow._id)}
+                            >
+                                <Button danger icon={<DeleteOutlined />} loading={deleteMutation.isPending} />
+                            </Popconfirm>
+                        </Space>
+                    )
+                )}
                 destroyOnHidden
             >
-                {drawerRow && (drawerRow.kind === 'log' ? (
-                    <>
-                        <Descriptions
-                            size="small"
-                            column={2}
-                            bordered
-                            style={{ marginBottom: 16 }}
-                            items={[
-                                { key: 'user',  label: 'Сотрудник', children: drawerRow.userName },
-                                { key: 'mail',  label: 'Email',     children: drawerRow.email },
-                                { key: 'hours', label: 'Часов',     children: <Tag color="blue"><ClockCircleOutlined /> {drawerRow.hours}ч</Tag> },
-                                { key: 'cnt',   label: 'Записей',   children: drawerRow.innerTasks?.length || 0 },
-                            ]}
-                        />
-                        <Title level={5}>Задачи дня</Title>
-                        {drawerRow.innerTasks?.length ? (
-                            <Table
-                                size="small"
-                                dataSource={drawerRow.innerTasks}
-                                columns={innerColumns}
-                                rowKey="_id"
-                                pagination={false}
-                            />
-                        ) : (
-                            <Empty description="Нет задач" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                        )}
-                    </>
-                ) : (
-                    <Descriptions
-                        size="small"
-                        column={1}
-                        bordered
-                        items={[
-                            { key: 'title', label: 'Задача',     children: drawerRow.title || '—' },
-                            { key: 'user',  label: 'Исполнитель', children: drawerRow.userName },
-                            { key: 'cust',  label: 'Заказчик',   children: drawerRow.client || '—' },
-                            { key: 'kind',  label: 'Источник',   children: <Tag color={drawerRow.isSelf ? 'green' : 'purple'}>{drawerRow.isSelf ? 'Личная' : 'От менеджера'}</Tag> },
-                            { key: 'hours', label: 'Часов',      children: <Tag color="green"><ClockCircleOutlined /> {drawerRow.hours}ч</Tag> },
-                            { key: 'date',  label: 'Дата',       children: dayjs(drawerRow.date).format('DD.MM.YYYY') },
-                        ]}
-                    />
-                ))}
+                {drawerRow && !editMode && (() => {
+                    const s = STATUS_LABEL[drawerRow.status] || { text: '—', color: 'default' };
+                    const isExternal = drawerRow.kind === 'external';
+                    const isPaid = drawerRow.payment?.status === 'paid';
+                    const items = [
+                        { key: 'title',   label: 'Задача',      children: drawerRow.title || '—' },
+                        { key: 'desc',    label: 'Описание',    children: drawerRow.description || '—' },
+                        { key: 'project', label: 'Проект',      children: drawerRow.projectName || '—' },
+                        { key: 'cust',    label: 'Заказчик',    children: drawerRow.customer?.name || '—' },
+                        { key: 'exec',    label: 'Исполнитель', children: drawerRow.executor || drawerRow.userName },
+                        { key: 'hours',   label: 'Часы',        children: <Tag color="blue"><ClockCircleOutlined /> {drawerRow.hours || 0}ч</Tag> },
+                        { key: 'status',  label: 'Статус',      children: <Tag color={s.color} icon={s.icon}>{s.text}</Tag> },
+                        { key: 'kind',    label: 'Тип',         children: KIND_LABEL[drawerRow.kind] || KIND_LABEL.work },
+                    ];
+                    if (isExternal) {
+                        items.push({
+                            key: 'pay',
+                            label: 'Оплата',
+                            children: (
+                                <Space>
+                                    <Tag color={isPaid ? 'green' : 'orange'}>
+                                        {isPaid ? '💰 Оплачено' : '⌛ Не оплачено'}
+                                    </Tag>
+                                    {drawerRow.shortCode && (
+                                        <Tag>код #{drawerRow.shortCode}</Tag>
+                                    )}
+                                    {isPaid && drawerRow.payment?.paidAt && (
+                                        <Text type="secondary" style={{ fontSize: 12 }}>
+                                            · {dayjs(drawerRow.payment.paidAt).format('DD.MM.YYYY')}
+                                        </Text>
+                                    )}
+                                </Space>
+                            ),
+                        });
+                    }
+                    items.push(
+                        { key: 'date', label: 'Дата',     children: dayjs(drawerRow.date).format('DD.MM.YYYY') },
+                        { key: 'src',  label: 'Источник', children: drawerRow.source === 'bot' ? <Tag icon={<RobotOutlined />}>из бота</Tag> : drawerRow.source === 'managed' ? <Tag color="purple">от менеджера</Tag> : <Tag color="blue">дневной лог</Tag> },
+                    );
+                    return <Descriptions size="small" column={1} bordered items={items} />;
+                })()}
+
+                {drawerRow && editMode && (
+                    <Form form={editForm} layout="vertical">
+                        <Form.Item name="title" label="Задача" rules={[{ required: true, message: 'Укажи название' }]}>
+                            <Input />
+                        </Form.Item>
+                        <Form.Item name="description" label="Описание">
+                            <Input.TextArea rows={3} />
+                        </Form.Item>
+                        <Row gutter={12}>
+                            <Col span={12}>
+                                <Form.Item name="hours" label="Часы" rules={[{ required: true }]}>
+                                    <InputNumber min={0} max={24} step={0.5} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="customer" label="Заказчик">
+                                    <Input placeholder="Имя/название" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={12}>
+                            <Col span={12}>
+                                <Form.Item name="status" label="Статус">
+                                    <Select
+                                        options={[
+                                            { value: 'completed', label: '✅ Завершено' },
+                                            { value: 'pending',   label: '⏳ Запланировано' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="kind" label="Тип">
+                                    <Select
+                                        options={[
+                                            { value: 'work',     label: '💼 Рабочая' },
+                                            { value: 'external', label: '🌍 Внешняя' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item
+                            shouldUpdate={(prev, cur) => prev.kind !== cur.kind}
+                            noStyle
+                        >
+                            {({ getFieldValue }) => getFieldValue('kind') === 'external' && (
+                                <Form.Item name="paymentStatus" label="Оплата">
+                                    <Select
+                                        options={[
+                                            { value: 'unpaid', label: '⌛ Не оплачено' },
+                                            { value: 'paid',   label: '💰 Оплачено' },
+                                        ]}
+                                    />
+                                </Form.Item>
+                            )}
+                        </Form.Item>
+                    </Form>
+                )}
+
+                {drawerRow?.source === 'managed' && (
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        Это задача из системы менеджера (ManagedTask). Редактируется в «Мои задачи».
+                    </Text>
+                )}
             </Drawer>
+
+            <Modal
+                open={createOpen}
+                onCancel={() => setCreateOpen(false)}
+                title="Новая задача"
+                okText="Создать"
+                cancelText="Отмена"
+                confirmLoading={createMutation.isPending}
+                onOk={onCreateSubmit}
+                width={560}
+                destroyOnHidden
+            >
+                <Form form={createForm} layout="vertical" style={{ marginTop: 12 }}>
+                    <Form.Item name="title" label="Что за задача?" rules={[{ required: true, message: 'Опиши задачу' }]}>
+                        <Input placeholder="Например: Верстка главной Dashboard" autoFocus />
+                    </Form.Item>
+                    <Form.Item name="description" label="Подробнее (опционально)">
+                        <Input.TextArea rows={2} placeholder="Что именно сделал / нужно сделать" />
+                    </Form.Item>
+                    <Row gutter={12}>
+                        <Col span={8}>
+                            <Form.Item name="hours" label="Часы" rules={[{ required: true }]}>
+                                <InputNumber min={0} max={24} step={0.5} style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                        <Col span={16}>
+                            <Form.Item name="date" label="Дата" rules={[{ required: true }]}>
+                                <DatePicker format="DD.MM.YYYY" style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={12}>
+                        <Col span={12}>
+                            <Form.Item name="project" label="Проект">
+                                <AutoComplete
+                                    placeholder="Выбери или введи новый"
+                                    options={(report?.availableProjects || []).map((p) => ({ value: p }))}
+                                    filterOption={(input, opt) => String(opt?.value || '').toLowerCase().includes(input.toLowerCase())}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="customer" label="Заказчик">
+                                <Input placeholder="Имя/название" />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Row gutter={12}>
+                        <Col span={12}>
+                            <Form.Item name="status" label="Статус">
+                                <Select
+                                    options={[
+                                        { value: 'completed', label: '✅ Завершено' },
+                                        { value: 'pending',   label: '⏳ Запланировано' },
+                                    ]}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="kind" label="Тип">
+                                <Select
+                                    options={[
+                                        { value: 'work',     label: '💼 Рабочая' },
+                                        { value: 'external', label: '🌍 Внешняя (с кодом)' },
+                                    ]}
+                                />
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Form.Item
+                        shouldUpdate={(prev, cur) => prev.kind !== cur.kind}
+                        noStyle
+                    >
+                        {({ getFieldValue }) => getFieldValue('kind') === 'external' && (
+                            <Form.Item name="paymentStatus" label="Оплата">
+                                <Select
+                                    options={[
+                                        { value: 'unpaid', label: '⌛ Не оплачено' },
+                                        { value: 'paid',   label: '💰 Оплачено' },
+                                    ]}
+                                />
+                            </Form.Item>
+                        )}
+                    </Form.Item>
+                </Form>
+            </Modal>
         </div>
     );
 };

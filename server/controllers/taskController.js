@@ -29,6 +29,113 @@ exports.createTask = catchAsync(async (req, res, next) => {
     });
 });
 
+// Быстрое создание задачи: автоматически находит/создаёт DayLog за указанную дату,
+// опционально создаёт Project в этом дне по имени, генерит shortCode для внешних.
+exports.quickCreateTask = catchAsync(async (req, res, next) => {
+    const {
+        date,
+        title,
+        description,
+        hours,
+        status,
+        kind,
+        customer,
+        projectName,
+        payment,
+    } = req.body;
+
+    if (!title || !title.trim()) {
+        return next(new AppError('title обязателен', 400));
+    }
+    const dateIso = (date || new Date().toISOString().slice(0, 10)).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateIso)) {
+        return next(new AppError('Некорректная дата', 400));
+    }
+
+    const Project = require('../models/Project');
+    const UserProject = require('../models/UserProject');
+
+    const dateStart = new Date(`${dateIso}T00:00:00.000Z`);
+    const dateEnd   = new Date(`${dateIso}T23:59:59.999Z`);
+
+    // 1. DayLog (find or create)
+    let dayLog = await DayLog.findOne({
+        userId: req.user._id,
+        date: { $gte: dateStart, $lte: dateEnd },
+    });
+    if (!dayLog) {
+        dayLog = await DayLog.create({ userId: req.user._id, date: dateStart });
+    }
+
+    // 2. Project в этом дне (если указано имя)
+    let projectId = null;
+    if (projectName && projectName.trim()) {
+        const name = projectName.trim();
+        const safe = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        let proj = await Project.findOne({
+            dayLogId: dayLog._id,
+            name: new RegExp(`^${safe}$`, 'i'),
+        });
+        if (!proj) {
+            proj = await Project.create({ dayLogId: dayLog._id, name });
+        }
+        projectId = proj._id;
+
+        // 3. UserProject (реестр проектов юзера)
+        const existingUp = await UserProject.findOne({
+            userId: req.user._id,
+            name: new RegExp(`^${safe}$`, 'i'),
+        });
+        if (!existingUp) {
+            await UserProject.create({
+                userId: req.user._id,
+                name,
+                customer: customer || '',
+            });
+        }
+    }
+
+    // 4. shortCode для внешних
+    const taskKind = kind === 'external' ? 'external' : 'work';
+    let shortCode = null;
+    if (taskKind === 'external') {
+        const userDayLogs = await DayLog.find({ userId: req.user._id }).select('_id').lean();
+        const ids = userDayLogs.map((d) => d._id);
+        const tasksWithCodes = await Task.find({
+            dayLogId: { $in: ids },
+            shortCode: { $exists: true, $ne: null },
+        }).select('shortCode').lean();
+        const nums = tasksWithCodes.map((t) => parseInt(t.shortCode, 10)).filter((n) => Number.isFinite(n));
+        const next = nums.length ? Math.max(...nums) + 1 : 1;
+        shortCode = String(next).padStart(4, '0');
+    }
+
+    const paymentStatus = payment === 'paid' ? 'paid' : 'unpaid';
+
+    const task = await Task.create({
+        dayLogId: dayLog._id,
+        projectId,
+        title: title.trim(),
+        description: description || undefined,
+        hours: Number(hours) || 0,
+        status: status === 'pending' ? 'pending' : 'completed',
+        kind: taskKind,
+        customer: customer ? { name: customer.trim() } : undefined,
+        shortCode,
+        payment: {
+            status:   paymentStatus,
+            amount:   0,
+            currency: 'UZS',
+            paidAt:   paymentStatus === 'paid' ? new Date() : null,
+        },
+    });
+
+    res.status(201).json({
+        status: 'success',
+        data: { task, dayLogId: dayLog._id },
+    });
+});
+
 exports.getTasksByDay = catchAsync(async (req, res, next) => {
     await assertDayLogOwnership(req.params.dayLogId, req.user);
 

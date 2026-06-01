@@ -50,6 +50,12 @@ const taskSchema = new mongoose.Schema({
         currency: { type: String, default: 'UZS', trim: true },
         paidAt:   { type: Date,   default: null },
     },
+    shortCode: {
+        type: String,
+        default: null,
+        index: true,
+        sparse: true,
+    },
     customer: {
         name: {
             type: String,

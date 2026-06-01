@@ -2,26 +2,28 @@ const OLLAMA_URL = (process.env.OLLAMA_URL || 'http://localhost:11434').replace(
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'qwen2.5:7b';
 
 const SYSTEM_PROMPT = `Ты — извлекатель данных из коротких рабочих сообщений на русском/узбекском/английском.
-Получив свободный текст о выполненной задаче, верни СТРОГО валидный JSON со следующими полями:
+Получив свободный текст о задаче (выполненной ИЛИ запланированной), верни СТРОГО валидный JSON:
 {
   "title": string,                  // краткое название задачи (до 80 символов)
   "description": string|null,       // подробности, если есть; иначе null
-  "hours": number,                  // потраченное время в часах (десятичное, напр. 1.5)
-  "customer": string|null,          // имя/название заказчика, если упомянут; иначе null
-  "executor": string|null,          // имя исполнителя, если упомянут (если "я"/"сам" — оставь null)
-  "project": string|null,           // название проекта/системы/продукта (SmartSpace, SAP, лендинг X); иначе null
-  "kind": "work" | "external",      // "халтура", "со стороны", "левый", "для друга", "калым", "на стороне", "side-проект" => "external"; обычная рабочая задача => "work"
-  "payment": "paid" | "unpaid" | null, // "оплатили","заплатили","оплачено","paid" => "paid"; "не оплачено","ждёт оплаты","в долг","unpaid" => "unpaid"; если не упомянуто и kind=work — null; если kind=external и не упомянуто — "unpaid"
-  "amount": number | null,          // сумма если упомянута: "500к" => 500000, "200 000 сум" => 200000, "50$" => 50; иначе null
-  "currency": "UZS" | "USD" | "RUB" | null, // валюта если упомянута ("сум","$","руб"); иначе null
-  "date": string|null               // дата в формате YYYY-MM-DD, если указана (вчера/сегодня — вычисли); иначе null
+  "hours": number,                  // время в часах (десятичное); 0 если не указано
+  "customer": string|null,          // имя/название заказчика; иначе null
+  "executor": string|null,          // имя исполнителя (если "я"/"сам" — null)
+  "project": string|null,           // название проекта/системы/продукта
+  "kind": "work" | "external",      // "халтура","левый","со стороны","для друга","калым","side-проект" => "external"; обычная => "work"
+  "payment": "paid" | "unpaid" | null,
+  "amount": number | null,          // "500к"=>500000, "200 000 сум"=>200000, "50$"=>50
+  "currency": "UZS" | "USD" | "RUB" | null,
+  "date": string|null,              // дата YYYY-MM-DD (вчера/сегодня/завтра/послезавтра — вычисли от "сегодня"); иначе null
+  "status": "completed" | "pending" // "completed" если задача УЖЕ сделана (прошедшее время: сделал/починил/написал/выполнил). "pending" если ЗАПЛАНИРОВАНА на будущее (будущее время или дата позже сегодня: "завтра сделаю","на послезавтра задача","нужно починить","надо сделать","предстоит")
 }
 Правила:
-- Время: "30 минут" => 0.5, "час" => 1, "2 ч 30 мин" => 2.5, "полчаса" => 0.5.
-- Не путай проект и заказчика: проект — это конкретный продукт/система, заказчик — компания или человек, для которого это делается.
-- "к" в конце числа = тысячи (500к => 500000).
-- Не придумывай данных, которых нет в тексте — ставь null. По умолчанию kind = "work".
-- Никаких пояснений, никаких markdown, ТОЛЬКО JSON-объект.`;
+- Время: "30 минут"=>0.5, "час"=>1, "2 ч 30 мин"=>2.5, "полчаса"=>0.5, "полдня"=>4.
+- "к" в конце числа = тысячи.
+- Дата: "сегодня"=сегодняшняя, "вчера"=минус 1 день, "завтра"=плюс 1, "послезавтра"=плюс 2.
+- Не путай проект (продукт/система) и заказчика (компания/человек).
+- Не придумывай данных — ставь null. По умолчанию kind="work", status="completed".
+- ТОЛЬКО JSON, никаких пояснений и markdown.`;
 
 async function callOllama({ system, user, format, temperature = 0.1 }) {
     const body = {
@@ -78,6 +80,8 @@ async function parseTaskMessage(text, { now = new Date() } = {}) {
     // По умолчанию для внешних задач, если оплата не упомянута — считаем "unpaid"
     if (kind === 'external' && payment === null) payment = 'unpaid';
 
+    const status = parsed.status === 'pending' ? 'pending' : 'completed';
+
     return {
         title: typeof parsed.title === 'string' ? parsed.title.trim() : '',
         description: parsed.description ? String(parsed.description).trim() : null,
@@ -90,6 +94,7 @@ async function parseTaskMessage(text, { now = new Date() } = {}) {
         amount: Number.isFinite(Number(parsed.amount)) ? Number(parsed.amount) : 0,
         currency: ['UZS', 'USD', 'RUB'].includes(parsed.currency) ? parsed.currency : 'UZS',
         date: parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : null,
+        status,
     };
 }
 

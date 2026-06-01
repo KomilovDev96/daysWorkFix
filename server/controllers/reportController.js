@@ -771,9 +771,9 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
             populate: { path: 'tasks' },
         });
 
-    // Также подтягиваем выполненные ManagedTask за период (личные + назначенные)
+    // Подтягиваем ManagedTask за период (личные + назначенные) во ВСЕХ статусах,
+    // чтобы запланированные/в работе тоже попадали в общий отчёт.
     const managedFilter = {
-        status: 'completed',
         dueDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
     };
     if (effectiveUserId) {
@@ -1089,8 +1089,16 @@ exports.exportAnalyticsExcel = catchAsync(async (req, res, next) => {
 });
 
 exports.exportExcel = catchAsync(async (req, res, next) => {
-    const { startDate, endDate, userId, projectName, kind } = req.query;
-    const kindFilter = kind === 'work' || kind === 'external' ? kind : null;
+    const { startDate, endDate, userId, projectName, kind, status, payment } = req.query;
+    const kindFilter    = kind === 'work' || kind === 'external' ? kind : null;
+    const statusFilter  = ['pending', 'completed', 'failed', 'in_progress', 'testing', 'cancelled'].includes(status) ? status : null;
+    const paymentFilter = payment === 'paid' || payment === 'unpaid' ? payment : null;
+    const passesStatus  = (s) => !statusFilter  || s === statusFilter;
+    const passesPayment = (taskKind, payStatus) => {
+        if (!paymentFilter) return true;
+        if (taskKind !== 'external') return false; // оплата применима только к внешним
+        return (payStatus || 'unpaid') === paymentFilter;
+    };
 
     if ((startDate && !endDate) || (!startDate && endDate)) {
         return next(new AppError('Please provide both startDate and endDate for date filtering', 400));
@@ -1135,7 +1143,10 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         (log.projects || []).forEach((project) => {
             if (hasProjectFilter && !projectMatches(project.name)) return;
             (project.tasks || []).forEach((task) => {
-                if (kindFilter && (task.kind || 'work') !== kindFilter) return;
+                const taskKind = task.kind || 'work';
+                if (kindFilter && taskKind !== kindFilter) return;
+                if (!passesStatus(task.status || 'pending')) return;
+                if (!passesPayment(taskKind, task.payment?.status)) return;
                 collectedTaskIds.add(String(task._id));
                 reportData.push({
                     date,
@@ -1146,7 +1157,7 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
                     executor:      task.executor             || defaultExecutor,
                     hours:         Number(task.hours)        || 0,
                     status:        task.status               || 'pending',
-                    kind:          task.kind                 || 'work',
+                    kind:          taskKind,
                     paymentStatus: task.payment?.status      || '',
                     amount:        task.payment?.amount      || 0,
                     currency:      task.payment?.currency    || '',
@@ -1167,7 +1178,10 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
             const logById = new Map(logs.map((l) => [String(l._id), l]));
             orphanTasks.forEach((task) => {
                 if (collectedTaskIds.has(String(task._id))) return;
-                if (kindFilter && (task.kind || 'work') !== kindFilter) return;
+                const taskKind = task.kind || 'work';
+                if (kindFilter && taskKind !== kindFilter) return;
+                if (!passesStatus(task.status || 'pending')) return;
+                if (!passesPayment(taskKind, task.payment?.status)) return;
                 const log = logById.get(String(task.dayLogId));
                 if (!log) return;
                 reportData.push({
@@ -1179,7 +1193,7 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
                     executor:      task.executor             || log.userId?.name || '—',
                     hours:         Number(task.hours)        || 0,
                     status:        task.status               || 'pending',
-                    kind:          task.kind                 || 'work',
+                    kind:          taskKind,
                     paymentStatus: task.payment?.status      || '',
                     amount:        task.payment?.amount      || 0,
                     currency:      task.payment?.currency    || '',
@@ -1188,9 +1202,8 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         }
     }
 
-    // Добавляем выполненные ManagedTask за тот же период
+    // Добавляем ManagedTask за период (все статусы — фильтруем ниже по запросу)
     const managedFilter = {
-        status: 'completed',
         dueDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
     };
     if (effectiveUserId) {
@@ -1209,9 +1222,10 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         managedTasks = managedTasks.filter((t) => projectMatches(t.project?.name));
     }
 
-    // ManagedTask считаем рабочими (kind=work); если фильтр = external — их пропускаем
-    if (kindFilter !== 'external') {
+    // ManagedTask считаем рабочими (kind=work). Фильтр external и payment-фильтр их прячут.
+    if (kindFilter !== 'external' && !paymentFilter) {
         managedTasks.forEach((task) => {
+            if (!passesStatus(task.status)) return;
             const hours = task.actualHours || task.estimatedHours || 0;
             const executor = task.assignedTo?.length
                 ? task.assignedTo.map((u) => u.name).join(', ')
