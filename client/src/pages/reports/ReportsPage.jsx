@@ -935,18 +935,23 @@ const exportExcel = async () => {
                 )}
             </Drawer>
 
-            <Modal
+            <Drawer
                 open={createOpen}
-                onCancel={() => setCreateOpen(false)}
+                onClose={() => setCreateOpen(false)}
                 title="Новая задача"
-                okText="Создать"
-                cancelText="Отмена"
-                confirmLoading={createMutation.isPending}
-                onOk={onCreateSubmit}
-                width={560}
+                placement="right"
+                width={480}
                 destroyOnHidden
+                footer={
+                    <Space style={{ justifyContent: 'flex-end', width: '100%' }}>
+                        <Button onClick={() => setCreateOpen(false)}>Отмена</Button>
+                        <Button type="primary" loading={createMutation.isPending} onClick={onCreateSubmit}>
+                            Создать
+                        </Button>
+                    </Space>
+                }
             >
-                <Form form={createForm} layout="vertical" style={{ marginTop: 12 }}>
+                <Form form={createForm} layout="vertical">
                     <Form.Item name="title" label="Что за задача?" rules={[{ required: true, message: 'Опиши задачу' }]}>
                         <Input placeholder="Например: Верстка главной Dashboard" autoFocus />
                     </Form.Item>
@@ -1019,7 +1024,7 @@ const exportExcel = async () => {
                         )}
                     </Form.Item>
                 </Form>
-            </Modal>
+            </Drawer>
         </div>
     );
 };
