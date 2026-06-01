@@ -140,23 +140,33 @@ const STATUS_LABEL_RU = {
 const KIND_LABEL_RU    = { work: 'Рабочая', external: 'Внешняя' };
 const PAYMENT_LABEL_RU = { paid: 'Оплачено', unpaid: 'Не оплачено' };
 
-exports.generateGeneralReport = async (rows) => {
+const ALL_GENERAL_COLUMNS = [
+    { header: 'Организация',       key: 'organization', width: 16 },
+    { header: 'Заказчик',          key: 'customer',     width: 28 },
+    { header: 'Проект',            key: 'project',      width: 28 },
+    { header: 'Описание задачи',   key: 'description',  width: 55 },
+    { header: 'Исполнитель',       key: 'executor',     width: 25 },
+    { header: 'Затраченное время', key: 'hours',        width: 18 },
+    { header: 'Статус',            key: 'status',       width: 22 },
+    { header: 'Дата',              key: 'date',         width: 14 },
+];
+
+exports.generateGeneralReport = async (rows, selectedCols) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Общий отчет');
 
+    const activeCols = selectedCols && selectedCols.length
+        ? ALL_GENERAL_COLUMNS.filter((c) => selectedCols.includes(c.key))
+        : ALL_GENERAL_COLUMNS;
+
     worksheet.columns = [
-        { header: '№',                  key: 'num',          width: 6  },
-        { header: 'Организация',        key: 'organization', width: 16 },
-        { header: 'Заказчик',           key: 'customer',     width: 28 },
-        { header: 'Проект',             key: 'project',      width: 28 },
-        { header: 'Описание задачи',    key: 'description',  width: 55 },
-        { header: 'Исполнитель',        key: 'executor',     width: 25 },
-        { header: 'Затраченное время',  key: 'hours',        width: 18 },
-        { header: 'Статус',             key: 'status',       width: 22 },
-        { header: 'Дата',               key: 'date',         width: 14 },
+        { header: '№', key: 'num', width: 6 },
+        ...activeCols,
     ];
 
-    setWrapForColumns(worksheet, ['description']);
+    if (activeCols.some((c) => c.key === 'description')) {
+        setWrapForColumns(worksheet, ['description']);
+    }
 
     rows.forEach((row, index) => {
         const isExternal = row.kind === 'external';

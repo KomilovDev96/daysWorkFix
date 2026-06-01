@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
     Typography, Card, Form, DatePicker, Select, Button,
     Table, Space, Tag, message, Drawer, Descriptions, Empty, Segmented, Row, Col, Statistic,
-    Input, InputNumber, Popconfirm, Modal, AutoComplete,
+    Input, InputNumber, Popconfirm, Modal, AutoComplete, Popover, Checkbox,
 } from 'antd';
 import {
     FilterOutlined, FileExcelOutlined,
@@ -37,9 +37,26 @@ const STATUS_LABEL = {
 
 const KIND_LABEL = { work: '💼 Рабочая', external: '🌍 Внешняя' };
 
+const EXCEL_COLUMNS = [
+    { key: 'organization', label: 'Организация' },
+    { key: 'customer',     label: 'Заказчик' },
+    { key: 'project',      label: 'Проект' },
+    { key: 'description',  label: 'Описание задачи' },
+    { key: 'executor',     label: 'Исполнитель' },
+    { key: 'hours',        label: 'Затраченное время' },
+    { key: 'status',       label: 'Статус' },
+    { key: 'date',         label: 'Дата' },
+];
+const DEFAULT_COLS = EXCEL_COLUMNS.map((c) => c.key);
+const STORAGE_KEY  = 'excelColsV1';
+
 const ReportsPage = () => {
     const [drawerRow, setDrawerRow] = useState(null);
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [selectedCols, setSelectedCols] = useState(() => {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_COLS; } catch { return DEFAULT_COLS; }
+    });
+    const [colsPopoverOpen, setColsPopoverOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
     const [editForm] = Form.useForm();
@@ -215,7 +232,9 @@ const exportExcel = async () => {
             const { startDate, endDate, projectNames } = filters;
             const apiEndDate = dayjs(endDate).add(1, 'day').format('YYYY-MM-DD');
             // includeFilters=true — Excel-экспорт уважает статус/оплату
-            const response = await apiClient.get(`/reports/export?${buildParams(apiEndDate, { includeFilters: true }).toString()}`, { responseType: 'blob' });
+            const params = buildParams(apiEndDate, { includeFilters: true });
+            if (selectedCols.length !== DEFAULT_COLS.length) params.set('cols', selectedCols.join(','));
+            const response = await apiClient.get(`/reports/export?${params.toString()}`, { responseType: 'blob' });
             const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
             const link = document.createElement('a');
             link.href  = window.URL.createObjectURL(blob);
@@ -470,14 +489,45 @@ const exportExcel = async () => {
                     >
                         Новая задача
                     </Button>
-                    <Button
-                        icon={<FileExcelOutlined />}
-                        onClick={exportExcel}
-                        style={{ backgroundColor: '#217346', color: '#fff' }}
-                        disabled={!flatTasks.length}
-                    >
-                        Экспорт в Excel
-                    </Button>
+                    <Space.Compact>
+                        <Button
+                            icon={<FileExcelOutlined />}
+                            onClick={exportExcel}
+                            style={{ backgroundColor: '#217346', color: '#fff' }}
+                            disabled={!flatTasks.length}
+                        >
+                            Экспорт в Excel
+                        </Button>
+                        <Popover
+                            open={colsPopoverOpen}
+                            onOpenChange={setColsPopoverOpen}
+                            trigger="click"
+                            placement="bottomRight"
+                            title="Колонки в Excel"
+                            content={
+                                <div style={{ minWidth: 200 }}>
+                                    <Checkbox.Group
+                                        value={selectedCols}
+                                        onChange={(vals) => {
+                                            setSelectedCols(vals);
+                                            localStorage.setItem(STORAGE_KEY, JSON.stringify(vals));
+                                        }}
+                                        style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+                                    >
+                                        {EXCEL_COLUMNS.map((col) => (
+                                            <Checkbox key={col.key} value={col.key}>{col.label}</Checkbox>
+                                        ))}
+                                    </Checkbox.Group>
+                                </div>
+                            }
+                        >
+                            <Button
+                                icon={<SettingOutlined />}
+                                style={{ backgroundColor: '#1a5c36', color: '#fff', borderLeft: '1px solid #155228' }}
+                                title="Настройка колонок"
+                            />
+                        </Popover>
+                    </Space.Compact>
                 </Space>
             </div>
 

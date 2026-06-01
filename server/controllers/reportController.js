@@ -1089,7 +1089,8 @@ exports.exportAnalyticsExcel = catchAsync(async (req, res, next) => {
 });
 
 exports.exportExcel = catchAsync(async (req, res, next) => {
-    const { startDate, endDate, userId, projectName, kind, status, payment } = req.query;
+    const { startDate, endDate, userId, projectName, kind, status, payment, cols } = req.query;
+    const selectedCols = cols ? cols.split(',').map((c) => c.trim()).filter(Boolean) : null;
     const kindFilter    = kind === 'work' || kind === 'external' ? kind : null;
     const statusFilter  = ['pending', 'completed', 'failed', 'in_progress', 'testing', 'cancelled'].includes(status) ? status : null;
     const paymentFilter = payment === 'paid' || payment === 'unpaid' ? payment : null;
@@ -1251,7 +1252,7 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
     // Сортируем по дате — свежие сверху
     reportData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    const workbook = await excelService.generateGeneralReport(reportData);
+    const workbook = await excelService.generateGeneralReport(reportData, selectedCols);
 
     res.setHeader(
         'Content-Type',
