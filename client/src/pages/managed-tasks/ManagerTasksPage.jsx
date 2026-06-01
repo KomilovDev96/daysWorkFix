@@ -280,7 +280,7 @@ const TaskModal = ({ open, onClose, onSave, initial, parentTask, workers, projec
                     <Input />
                 </Form.Item>
                 <Form.Item name="description" label="Описание">
-                    <TextArea rows={2} />
+                    <TextArea autoSize={{ minRows: 3 }} />
                 </Form.Item>
                 <Row gutter={12}>
                     <Col span={12}>
@@ -360,7 +360,7 @@ const CreateProjectModal = ({ open, onClose, onSave }) => {
                     <Input placeholder="Название проекта" />
                 </Form.Item>
                 <Form.Item name="description" label="Описание">
-                    <TextArea rows={2} />
+                    <TextArea autoSize={{ minRows: 3 }} />
                 </Form.Item>
             </Form>
         </Modal>
@@ -1255,7 +1255,7 @@ const ManagerSelfTaskDrawer = ({ open, onClose, onSave, initial, projects }) => 
                 )}
 
                 <Form.Item name="description" label="Детали задачи">
-                    <Input.TextArea rows={2} placeholder="Подробное описание..." />
+                    <Input.TextArea autoSize={{ minRows: 3 }} placeholder="Подробное описание..." />
                 </Form.Item>
             </Form>
 

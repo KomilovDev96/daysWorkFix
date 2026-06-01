@@ -710,7 +710,7 @@ const SelfTaskDrawer = ({ open, onClose, onSave, initial, projects, saving }) =>
                 )}
 
                 <Form.Item name="description" label="Детали задачи">
-                    <TextArea rows={2} placeholder="Подробное описание..." />
+                    <TextArea autoSize={{ minRows: 3 }} placeholder="Подробное описание..." />
                 </Form.Item>
 
                 {!initial && (

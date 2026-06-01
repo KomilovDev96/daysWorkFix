@@ -9,6 +9,7 @@ const Project = require('../models/Project');
 const UserProject = require('../models/UserProject');
 const TaskFile = require('../models/TaskFile');
 const AssistantKnowledge = require('../models/AssistantKnowledge');
+const TelegramDraft = require('../models/TelegramDraft');
 const ollamaService = require('./ollamaService');
 const { buildTeamContext } = require('./teamContextService');
 
@@ -56,8 +57,53 @@ const formatFeatures = (kb) => {
     return `🛠 *Что я умею:*\n\n${kb.features.map((f) => `• ${f}`).join('\n')}`;
 };
 
-const pendingDrafts   = new Map(); // draftId → draft
-const userActiveDraft = new Map(); // chatId → draftId
+class PendingDrafts {
+    constructor() { this._map = new Map(); }
+
+    get(draftId) { return this._map.get(draftId) || null; }
+
+    set(draftId, draft) {
+        this._map.set(draftId, draft);
+        TelegramDraft.findOneAndUpdate(
+            { draftId },
+            { draftId, chatId: draft.chatId, userId: draft.userId, parsed: draft.parsed || {}, photos: draft.photos || [], awaiting: draft.awaiting || null, photoStepDone: !!draft.photoStepDone, projectStepDone: !!draft.projectStepDone, dateStepDone: !!draft.dateStepDone, customerStepDone: !!draft.customerStepDone },
+            { upsert: true }
+        ).catch(() => {});
+    }
+
+    delete(draftId) {
+        const draft = this._map.get(draftId);
+        this._map.delete(draftId);
+        if (draft) userActiveDraft.delete(draft.chatId);
+        TelegramDraft.deleteOne({ draftId }).catch(() => {});
+    }
+
+    [Symbol.iterator]() { return this._map[Symbol.iterator](); }
+}
+
+class UserActiveDraft {
+    constructor() { this._map = new Map(); }
+    get(chatId) { return this._map.get(chatId); }
+    set(chatId, draftId) { this._map.set(chatId, draftId); }
+    delete(chatId) { this._map.delete(chatId); }
+}
+
+const pendingDrafts   = new PendingDrafts();
+const userActiveDraft = new UserActiveDraft();
+
+async function loadDraftsFromDB() {
+    try {
+        const docs = await TelegramDraft.find({});
+        docs.forEach((doc) => {
+            const d = doc.toObject();
+            pendingDrafts._map.set(d.draftId, d);
+            userActiveDraft._map.set(d.chatId, d.draftId);
+        });
+        if (docs.length) console.log(`[Bot] Restored ${docs.length} draft(s) from DB`);
+    } catch (e) {
+        console.error('[Bot] Failed to load drafts from DB:', e.message);
+    }
+}
 
 const findUserByTelegramId = (tgId) => User.findOne({ telegramId: String(tgId) });
 
@@ -1142,6 +1188,7 @@ function startTelegramBot() {
     }
     const bot = createBot(token);
     console.log('🤖 Telegram bot launching…');
+    loadDraftsFromDB().catch(() => {});
     bot.launch({ dropPendingUpdates: true })
         .catch((err) => console.error('Telegram bot launch failed:', err.message));
 

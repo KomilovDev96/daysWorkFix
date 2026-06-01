@@ -956,7 +956,7 @@ const exportExcel = async () => {
                         <Input placeholder="Например: Верстка главной Dashboard" autoFocus />
                     </Form.Item>
                     <Form.Item name="description" label="Подробнее (опционально)">
-                        <Input.TextArea rows={2} placeholder="Что именно сделал / нужно сделать" />
+                        <Input.TextArea autoSize={{ minRows: 3 }} placeholder="Что именно сделал / нужно сделать" />
                     </Form.Item>
                     <Row gutter={12}>
                         <Col span={8}>

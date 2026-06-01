@@ -585,7 +585,7 @@ const DayLogDetailsPage = () => {
                         <Input placeholder="напр. Реализация модуля авторизации" />
                     </Form.Item>
                     <Form.Item name="description" label="Описание задачи">
-                        <Input.TextArea rows={4} placeholder="Опишите, что вы сделали..." />
+                        <Input.TextArea autoSize={{ minRows: 3 }} placeholder="Опишите, что вы сделали..." />
                     </Form.Item>
                     <Form.Item
                         name="hours"
