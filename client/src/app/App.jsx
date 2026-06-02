@@ -31,6 +31,8 @@ import ManagerTasksPage         from '../pages/managed-tasks/ManagerTasksPage';
 import WorkerTasksPage          from '../pages/my-tasks/WorkerTasksPage';
 import ManagerWorkReportPage    from '../pages/manager-work-report/ManagerWorkReportPage';
 import TaskPanelPage            from '../pages/task-panel/TaskPanelPage';
+import RemindersPage            from '../pages/reminders/RemindersPage';
+import AIGuidePage              from '../pages/ai-guide/AIGuidePage';
 
 import './styles/index.css';
 import { useSelector } from 'react-redux';
@@ -94,6 +96,8 @@ const App = () => (
                                 <Route path="/customer-report" element={<CustomerReportPage />} />
                                 <Route path="/startup"         element={<StartupPage />} />
                                 <Route path="/templates"       element={<TemplatesPage />} />
+                                <Route path="/reminders"       element={<RemindersPage />} />
+                                <Route path="/ai-guide"        element={<AIGuidePage />} />
 
                                 {/* Менеджер — задачи + отчёт */}
                                 <Route element={<ProtectedRoute allowedRoles={['projectManager', 'admin']} />}>

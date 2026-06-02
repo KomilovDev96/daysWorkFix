@@ -10,6 +10,7 @@ const UserProject = require('../models/UserProject');
 const TaskFile = require('../models/TaskFile');
 const AssistantKnowledge = require('../models/AssistantKnowledge');
 const TelegramDraft = require('../models/TelegramDraft');
+const Reminder = require('../models/Reminder');
 const ollamaService = require('./ollamaService');
 const { buildTeamContext } = require('./teamContextService');
 
@@ -29,6 +30,10 @@ const MARK_PAID_RE   = /(опла|запла|упла|paid)/i;
 
 // «запланированные», «за планированые», «планы», «что запланировано», «предстоит», «todo», «planned»
 const LIST_PENDING_RE = /(заплан|за\s*план|планир|плани?руем|предсто|todo|planned|план[ыа])/i;
+
+// «напомни», «напомина», «эслат» (uz), «remind», «reminder», «remember»
+const REMINDER_RE      = /(напомн[ия]|напомина|reminder|remind|эслат|eslat)/i;
+const LIST_REMINDERS_RE = /(мо[ии]\s+напомин|какие.*напомин|спис(?:ок|ке)\s+напомин|покажи\s+напомин|все\s+напомин)/i;
 
 const GREETING_RE = /^(привет(ствую)?|здаров[ао]?|здравствуй(те)?|хай|hi|hello|hey|yo|салом|salom|ассал[оa]м[уo][\s,!.]*(алейкум)?|добр[оы][ейм]?\s+(утр[оа]|день|вечер)|доброе\s+утро|good\s*(morning|afternoon|evening|day))[!.,?\s)]*$/i;
 
@@ -550,6 +555,58 @@ async function listPendingTasks(ctx, user) {
     return ctx.reply(lines.join('\n'), { parse_mode: 'Markdown' });
 }
 
+function formatReminderTime(date) {
+    // DD.MM HH:mm в Asia/Tashkent (UTC+5)
+    const d = new Date(date.getTime() + 5 * 60 * 60 * 1000);
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const hh = String(d.getUTCHours()).padStart(2, '0');
+    const mi = String(d.getUTCMinutes()).padStart(2, '0');
+    return `${dd}.${mm} ${hh}:${mi}`;
+}
+
+function buildReminderConfirmKeyboard(draftId) {
+    return Markup.inlineKeyboard([
+        [Markup.button.callback('✅ Сохранить', `remsave:${draftId}`)],
+        [
+            Markup.button.callback('⏰ Изменить время', `remedit:${draftId}`),
+            Markup.button.callback('❌ Отмена',         `remcancel:${draftId}`),
+        ],
+    ]);
+}
+
+function buildReminderFireKeyboard(reminderId) {
+    return Markup.inlineKeyboard([
+        [Markup.button.callback('✅ Готово', `rdone:${reminderId}`)],
+        [
+            Markup.button.callback('⏰ +1ч',    `rsnooze:${reminderId}:1h`),
+            Markup.button.callback('⏰ +1д',    `rsnooze:${reminderId}:1d`),
+        ],
+    ]);
+}
+
+const pendingReminders = new Map(); // draftId → { chatId, userId, text, fireAt, sourceMessage, awaiting? }
+
+async function listUserReminders(ctx, user) {
+    const items = await Reminder.find({
+        userId: user._id,
+        status: { $in: ['pending', 'snoozed'] },
+    }).sort({ fireAt: 1 }).lean();
+
+    if (!items.length) {
+        return ctx.reply('🔔 Активных напоминаний нет.\n\nЧтобы добавить — скажи мне «напомни …». Например: «напомни завтра в 9 позвонить Амиру».');
+    }
+
+    const lines = [`🔔 *Твои напоминания (${items.length}):*`, ''];
+    items.forEach((r, i) => {
+        lines.push(`${i + 1}. ${r.text}`);
+        lines.push(`   📅 ${formatReminderTime(new Date(r.fireAt))}${r.status === 'snoozed' ? ' (отложено)' : ''}`);
+        lines.push('');
+    });
+    lines.push('_Чтобы убрать — открой страницу «Напоминания» в веб-приложении._');
+    return ctx.reply(lines.join('\n'), { parse_mode: 'Markdown' });
+}
+
 async function getTasksFor(userId, dateIso) {
     const dateStart = new Date(`${dateIso}T00:00:00.000Z`);
     const dateEnd = new Date(`${dateIso}T23:59:59.999Z`);
@@ -566,7 +623,8 @@ async function sendTodaySummary(telegram, chatId, user, opts = {}) {
     const tasks = await getTasksFor(user._id, dateIso);
 
     if (!tasks.length) {
-        if (opts.silentIfEmpty) return false;
+        // Не дёргать пользователя из крона — только при явном запросе (/today)
+        if (opts.silentIfEmpty || opts.onlyIfPending) return false;
         await telegram.sendMessage(chatId, `📭 На сегодня (${dateIso}) задач нет.`);
         return false;
     }
@@ -595,6 +653,37 @@ async function sendTodaySummary(telegram, chatId, user, opts = {}) {
 
 // Раз в день отправляем напоминание про запланированные задачи (между 9:00 и 11:00)
 const remindedToday = new Map(); // userId(string) → 'YYYY-MM-DD'
+
+async function fireDueReminders(telegram) {
+    const now = new Date();
+    const due = await Reminder.find({
+        status: { $in: ['pending', 'snoozed'] },
+        fireAt: { $lte: now },
+    }).populate('userId', 'telegramId name').limit(50);
+
+    for (const r of due) {
+        const tgId = r.userId?.telegramId;
+        if (!tgId) {
+            // Юзер отвязал аккаунт — отметим как sent, чтобы не сыпало
+            r.status = 'sent';
+            r.sentAt = new Date();
+            await r.save();
+            continue;
+        }
+        try {
+            await telegram.sendMessage(
+                tgId,
+                `🔔 *Напоминание!*\n\n${r.text}`,
+                { parse_mode: 'Markdown', ...buildReminderFireKeyboard(r._id) },
+            );
+            r.status = 'sent';
+            r.sentAt = new Date();
+            await r.save();
+        } catch (err) {
+            console.error(`fire reminder ${r._id} error:`, err.message);
+        }
+    }
+}
 
 async function runReminderTick(telegram) {
     const now = new Date();
@@ -719,7 +808,7 @@ function createBot(token) {
 
     bot.command('help', async (ctx) => {
         const kb = await AssistantKnowledge.getOrCreate();
-        const extra = '\n\n*Команды:*\n/projects — мои проекты\n/about — о проекте\n/whoami — кто я\n/logout — отвязать аккаунт\n\nПросто пиши свободным текстом — я разберу: задача это или вопрос. Если чего-то не хватает (часы, описание) — спрошу.';
+        const extra = '\n\n*Команды:*\n/projects — мои проекты\n/today — задачи на сегодня\n/planned — запланированные\n/unpaid — неоплаченные\n/reminders — мои напоминания\n/about — о проекте\n/whoami — кто я\n/logout — отвязать аккаунт\n\n*Подсказки:*\n• Имя задачи можно явно указать в кавычках: `сделал "Верстка главной" 2ч проект Dashboard, использовал tailwind, lazy-load карточек`\n• Длинные подробности (>30 символов) сохраняются как ты написал, бот их не сокращает.\n\n*Примеры:*\n• «сделал верстку Dashboard 2ч»\n• «напомни завтра в 9 позвонить Амиру»\n• «неоплаченные» / «оплачено 0001»';
         return ctx.reply(formatFeatures(kb) + extra, { parse_mode: 'Markdown' });
     });
 
@@ -762,6 +851,82 @@ function createBot(token) {
         return listPendingTasks(ctx, user);
     });
 
+    bot.command('reminders', async (ctx) => {
+        const user = await findUserByTelegramId(ctx.from.id);
+        if (!user) return ctx.reply('Сначала привяжи аккаунт.');
+        return listUserReminders(ctx, user);
+    });
+
+    // Подтверждение и сохранение напоминания
+    bot.action(/^remsave:(.+)$/, async (ctx) => {
+        const draftId = ctx.match[1];
+        const draft = pendingReminders.get(draftId);
+        await ctx.answerCbQuery();
+        if (!draft) return ctx.editMessageText('⏱ Черновик потерян, повтори: «напомни …».');
+        try {
+            const r = await Reminder.create({
+                userId:        draft.userId,
+                text:          draft.text,
+                fireAt:        draft.fireAt,
+                sourceMessage: draft.sourceMessage,
+            });
+            pendingReminders.delete(draftId);
+            await ctx.editMessageText(
+                `✅ Напоминание сохранено!\n\n🔔 ${r.text}\n📅 ${formatReminderTime(new Date(r.fireAt))}`,
+                { parse_mode: 'Markdown' },
+            );
+        } catch (err) {
+            console.error('reminder save error:', err.message);
+            await ctx.editMessageText(`❌ Не получилось сохранить: ${err.message}`);
+        }
+    });
+
+    bot.action(/^remcancel:(.+)$/, async (ctx) => {
+        const draftId = ctx.match[1];
+        pendingReminders.delete(draftId);
+        await ctx.answerCbQuery('Отменено');
+        await ctx.editMessageText('❌ Напоминание отменено.');
+    });
+
+    bot.action(/^remedit:(.+)$/, async (ctx) => {
+        const draftId = ctx.match[1];
+        const draft = pendingReminders.get(draftId);
+        await ctx.answerCbQuery();
+        if (!draft) return;
+        draft.awaiting = 'time';
+        pendingReminders.set(draftId, draft);
+        try { await ctx.editMessageReplyMarkup(undefined); } catch {}
+        await ctx.reply('✏️ Напиши новое время. Примеры:\n• `завтра в 10:30`\n• `через 2 часа`\n• `15.06.2026 09:00`\n• `сегодня в 18`', { parse_mode: 'Markdown' });
+    });
+
+    // Действия по сработавшему напоминанию
+    bot.action(/^rdone:(.+)$/, async (ctx) => {
+        const id = ctx.match[1];
+        await ctx.answerCbQuery('Готово');
+        try {
+            await Reminder.findByIdAndUpdate(id, { status: 'sent' });
+            try { await ctx.editMessageReplyMarkup(undefined); } catch {}
+            await ctx.reply('✅ Напоминание закрыто.');
+        } catch (err) { console.error('rdone error:', err.message); }
+    });
+
+    bot.action(/^rsnooze:(.+):(1h|1d)$/, async (ctx) => {
+        const id = ctx.match[1];
+        const dur = ctx.match[2];
+        await ctx.answerCbQuery();
+        try {
+            const r = await Reminder.findById(id);
+            if (!r) return;
+            const addMs = dur === '1h' ? 3600_000 : 24 * 3600_000;
+            r.fireAt = new Date(Date.now() + addMs);
+            r.status = 'snoozed';
+            r.snoozeCount = (r.snoozeCount || 0) + 1;
+            await r.save();
+            try { await ctx.editMessageReplyMarkup(undefined); } catch {}
+            await ctx.reply(`⏰ Перенесено на ${formatReminderTime(r.fireAt)}.`);
+        } catch (err) { console.error('rsnooze error:', err.message); }
+    });
+
     bot.command('cancel', async (ctx) => {
         const draftId = userActiveDraft.get(ctx.chat.id);
         if (draftId) {
@@ -793,6 +958,24 @@ function createBot(token) {
             return ctx.reply(
                 `✅ Аккаунт привязан: ${candidate.name} (${candidate.email}).\n\nТеперь просто пиши, что сделал — я разберу и сохраню.`
             );
+        }
+
+        // === Reminder draft awaiting new time ===
+        for (const [draftId, draft] of pendingReminders) {
+            if (draft.chatId !== ctx.chat.id || draft.awaiting !== 'time') continue;
+            try {
+                const parsed = await ollamaService.parseReminderMessage(`напомни ${draft.text} ${text}`);
+                draft.fireAt = parsed.fireAt;
+                draft.awaiting = null;
+                pendingReminders.set(draftId, draft);
+                await ctx.reply(
+                    `🔔 *Напомнить:* ${draft.text}\n📅 *Когда:* ${formatReminderTime(parsed.fireAt)}\n\nПодтверди?`,
+                    { parse_mode: 'Markdown', ...buildReminderConfirmKeyboard(draftId) },
+                );
+            } catch (err) {
+                await ctx.reply(`Не понял время: ${err.message}. Попробуй ещё раз или нажми «❌ Отмена» в предыдущем сообщении.`);
+            }
+            return;
         }
 
         // === Active draft in follow-up state ===
@@ -887,6 +1070,39 @@ function createBot(token) {
             return ctx.reply('Всегда пожалуйста 🙌');
         }
 
+        // === List reminders ===
+        if (LIST_REMINDERS_RE.test(text)) {
+            return listUserReminders(ctx, user);
+        }
+
+        // === Create reminder ===
+        if (REMINDER_RE.test(text)) {
+            const waiting = await ctx.reply('🔔 Разбираю напоминание…');
+            try {
+                const parsed = await ollamaService.parseReminderMessage(text);
+                const draftId = `rem:${ctx.from.id}:${ctx.message.message_id}`;
+                pendingReminders.set(draftId, {
+                    chatId: ctx.chat.id,
+                    userId: user._id,
+                    text: parsed.text,
+                    fireAt: parsed.fireAt,
+                    sourceMessage: text,
+                });
+                await ctx.telegram.editMessageText(
+                    ctx.chat.id, waiting.message_id, undefined,
+                    `🔔 *Напомнить:* ${parsed.text}\n📅 *Когда:* ${formatReminderTime(parsed.fireAt)}\n\nПодтверди?`,
+                    { parse_mode: 'Markdown', ...buildReminderConfirmKeyboard(draftId) },
+                );
+            } catch (err) {
+                console.error('TG reminder parse error:', err.message);
+                await ctx.telegram.editMessageText(
+                    ctx.chat.id, waiting.message_id, undefined,
+                    `⚠️ Не разобрал напоминание: ${err.message}\n\nПопробуй так: «напомни завтра в 9 утра позвонить Амиру».`,
+                );
+            }
+            return;
+        }
+
         // === List pending/planned tasks ===
         if (LIST_PENDING_RE.test(text)) {
             return listPendingTasks(ctx, user);
@@ -930,7 +1146,29 @@ function createBot(token) {
         // === New task: parse with Ollama, then collect missing fields ===
         const waiting = await ctx.reply('🤖 Разбираю сообщение…');
         try {
-            const parsed = await ollamaService.parseTaskMessage(ctx.message.text);
+            const originalText = ctx.message.text;
+            const parsed = await ollamaService.parseTaskMessage(originalText);
+
+            // ── Явный title из кавычек («…» или "…") — приоритет над LLM
+            const quoteMatch = originalText.match(/[«"]([^"»]{2,120})[»"]/);
+            let restAfterQuote = null;
+            if (quoteMatch) {
+                parsed.title = quoteMatch[1].trim();
+                restAfterQuote = originalText.replace(quoteMatch[0], '').trim();
+            }
+
+            // ── Сохраняем детали как юзер написал (НЕ упрощаем длинные тексты)
+            //    Длинные сообщения (>30 символов) кладём целиком в description
+            if (quoteMatch) {
+                // Если есть кавычки — description = всё что вокруг них (verbatim)
+                parsed.description = (restAfterQuote && restAfterQuote.length > 5) ? restAfterQuote : null;
+            } else if (originalText.length > 30) {
+                // Длинное сообщение — сохраняем как написал, не позволяем LLM сокращать
+                parsed.description = originalText;
+            }
+            // Короткие сообщения без кавычек — оставляем parsed.description от LLM (может быть null,
+            // тогда бот спросит «опиши подробнее»)
+
             if (!parsed.title) {
                 await ctx.telegram.editMessageText(
                     ctx.chat.id, waiting.message_id, undefined,
@@ -1176,6 +1414,11 @@ function createBot(token) {
     setInterval(() => {
         runReminderTick(bot.telegram).catch((err) => console.error('reminder tick error:', err.message));
     }, 30 * 60 * 1000).unref();
+
+    // Шедулер напоминаний пользователей: раз в минуту
+    setInterval(() => {
+        fireDueReminders(bot.telegram).catch((err) => console.error('reminder fire error:', err.message));
+    }, 60 * 1000).unref();
 
     return bot;
 }

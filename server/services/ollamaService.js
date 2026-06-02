@@ -150,6 +150,55 @@ async function answerQuestion(text, { knowledge, teamContext, role = 'worker', u
     return (answer || '').trim();
 }
 
+const REMINDER_SYSTEM_PROMPT = `Ты — извлекатель напоминаний из коротких сообщений на русском/узбекском/английском.
+Получив текст «напомни мне …», верни СТРОГО валидный JSON:
+{
+  "text":   string,    // ЧТО напомнить (без слов «напомни мне»/«напомни про»). Кратко, до 100 символов.
+  "fireAt": string     // КОГДА — точная дата+время в ISO 8601 (YYYY-MM-DDTHH:mm:00, локальная зона Asia/Tashkent UTC+5).
+                       // Если время не указано — поставь 09:00.
+                       // Относительные: «через час» => +1ч, «через 30 минут» => +30мин, «через 2 дня» => +2д.
+                       // Дни недели: «в понедельник», «в субботу» — ближайший следующий.
+                       // «завтра» => +1 день, «послезавтра» => +2 дня, «сегодня вечером» => сегодня 20:00.
+                       // «утром» => 09:00, «днём» => 13:00, «вечером» => 20:00, «ночью» => 23:00.
+}
+Никаких пояснений, никаких markdown — только JSON.`;
+
+async function parseReminderMessage(text, { now = new Date() } = {}) {
+    if (!text || !text.trim()) throw new Error('Пустое сообщение');
+
+    // Подставляем "сейчас" в локальной зоне UTC+5 для модели
+    const tzOffsetMs = 5 * 60 * 60 * 1000;
+    const local = new Date(now.getTime() + tzOffsetMs);
+    const nowIso = local.toISOString().slice(0, 19);
+
+    const content = await callOllama({
+        system: REMINDER_SYSTEM_PROMPT,
+        user: `Сейчас (Asia/Tashkent): ${nowIso}. Текст: "${text.trim()}"`,
+        format: 'json',
+    });
+
+    let parsed;
+    try { parsed = JSON.parse(content); }
+    catch {
+        const m = content.match(/\{[\s\S]*\}/);
+        if (!m) throw new Error('Не удалось разобрать ответ модели');
+        parsed = JSON.parse(m[0]);
+    }
+
+    const reminderText = String(parsed.text || '').trim();
+    if (!reminderText) throw new Error('Модель не извлекла текст напоминания');
+
+    // fireAt: модель отдаёт локальное время UTC+5; превращаем в UTC Date
+    let fireAt = null;
+    if (parsed.fireAt && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(parsed.fireAt)) {
+        const localDate = new Date(parsed.fireAt.slice(0, 19) + '+05:00');
+        if (!Number.isNaN(localDate.getTime())) fireAt = localDate;
+    }
+    if (!fireAt) throw new Error('Не удалось разобрать время напоминания');
+
+    return { text: reminderText, fireAt };
+}
+
 async function healthCheck() {
     try {
         const res = await fetch(`${OLLAMA_URL}/api/tags`);
@@ -162,4 +211,4 @@ async function healthCheck() {
     }
 }
 
-module.exports = { parseTaskMessage, answerQuestion, healthCheck, OLLAMA_URL, OLLAMA_MODEL };
+module.exports = { parseTaskMessage, parseReminderMessage, answerQuestion, healthCheck, OLLAMA_URL, OLLAMA_MODEL };

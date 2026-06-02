@@ -6,7 +6,7 @@ import {
     MessageOutlined, TeamOutlined, LogoutOutlined,
     AppstoreOutlined, FolderOutlined, UserOutlined,
     RocketOutlined, SettingOutlined, ProjectOutlined,
-    CheckSquareOutlined, FileTextOutlined,
+    CheckSquareOutlined, FileTextOutlined, BellOutlined, BookOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -29,6 +29,8 @@ const buildMenu = (role, perms) => {
     if (role === 'admin') {
         return [
             { key: '/admin-analytics', icon: <BarChartOutlined />,    label: 'Аналитика задач' },
+            { key: '/reminders',       icon: <BellOutlined />,         label: 'Напоминания' },
+            { key: '/ai-guide',        icon: <BookOutlined />,         label: 'Справочник AI' },
             { key: '/users',           icon: <TeamOutlined />,         label: 'Пользователи' },
             { key: '/settings',        icon: <SettingOutlined />,      label: 'Настройки' },
         ];
@@ -37,6 +39,8 @@ const buildMenu = (role, perms) => {
     if (role === 'projectManager') {
         const items = [
             { key: '/managed-tasks',       icon: <CheckSquareOutlined />, label: 'Задачи' },
+            { key: '/reminders',           icon: <BellOutlined />,        label: 'Напоминания' },
+            { key: '/ai-guide',            icon: <BookOutlined />,        label: 'Справочник AI' },
             { key: '/manager-work-report', icon: <FileTextOutlined />,    label: 'Мой отчёт' },
         ];
 
@@ -63,7 +67,9 @@ const buildMenu = (role, perms) => {
 
     // worker
     const items = [
-        { key: '/my-tasks', icon: <CheckSquareOutlined />, label: 'Мои задачи' },
+        { key: '/my-tasks',   icon: <CheckSquareOutlined />, label: 'Мои задачи' },
+        { key: '/reminders',  icon: <BellOutlined />,         label: 'Напоминания' },
+        { key: '/ai-guide',   icon: <BookOutlined />,         label: 'Справочник AI' },
     ];
 
     if (can('canViewDashboard'))

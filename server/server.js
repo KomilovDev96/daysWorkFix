@@ -43,6 +43,7 @@ app.use('/api/portal',  require('./routes/portalRoutes'));
 app.use('/api/board-projects', require('./routes/boardProjectRoutes'));
 app.use('/api/settings',      require('./routes/settingsRoutes'));
 app.use('/api/managed-tasks', require('./routes/managedTaskRoutes'));
+app.use('/api/reminders',     require('./routes/reminderRoutes'));
 
 // Root path
 app.get('/', (req, res) => {
