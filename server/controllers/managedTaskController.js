@@ -1,6 +1,7 @@
 const ExcelJS        = require('exceljs');
 const ManagedTask    = require('../models/ManagedTask');
 const BoardProject   = require('../models/BoardProject');
+const SavedClient    = require('../models/SavedClient');
 const User           = require('../models/User');
 const catchAsync     = require('../utils/catchAsync');
 const AppError       = require('../utils/appError');
@@ -84,7 +85,7 @@ exports.createTask = catchAsync(async (req, res, next) => {
     const user = req.user;
     const { title, description, type, parentId, assignedTo, isHot,
             estimatedHours, actualHours, status, startDate, dueDate,
-            isSelfTask, project, client, manualAssignee } = req.body;
+            isSelfTask, project, client, manualAssignee, payment, kind } = req.body;
 
     // Worker может создавать только свои задачи
     if (user.role === 'worker' && !isSelfTask)
@@ -112,6 +113,12 @@ exports.createTask = catchAsync(async (req, res, next) => {
         dueDate:        dueDate   || null,
         client:         client    || '',
         manualAssignee: manualAssignee || '',
+        kind:           kind === 'external' ? 'external' : 'work',
+        payment: {
+            // Оплата учитывается только у внешних задач; у рабочих — всегда unpaid
+            status: kind === 'external' && payment?.status === 'paid' ? 'paid' : 'unpaid',
+            paidAt: kind === 'external' && payment?.status === 'paid' ? (payment?.paidAt || new Date()) : null,
+        },
     });
 
     await task.populate(POPULATE_OPTS);
@@ -461,6 +468,34 @@ exports.createTaskProject = catchAsync(async (req, res) => {
         tasks: [],
     });
     res.status(201).json({ status: 'success', data: { project } });
+});
+
+// ── Сохранённые менеджеры / заказчики (переиспользуемый список для формы) ──────
+
+exports.getSavedClients = catchAsync(async (req, res) => {
+    const clients = await SavedClient.find({ createdBy: req.user._id })
+        .select('name')
+        .sort({ name: 1 });
+    res.status(200).json({ status: 'success', data: { clients } });
+});
+
+exports.createSavedClient = catchAsync(async (req, res) => {
+    const name = (req.body.name || '').trim();
+    if (!name) return res.status(400).json({ status: 'fail', message: 'Имя обязательно' });
+
+    // Не плодим дубли — возвращаем существующего, если уже есть
+    let client = await SavedClient.findOne({ createdBy: req.user._id, name });
+    if (!client) {
+        client = await SavedClient.create({ name, createdBy: req.user._id });
+    }
+    res.status(201).json({ status: 'success', data: { client } });
+});
+
+exports.deleteSavedClient = catchAsync(async (req, res, next) => {
+    const client = await SavedClient.findOne({ _id: req.params.id, createdBy: req.user._id });
+    if (!client) return next(new AppError('Запись не найдена', 404));
+    await client.deleteOne();
+    res.status(204).json({ status: 'success', data: null });
 });
 
 // ── Manager stats (свой отчёт менеджера) ──────────────────────────────────────

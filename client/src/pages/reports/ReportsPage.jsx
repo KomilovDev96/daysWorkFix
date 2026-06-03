@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import {
     Typography, Card, Form, DatePicker, Select, Button,
     Table, Space, Tag, message, Drawer, Descriptions, Empty, Segmented, Row, Col, Statistic,
-    Input, InputNumber, Popconfirm, Modal, AutoComplete, Popover, Checkbox,
+    Input, InputNumber, Popconfirm, Popover, Checkbox, Divider,
 } from 'antd';
 import {
     FilterOutlined, FileExcelOutlined,
@@ -14,6 +14,11 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
 import apiClient from '../../shared/api/apiClient';
+import {
+    createTask, addComment, fetchTaskProjects, createTaskProject,
+    fetchSavedClients, createSavedClient, deleteSavedClient,
+} from '../../shared/api/managedTasksApi';
+import CreatableSelect from '../../shared/ui/CreatableSelect';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -37,6 +42,21 @@ const STATUS_LABEL = {
 
 const KIND_LABEL = { work: '💼 Рабочая', external: '🌍 Внешняя' };
 
+// Опции для формы создания задачи (как в «Мои задачи» — создаём ManagedTask)
+const SELF_STATUS_OPTIONS = [
+    { value: 'pending',     label: 'Ожидает' },
+    { value: 'in_progress', label: 'В процессе' },
+    { value: 'testing',     label: 'Тестирование' },
+    { value: 'completed',   label: 'Выполнено' },
+    { value: 'cancelled',   label: 'Отменено' },
+];
+const TASK_TYPE_OPTIONS = [
+    { value: 'daily',   label: 'Дневная'   },
+    { value: 'hourly',  label: 'Часовая'   },
+    { value: 'weekly',  label: 'Недельная' },
+    { value: 'monthly', label: 'Месячная'  },
+];
+
 const EXCEL_COLUMNS = [
     { key: 'organization', label: 'Организация' },
     { key: 'customer',     label: 'Заказчик' },
@@ -59,6 +79,7 @@ const ReportsPage = () => {
     const [colsPopoverOpen, setColsPopoverOpen] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [createOpen, setCreateOpen] = useState(false);
+    const [createDateMode, setCreateDateMode] = useState('today'); // 'today' | 'other'
     const [editForm] = Form.useForm();
     const [createForm] = Form.useForm();
     const [advForm] = Form.useForm();
@@ -101,17 +122,22 @@ const ReportsPage = () => {
     });
 
     const createMutation = useMutation({
+        // Создаём ManagedTask (как в «Мои задачи»); комментарий постим отдельным запросом
         mutationFn: async (payload) => {
-            const { data } = await apiClient.post('/tasks/quick', payload);
-            return data.data;
+            const { comment, ...body } = payload;
+            const task = await createTask(body);
+            if (comment?.trim()) {
+                try { await addComment(task._id, comment.trim()); } catch {}
+            }
+            return task;
         },
-        onSuccess: ({ task }) => {
-            const codeMsg = task.shortCode ? ` (код #${task.shortCode})` : '';
-            message.success(`Задача создана${codeMsg}`);
+        onSuccess: () => {
+            message.success('Задача создана');
             queryClient.invalidateQueries({ queryKey: ['report'] });
             queryClient.invalidateQueries({ queryKey: ['upcoming-pending'] });
             setCreateOpen(false);
             createForm.resetFields();
+            setCreateDateMode('today');
         },
         onError: (err) => {
             message.error('Не удалось создать: ' + (err?.response?.data?.message || err.message));
@@ -120,16 +146,22 @@ const ReportsPage = () => {
 
     const onCreateSubmit = () => {
         createForm.validateFields().then((vals) => {
+            const date = createDateMode === 'today' ? dayjs() : (vals.customDate || dayjs());
             createMutation.mutate({
-                date:        vals.date ? vals.date.format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-                title:       vals.title,
-                description: vals.description,
-                hours:       Number(vals.hours) || 0,
-                status:      vals.status,
-                kind:        vals.kind,
-                customer:    vals.customer,
-                projectName: vals.project,
-                payment:     vals.paymentStatus,
+                title:          vals.title,
+                client:         vals.client,
+                project:        vals.project || null,
+                status:         vals.status,
+                type:           vals.type,
+                estimatedHours: Number(vals.estimatedHours) || 0,
+                actualHours:    Number(vals.actualHours)    || 0,
+                description:    vals.description || '',
+                isSelfTask:     true,
+                startDate:      date.startOf('day').toISOString(),
+                dueDate:        date.endOf('day').toISOString(),
+                kind:           vals.kind || 'work',
+                payment:        { status: vals.kind === 'external' && vals.paymentStatus === 'paid' ? 'paid' : 'unpaid' },
+                comment:        vals.comment || '',
             });
         });
     };
@@ -204,6 +236,34 @@ const ReportsPage = () => {
         }
         return params;
     };
+
+    // Проекты для привязки задачи в форме создания (ManagedTask.project = ObjectId)
+    const { data: taskProjects = [] } = useQuery({
+        queryKey: ['task-projects'],
+        queryFn:  fetchTaskProjects,
+    });
+
+    // Сохранённые менеджеры/заказчики (список с возможностью добавлять/удалять)
+    const { data: savedClients = [] } = useQuery({
+        queryKey: ['saved-clients'],
+        queryFn:  fetchSavedClients,
+    });
+
+    const createProjectMut = useMutation({
+        mutationFn: (name) => createTaskProject({ name }),
+        onSuccess:  () => queryClient.invalidateQueries({ queryKey: ['task-projects'] }),
+        onError:    (e) => message.error('Не удалось создать проект: ' + (e?.response?.data?.message || e.message)),
+    });
+    const createClientMut = useMutation({
+        mutationFn: (name) => createSavedClient(name),
+        onSuccess:  () => queryClient.invalidateQueries({ queryKey: ['saved-clients'] }),
+        onError:    (e) => message.error('Не удалось добавить: ' + (e?.response?.data?.message || e.message)),
+    });
+    const deleteClientMut = useMutation({
+        mutationFn: (id) => deleteSavedClient(id),
+        onSuccess:  () => { message.success('Удалено из списка'); queryClient.invalidateQueries({ queryKey: ['saved-clients'] }); },
+        onError:    (e) => message.error('Не удалось удалить: ' + (e?.response?.data?.message || e.message)),
+    });
 
     const { data: report, isLoading: reportLoading } = useQuery({
         queryKey: ['report', filters],
@@ -304,7 +364,7 @@ const exportExcel = async () => {
             (rep?.managedTasks || []).forEach((t) => {
                 rows.push({
                     _id: t._id,
-                    date: t.dueDate || t.createdAt,
+                    date: (t.status === 'completed' && t.completedAt) ? t.completedAt : (t.dueDate || t.createdAt),
                     userName:  t.createdBy?.name  || user?.name  || '—',
                     userEmail: t.createdBy?.email || user?.email || '—',
                     title: t.title,
@@ -312,7 +372,9 @@ const exportExcel = async () => {
                     hours: t.actualHours || t.estimatedHours || 0,
                     status: t.status,
                     customer: t.client ? { name: t.client } : null,
-                    kind: 'work',
+                    kind: t.kind || 'work',
+                    payment: t.payment || null,
+                    shortCode: t.shortCode || null,
                     projectName: t.project?.name || null,
                     source: 'managed',
                     isSelf: t.isSelfTask,
@@ -478,12 +540,13 @@ const exportExcel = async () => {
                         onClick={() => {
                             createForm.resetFields();
                             createForm.setFieldsValue({
-                                date:   dayjs(),
-                                hours:  1,
-                                status: 'completed',
-                                kind:   'work',
-                                paymentStatus: 'unpaid',
+                                type:           'daily',
+                                estimatedHours: 1,
+                                status:         'in_progress',
+                                kind:           'work',
+                                paymentStatus:  'unpaid',
                             });
+                            setCreateDateMode('today');
                             setCreateOpen(true);
                         }}
                     >
@@ -980,7 +1043,7 @@ const exportExcel = async () => {
 
                 {drawerRow?.source === 'managed' && (
                     <Text type="secondary" style={{ fontSize: 12 }}>
-                        Это задача из системы менеджера (ManagedTask). Редактируется в «Мои задачи».
+                        Это задача из системы задач (ManagedTask) — здесь доступна только для просмотра.
                     </Text>
                 )}
             </Drawer>
@@ -990,7 +1053,7 @@ const exportExcel = async () => {
                 onClose={() => setCreateOpen(false)}
                 title="Новая задача"
                 placement="right"
-                width={480}
+                width="60%"
                 destroyOnHidden
                 footer={
                     <Space style={{ justifyContent: 'flex-end', width: '100%' }}>
@@ -1002,76 +1065,108 @@ const exportExcel = async () => {
                 }
             >
                 <Form form={createForm} layout="vertical">
-                    <Form.Item name="title" label="Что за задача?" rules={[{ required: true, message: 'Опиши задачу' }]}>
-                        <Input placeholder="Например: Верстка главной Dashboard" autoFocus />
+                    <Form.Item label={<b>На какой день?</b>} style={{ marginBottom: 12 }}>
+                        <Segmented
+                            block
+                            value={createDateMode}
+                            onChange={setCreateDateMode}
+                            options={[
+                                { label: '📅 На сегодня',     value: 'today' },
+                                { label: '📆 На другой день', value: 'other' },
+                            ]}
+                        />
+                        {createDateMode === 'other' && (
+                            <Form.Item name="customDate" noStyle rules={[{ required: true, message: 'Выберите дату' }]}>
+                                <DatePicker style={{ width: '100%', marginTop: 8 }} format="DD.MM.YYYY" placeholder="Выберите дату" />
+                            </Form.Item>
+                        )}
                     </Form.Item>
-                    <Form.Item name="description" label="Подробнее (опционально)">
-                        <Input.TextArea autoSize={{ minRows: 3 }} placeholder="Что именно сделал / нужно сделать" />
+
+                    <Divider style={{ margin: '0 0 12px' }} />
+
+                    <Form.Item name="title" label="Название задачи" rules={[{ required: true, message: 'Введите название' }]}>
+                        <Input placeholder="Что нужно сделать?" autoFocus />
                     </Form.Item>
+
+                    <Form.Item name="client" label="Менеджер / Заказчик" rules={[{ required: true, message: 'Укажите менеджера или заказчика' }]}>
+                        <CreatableSelect
+                            placeholder="Выберите или добавьте"
+                            options={(savedClients || []).map((c) => ({ value: c.name, label: c.name, _id: c._id }))}
+                            onCreate={async (name) => { await createClientMut.mutateAsync(name); return name; }}
+                            onDelete={(opt) => deleteClientMut.mutate(opt._id)}
+                            creating={createClientMut.isPending}
+                        />
+                    </Form.Item>
+
+                    <Form.Item name="project" label="Проект (необязательно)">
+                        <CreatableSelect
+                            placeholder="Без проекта"
+                            options={(taskProjects || []).map((p) => ({ value: p._id, label: p.name, _id: p._id }))}
+                            onCreate={async (name) => { const p = await createProjectMut.mutateAsync(name); return p._id; }}
+                            creating={createProjectMut.isPending}
+                        />
+                    </Form.Item>
+
                     <Row gutter={12}>
-                        <Col span={8}>
-                            <Form.Item name="hours" label="Часы" rules={[{ required: true }]}>
-                                <InputNumber min={0} max={24} step={0.5} style={{ width: '100%' }} />
+                        <Col span={12}>
+                            <Form.Item name="status" label="Статус" rules={[{ required: true }]}>
+                                <Select options={SELF_STATUS_OPTIONS} />
                             </Form.Item>
                         </Col>
-                        <Col span={16}>
-                            <Form.Item name="date" label="Дата" rules={[{ required: true }]}>
-                                <DatePicker format="DD.MM.YYYY" style={{ width: '100%' }} />
+                        <Col span={12}>
+                            <Form.Item name="type" label="Тип" rules={[{ required: true }]}>
+                                <Select options={TASK_TYPE_OPTIONS} />
                             </Form.Item>
                         </Col>
                     </Row>
+
                     <Row gutter={12}>
                         <Col span={12}>
-                            <Form.Item name="project" label="Проект">
-                                <AutoComplete
-                                    placeholder="Выбери или введи новый"
-                                    options={(report?.availableProjects || []).map((p) => ({ value: p }))}
-                                    filterOption={(input, opt) => String(opt?.value || '').toLowerCase().includes(input.toLowerCase())}
-                                />
+                            <Form.Item name="estimatedHours" label="Часы (план)" rules={[{ required: true, message: 'Укажите часы' }]}>
+                                <InputNumber min={0} step={0.5} style={{ width: '100%' }} placeholder="0" />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name="customer" label="Заказчик">
-                                <Input placeholder="Имя/название" />
+                            <Form.Item name="actualHours" label="Часы (факт)">
+                                <InputNumber min={0} step={0.5} style={{ width: '100%' }} placeholder="0" />
                             </Form.Item>
                         </Col>
                     </Row>
+
                     <Row gutter={12}>
                         <Col span={12}>
-                            <Form.Item name="status" label="Статус">
-                                <Select
-                                    options={[
-                                        { value: 'completed', label: '✅ Завершено' },
-                                        { value: 'pending',   label: '⏳ Запланировано' },
-                                    ]}
-                                />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item name="kind" label="Тип">
+                            <Form.Item name="kind" label="Вид" rules={[{ required: true }]}>
                                 <Select
                                     options={[
                                         { value: 'work',     label: '💼 Рабочая' },
-                                        { value: 'external', label: '🌍 Внешняя (с кодом)' },
+                                        { value: 'external', label: '🌍 Внешняя' },
                                     ]}
                                 />
                             </Form.Item>
                         </Col>
-                    </Row>
-                    <Form.Item
-                        shouldUpdate={(prev, cur) => prev.kind !== cur.kind}
-                        noStyle
-                    >
-                        {({ getFieldValue }) => getFieldValue('kind') === 'external' && (
-                            <Form.Item name="paymentStatus" label="Оплата">
-                                <Select
-                                    options={[
-                                        { value: 'unpaid', label: '⌛ Не оплачено' },
-                                        { value: 'paid',   label: '💰 Оплачено' },
-                                    ]}
-                                />
+                        <Col span={12}>
+                            {/* Оплата появляется только у внешней задачи; у рабочей поле исчезает */}
+                            <Form.Item shouldUpdate={(prev, cur) => prev.kind !== cur.kind} noStyle>
+                                {({ getFieldValue }) => getFieldValue('kind') === 'external' && (
+                                    <Form.Item name="paymentStatus" label="Оплата">
+                                        <Select
+                                            options={[
+                                                { value: 'unpaid', label: '⌛ Не оплачено' },
+                                                { value: 'paid',   label: '💰 Оплачено' },
+                                            ]}
+                                        />
+                                    </Form.Item>
+                                )}
                             </Form.Item>
-                        )}
+                        </Col>
+                    </Row>
+
+                    <Form.Item name="description" label="Детали задачи">
+                        <Input.TextArea autoSize={{ minRows: 3 }} placeholder="Подробное описание..." />
+                    </Form.Item>
+
+                    <Form.Item name="comment" label="Причина / Комментарий">
+                        <Input.TextArea rows={2} placeholder="Причина, заметка или комментарий..." />
                     </Form.Item>
                 </Form>
             </Drawer>

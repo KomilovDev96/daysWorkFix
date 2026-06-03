@@ -773,14 +773,21 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
 
     // Подтягиваем ManagedTask за период (личные + назначенные) во ВСЕХ статусах,
     // чтобы запланированные/в работе тоже попадали в общий отчёт.
+    // Задача попадает в период, если в него входит дедлайн ИЛИ дата завершения —
+    // чтобы завершённые задачи без дедлайна (или с дедлайном вне периода) не терялись.
+    const periodRange = { $gte: new Date(startDate), $lte: new Date(endDate) };
     const managedFilter = {
-        dueDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+        $and: [
+            { $or: [{ dueDate: periodRange }, { completedAt: periodRange }] },
+        ],
     };
     if (effectiveUserId) {
-        managedFilter.$or = [
-            { assignedTo: effectiveUserId },
-            { createdBy: effectiveUserId, isSelfTask: true },
-        ];
+        managedFilter.$and.push({
+            $or: [
+                { assignedTo: effectiveUserId },
+                { createdBy: effectiveUserId, isSelfTask: true },
+            ],
+        });
     }
     let managedTasks = await ManagedTask.find(managedFilter)
         .populate('createdBy', 'name email')
@@ -824,9 +831,9 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
         if (projectFilterList.length > 0) {
             managedTasks = managedTasks.filter((t) => projectMatches(t.project?.name));
         }
-        if (kindFilter === 'external') {
-            // ManagedTask считаем рабочими; при фильтре external их прячем
-            managedTasks = [];
+        if (kindFilter) {
+            // У задачи теперь есть собственный вид (work/external) — фильтруем по нему
+            managedTasks = managedTasks.filter((t) => (t.kind || 'work') === kindFilter);
         }
     }
 
@@ -1204,14 +1211,21 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
     }
 
     // Добавляем ManagedTask за период (все статусы — фильтруем ниже по запросу)
+    // Задача попадает в период, если в него входит дедлайн ИЛИ дата завершения —
+    // чтобы завершённые задачи без дедлайна (или с дедлайном вне периода) не терялись.
+    const periodRange = { $gte: new Date(startDate), $lte: new Date(endDate) };
     const managedFilter = {
-        dueDate: { $gte: new Date(startDate), $lte: new Date(endDate) },
+        $and: [
+            { $or: [{ dueDate: periodRange }, { completedAt: periodRange }] },
+        ],
     };
     if (effectiveUserId) {
-        managedFilter.$or = [
-            { assignedTo: effectiveUserId },
-            { createdBy: effectiveUserId, isSelfTask: true },
-        ];
+        managedFilter.$and.push({
+            $or: [
+                { assignedTo: effectiveUserId },
+                { createdBy: effectiveUserId, isSelfTask: true },
+            ],
+        });
     }
     let managedTasks = await ManagedTask.find(managedFilter)
         .populate('createdBy', 'name')
@@ -1223,31 +1237,32 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
         managedTasks = managedTasks.filter((t) => projectMatches(t.project?.name));
     }
 
-    // ManagedTask считаем рабочими (kind=work). Фильтр external и payment-фильтр их прячут.
-    if (kindFilter !== 'external' && !paymentFilter) {
-        managedTasks.forEach((task) => {
-            if (!passesStatus(task.status)) return;
-            const hours = task.actualHours || task.estimatedHours || 0;
-            const executor = task.assignedTo?.length
-                ? task.assignedTo.map((u) => u.name).join(', ')
-                : task.createdBy?.name || '—';
+    // ManagedTask теперь имеют собственный вид (work/external) и оплату — учитываем фильтры.
+    managedTasks.forEach((task) => {
+        const taskKind = task.kind || 'work';
+        if (kindFilter && taskKind !== kindFilter) return;
+        if (!passesStatus(task.status)) return;
+        if (!passesPayment(taskKind, task.payment?.status)) return;
+        const hours = task.actualHours || task.estimatedHours || 0;
+        const executor = task.assignedTo?.length
+            ? task.assignedTo.map((u) => u.name).join(', ')
+            : task.createdBy?.name || '—';
 
-            reportData.push({
-                date:          task.dueDate,
-                legalEntity:   '',
-                customer:      task.client || '',
-                project:       task.project?.name || '—',
-                description:   task.description  || task.title || '',
-                executor,
-                hours,
-                status:        task.status,
-                kind:          'work',
-                paymentStatus: '',
-                amount:        0,
-                currency:      '',
-            });
+        reportData.push({
+            date:          (task.status === 'completed' && task.completedAt) ? task.completedAt : (task.dueDate || task.createdAt),
+            legalEntity:   '',
+            customer:      task.client || '',
+            project:       task.project?.name || '—',
+            description:   task.description  || task.title || '',
+            executor,
+            hours,
+            status:        task.status,
+            kind:          taskKind,
+            paymentStatus: taskKind === 'external' ? (task.payment?.status || 'unpaid') : '',
+            amount:        0,
+            currency:      '',
         });
-    }
+    });
 
     // Сортируем по дате — свежие сверху
     reportData.sort((a, b) => new Date(b.date) - new Date(a.date));

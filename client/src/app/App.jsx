@@ -28,7 +28,6 @@ import SettingsPage        from '../pages/settings/SettingsPage';
 // Новые ролевые страницы
 import AdminAnalyticsPage       from '../pages/admin-analytics/AdminAnalyticsPage';
 import ManagerTasksPage         from '../pages/managed-tasks/ManagerTasksPage';
-import WorkerTasksPage          from '../pages/my-tasks/WorkerTasksPage';
 import ManagerWorkReportPage    from '../pages/manager-work-report/ManagerWorkReportPage';
 import TaskPanelPage            from '../pages/task-panel/TaskPanelPage';
 import RemindersPage            from '../pages/reminders/RemindersPage';
@@ -42,7 +41,7 @@ const RoleRedirect = () => {
     const dest = !user                        ? '/login'
                : user.role === 'admin'          ? '/admin-analytics'
                : user.role === 'projectManager' ? '/managed-tasks'
-               : user.role === 'worker'         ? '/my-tasks'
+               : user.role === 'worker'         ? '/reports'
                : '/dashboard';
     return <Navigate to={dest} replace />;
 };
@@ -103,11 +102,6 @@ const App = () => (
                                 <Route element={<ProtectedRoute allowedRoles={['projectManager', 'admin']} />}>
                                     <Route path="/managed-tasks"       element={<ManagerTasksPage />} />
                                     <Route path="/manager-work-report" element={<ManagerWorkReportPage />} />
-                                </Route>
-
-                                {/* Воркер — свои задачи */}
-                                <Route element={<ProtectedRoute allowedRoles={['worker']} />}>
-                                    <Route path="/my-tasks" element={<WorkerTasksPage />} />
                                 </Route>
 
                                 {/* Панель задач — менеджер и воркер */}

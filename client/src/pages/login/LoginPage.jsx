@@ -23,7 +23,7 @@ const LoginPage = () => {
             const dest = role === 'guest'          ? '/portal'
                        : role === 'admin'          ? '/admin-analytics'
                        : role === 'projectManager' ? '/managed-tasks'
-                       : role === 'worker'         ? '/my-tasks'
+                       : role === 'worker'         ? '/reports'
                        : '/dashboard';
             navigate(dest);
         } catch (error) {

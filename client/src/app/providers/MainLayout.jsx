@@ -67,7 +67,6 @@ const buildMenu = (role, perms) => {
 
     // worker
     const items = [
-        { key: '/my-tasks',   icon: <CheckSquareOutlined />, label: 'Мои задачи' },
         { key: '/reminders',  icon: <BellOutlined />,         label: 'Напоминания' },
         { key: '/ai-guide',   icon: <BookOutlined />,         label: 'Справочник AI' },
     ];

@@ -67,6 +67,19 @@ const managedTaskSchema = new mongoose.Schema(
         dueDate:     { type: Date, default: null },
         completedAt: { type: Date, default: null },
 
+        // Вид задачи: рабочая (без оплаты) или внешняя (с оплатой)
+        kind: {
+            type: String,
+            enum: ['work', 'external'],
+            default: 'work',
+        },
+
+        // Оплата задачи (только для внешних): Оплачено / Не оплачено
+        payment: {
+            status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
+            paidAt: { type: Date, default: null },
+        },
+
         comments: [
             {
                 text:      { type: String, required: true, trim: true },

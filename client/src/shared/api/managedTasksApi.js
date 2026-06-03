@@ -23,6 +23,11 @@ export const deleteComment  = (id, commentId)=> apiClient.delete(`/managed-tasks
 export const fetchTaskProjects   = ()     => apiClient.get('/managed-tasks/projects').then(r => r.data.data.projects);
 export const createTaskProject   = (body) => apiClient.post('/managed-tasks/projects', body).then(r => r.data.data.project);
 
+// Сохранённые менеджеры / заказчики (переиспользуемый список)
+export const fetchSavedClients   = ()     => apiClient.get('/managed-tasks/clients').then(r => r.data.data.clients);
+export const createSavedClient   = (name) => apiClient.post('/managed-tasks/clients', { name }).then(r => r.data.data.client);
+export const deleteSavedClient   = (id)   => apiClient.delete(`/managed-tasks/clients/${id}`);
+
 // Отчёт менеджера
 export const fetchManagerStats = (params) => apiClient.get('/managed-tasks/manager-stats', { params }).then(r => r.data.data);
 
