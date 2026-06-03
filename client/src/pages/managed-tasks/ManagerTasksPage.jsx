@@ -1131,7 +1131,11 @@ const ManagerSelfTaskDrawer = ({ open, onClose, onSave, initial, projects }) => 
     const handleSave = async () => {
         try {
             const vals = await form.validateFields();
-            const date = dateMode === 'today' ? dayjs() : (vals.customDate || dayjs());
+            if (dateMode === 'other' && !vals.customDate) {
+                message.error('Выберите дату');
+                return;
+            }
+            const date = dateMode === 'today' ? dayjs() : vals.customDate;
             onSave({
                 ...vals,
                 isSelfTask: true,

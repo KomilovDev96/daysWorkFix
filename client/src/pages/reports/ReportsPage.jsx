@@ -975,8 +975,7 @@ const exportExcel = async () => {
                         });
                     }
                     items.push(
-                        { key: 'date', label: 'Дата',     children: dayjs(drawerRow.date).format('DD.MM.YYYY') },
-                        { key: 'src',  label: 'Источник', children: drawerRow.source === 'bot' ? <Tag icon={<RobotOutlined />}>из бота</Tag> : drawerRow.source === 'managed' ? <Tag color="purple">от менеджера</Tag> : <Tag color="blue">дневной лог</Tag> },
+                        { key: 'date', label: 'Дата', children: dayjs(drawerRow.date).format('DD.MM.YYYY') },
                     );
                     return <Descriptions size="small" column={1} bordered items={items} />;
                 })()}
