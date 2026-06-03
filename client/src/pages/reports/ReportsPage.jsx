@@ -17,6 +17,7 @@ import apiClient from '../../shared/api/apiClient';
 import {
     createTask, addComment, fetchTaskProjects, createTaskProject,
     fetchSavedClients, createSavedClient, deleteSavedClient,
+    updateTask as updateManagedTask, deleteTask as deleteManagedTask,
 } from '../../shared/api/managedTasksApi';
 import CreatableSelect from '../../shared/ui/CreatableSelect';
 import dayjs from 'dayjs';
@@ -88,12 +89,12 @@ const ReportsPage = () => {
     useEffect(() => {
         if (drawerRow && editMode) {
             editForm.setFieldsValue({
-                title:        drawerRow.title || '',
-                description:  drawerRow.description || '',
-                hours:        drawerRow.hours || 0,
-                customer:     drawerRow.customer?.name || '',
-                status:       drawerRow.status || 'completed',
-                kind:         drawerRow.kind || 'work',
+                title:         drawerRow.title || '',
+                description:   drawerRow.description || '',
+                hours:         drawerRow.hours || 0,
+                customer:      drawerRow.customer?.name || '',
+                status:        drawerRow.status || (drawerRow.source === 'managed' ? 'in_progress' : 'completed'),
+                kind:          drawerRow.kind || 'work',
                 paymentStatus: drawerRow.payment?.status || 'unpaid',
             });
         }
@@ -146,7 +147,11 @@ const ReportsPage = () => {
 
     const onCreateSubmit = () => {
         createForm.validateFields().then((vals) => {
-            const date = createDateMode === 'today' ? dayjs() : (vals.customDate || dayjs());
+            if (createDateMode === 'other' && !vals.customDate) {
+                message.error('Выберите дату');
+                return;
+            }
+            const date = createDateMode === 'today' ? dayjs() : vals.customDate;
             createMutation.mutate({
                 title:          vals.title,
                 client:         vals.client,
@@ -179,26 +184,81 @@ const ReportsPage = () => {
         },
     });
 
+    const updateManagedMutation = useMutation({
+        mutationFn: async ({ id, patch }) => updateManagedTask(id, patch),
+        onSuccess: (updated) => {
+            message.success('Задача обновлена');
+            queryClient.invalidateQueries({ queryKey: ['report'] });
+            queryClient.invalidateQueries({ queryKey: ['upcoming-pending'] });
+            setDrawerRow((r) => r ? {
+                ...r,
+                title:       updated.title,
+                description: updated.description,
+                hours:       updated.actualHours || updated.estimatedHours || 0,
+                status:      updated.status,
+                kind:        updated.kind,
+                customer:    updated.client ? { name: updated.client } : null,
+                payment:     updated.payment,
+            } : r);
+            setEditMode(false);
+        },
+        onError: (err) => {
+            message.error('Не удалось обновить: ' + (err?.response?.data?.message || err.message));
+        },
+    });
+
+    const deleteManagedMutation = useMutation({
+        mutationFn: async (id) => deleteManagedTask(id),
+        onSuccess: () => {
+            message.success('Задача удалена');
+            queryClient.invalidateQueries({ queryKey: ['report'] });
+            queryClient.invalidateQueries({ queryKey: ['upcoming-pending'] });
+            closeDrawer();
+        },
+        onError: (err) => {
+            message.error('Не удалось удалить: ' + (err?.response?.data?.message || err.message));
+        },
+    });
+
     const onEditSave = () => {
         editForm.validateFields().then((vals) => {
-            const patch = {
-                title: vals.title,
-                description: vals.description,
-                hours: Number(vals.hours) || 0,
-                status: vals.status,
-                kind: vals.kind,
-                customer: vals.customer ? { name: vals.customer } : null,
-            };
-            if (vals.kind === 'external') {
-                patch.payment = {
+            const paymentPatch = vals.kind === 'external' ? {
+                payment: {
                     ...(drawerRow.payment || {}),
                     status: vals.paymentStatus,
                     paidAt: vals.paymentStatus === 'paid'
                         ? (drawerRow.payment?.paidAt || new Date())
                         : null,
-                };
+                },
+            } : {};
+
+            if (drawerRow.source === 'managed') {
+                updateManagedMutation.mutate({
+                    id: drawerRow._id,
+                    patch: {
+                        title:        vals.title,
+                        description:  vals.description,
+                        actualHours:  Number(vals.hours) || 0,
+                        status:       vals.status,
+                        kind:         vals.kind,
+                        client:       vals.customer || '',
+                        ...paymentPatch,
+                    },
+                });
+            } else {
+                updateMutation.mutate({
+                    id: drawerRow._id,
+                    patch: {
+                        title:       vals.title,
+                        description: vals.description,
+                        hours:       Number(vals.hours) || 0,
+                        status:      vals.status,
+                        kind:        vals.kind,
+                        customer:    vals.customer ? { name: vals.customer } : null,
+                        ...paymentPatch,
+                    },
+                });
             }
-            updateMutation.mutate({ id: drawerRow._id, patch });
         });
     };
 
@@ -913,11 +973,16 @@ const exportExcel = async () => {
                         </Space>
                     ) : null
                 }
-                extra={drawerRow && drawerRow.source !== 'managed' && (
+                extra={drawerRow && (
                     editMode ? (
                         <Space>
                             <Button onClick={() => setEditMode(false)} icon={<CloseOutlined />}>Отмена</Button>
-                            <Button type="primary" onClick={onEditSave} loading={updateMutation.isPending} icon={<SaveOutlined />}>
+                            <Button
+                                type="primary"
+                                onClick={onEditSave}
+                                loading={updateMutation.isPending || updateManagedMutation.isPending}
+                                icon={<SaveOutlined />}
+                            >
                                 Сохранить
                             </Button>
                         </Space>
@@ -930,9 +995,17 @@ const exportExcel = async () => {
                                 okText="Удалить"
                                 okType="danger"
                                 cancelText="Отмена"
-                                onConfirm={() => deleteMutation.mutate(drawerRow._id)}
+                                onConfirm={() =>
+                                    drawerRow.source === 'managed'
+                                        ? deleteManagedMutation.mutate(drawerRow._id)
+                                        : deleteMutation.mutate(drawerRow._id)
+                                }
                             >
-                                <Button danger icon={<DeleteOutlined />} loading={deleteMutation.isPending} />
+                                <Button
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    loading={deleteMutation.isPending || deleteManagedMutation.isPending}
+                                />
                             </Popconfirm>
                         </Space>
                     )
@@ -1004,7 +1077,13 @@ const exportExcel = async () => {
                             <Col span={12}>
                                 <Form.Item name="status" label="Статус">
                                     <Select
-                                        options={[
+                                        options={drawerRow.source === 'managed' ? [
+                                            { value: 'pending',     label: '⏳ Ожидает' },
+                                            { value: 'in_progress', label: '🔄 В процессе' },
+                                            { value: 'testing',     label: '🧪 Тестирование' },
+                                            { value: 'completed',   label: '✅ Завершено' },
+                                            { value: 'cancelled',   label: '❌ Отменено' },
+                                        ] : [
                                             { value: 'completed', label: '✅ Завершено' },
                                             { value: 'pending',   label: '⏳ Запланировано' },
                                         ]}
@@ -1038,12 +1117,6 @@ const exportExcel = async () => {
                             )}
                         </Form.Item>
                     </Form>
-                )}
-
-                {drawerRow?.source === 'managed' && (
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                        Это задача из системы задач (ManagedTask) — здесь доступна только для просмотра.
-                    </Text>
                 )}
             </Drawer>
 
