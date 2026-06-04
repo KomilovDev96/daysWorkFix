@@ -424,7 +424,7 @@ const exportExcel = async () => {
             (rep?.managedTasks || []).forEach((t) => {
                 rows.push({
                     _id: t._id,
-                    date: (t.status === 'completed' && t.completedAt) ? t.completedAt : (t.dueDate || t.createdAt),
+                    date: t.dueDate || t.completedAt || t.createdAt,
                     userName:  t.createdBy?.name  || user?.name  || '—',
                     userEmail: t.createdBy?.email || user?.email || '—',
                     title: t.title,

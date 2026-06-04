@@ -773,12 +773,18 @@ exports.getPeriodReport = catchAsync(async (req, res, next) => {
 
     // Подтягиваем ManagedTask за период (личные + назначенные) во ВСЕХ статусах,
     // чтобы запланированные/в работе тоже попадали в общий отчёт.
-    // Задача попадает в период, если в него входит дедлайн ИЛИ дата завершения —
-    // чтобы завершённые задачи без дедлайна (или с дедлайном вне периода) не терялись.
+    // Задача попадает в период по указанной дате. Дату завершения используем
+    // только для старых/особых задач без дедлайна, чтобы выбранный день не терялся.
     const periodRange = { $gte: new Date(startDate), $lte: new Date(endDate) };
     const managedFilter = {
         $and: [
-            { $or: [{ dueDate: periodRange }, { completedAt: periodRange }] },
+            {
+                $or: [
+                    { dueDate: periodRange },
+                    { dueDate: null, completedAt: periodRange },
+                    { dueDate: { $exists: false }, completedAt: periodRange },
+                ],
+            },
         ],
     };
     if (effectiveUserId) {
@@ -1211,12 +1217,18 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
     }
 
     // Добавляем ManagedTask за период (все статусы — фильтруем ниже по запросу)
-    // Задача попадает в период, если в него входит дедлайн ИЛИ дата завершения —
-    // чтобы завершённые задачи без дедлайна (или с дедлайном вне периода) не терялись.
+    // Задача попадает в период по указанной дате. Дату завершения используем
+    // только для старых/особых задач без дедлайна, чтобы выбранный день не терялся.
     const periodRange = { $gte: new Date(startDate), $lte: new Date(endDate) };
     const managedFilter = {
         $and: [
-            { $or: [{ dueDate: periodRange }, { completedAt: periodRange }] },
+            {
+                $or: [
+                    { dueDate: periodRange },
+                    { dueDate: null, completedAt: periodRange },
+                    { dueDate: { $exists: false }, completedAt: periodRange },
+                ],
+            },
         ],
     };
     if (effectiveUserId) {
@@ -1249,7 +1261,7 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
             : task.createdBy?.name || '—';
 
         reportData.push({
-            date:          (task.status === 'completed' && task.completedAt) ? task.completedAt : (task.dueDate || task.createdAt),
+            date:          task.dueDate || task.completedAt || task.createdAt,
             legalEntity:   '',
             customer:      task.client || '',
             project:       task.project?.name || '—',
