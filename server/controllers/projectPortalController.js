@@ -206,6 +206,8 @@ exports.deleteUpdate = catchAsync(async (req, res, next) => {
     const update = await ProjectUpdate.findOne({ _id: req.params.updateId, projectId: project._id });
     if (!update) return next(new AppError('Обновление не найдено', 404));
 
+    const hadProgress = update.progress != null;
+
     // Удаляем физические файлы обновления.
     (update.files || []).forEach((f) => {
         const fp = path.join(__dirname, '..', f.fileUrl);
@@ -214,7 +216,22 @@ exports.deleteUpdate = catchAsync(async (req, res, next) => {
         }
     });
 
+    // Удаляем связанные события таймлайна (update_published / file_added / progress_changed).
+    await ProjectEvent.deleteMany({ projectId: project._id, 'meta.updateId': update._id });
+
     await update.deleteOne();
+
+    // Откатываем ручной прогресс портала: если удалённое обновление задавало прогресс,
+    // берём прогресс последнего оставшегося обновления, иначе — авто-расчёт по задачам (null).
+    if (hadProgress) {
+        const last = await ProjectUpdate.findOne({
+            projectId: project._id,
+            progress: { $ne: null },
+        }).sort({ createdAt: -1 });
+        project.portal.manualProgress = last ? last.progress : null;
+        await project.save();
+    }
+
     res.status(204).json({ status: 'success', data: null });
 });
 
