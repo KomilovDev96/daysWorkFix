@@ -246,9 +246,22 @@ const ClientPortalPublicPage = () => {
             </Row>
 
             <Divider />
-            <Text type="secondary" style={{ display: 'block', textAlign: 'center', fontSize: 12 }}>
-                Обновлено {dayjs(project.updatedAt).format('DD.MM.YYYY HH:mm')} · DaysWorkFix
-            </Text>
+            <div style={{ textAlign: 'center' }}>
+                <Text type="secondary" style={{ display: 'block', fontSize: 12 }}>
+                    Обновлено {dayjs(project.updatedAt).format('DD.MM.YYYY HH:mm')} · DaysWorkFix
+                </Text>
+                <Text type="secondary" style={{ display: 'block', fontSize: 12, marginTop: 4 }}>
+                    Сделано с <span style={{ color: '#eb2f96' }}>♥</span> командой{' '}
+                    <a
+                        href="https://azdev.uz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ fontWeight: 600 }}
+                    >
+                        azdev.uz
+                    </a>
+                </Text>
+            </div>
         </div>
     );
 };
