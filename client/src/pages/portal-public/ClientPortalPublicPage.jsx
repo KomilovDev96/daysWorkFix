@@ -21,6 +21,12 @@ const STATUS = {
     paused:    { label: 'На паузе',     color: 'warning' },
 };
 
+const TASK_STATUS = {
+    todo:        { label: 'К выполнению', color: 'default' },
+    in_progress: { label: 'В процессе',   color: 'processing' },
+    done:        { label: 'Готово',       color: 'success' },
+};
+
 const EVENT_ICON = {
     project_created:  <RocketOutlined style={{ color: '#1677ff' }} />,
     stage_completed:  <FlagOutlined style={{ color: '#52c41a' }} />,
@@ -185,6 +191,42 @@ const ClientPortalPublicPage = () => {
                     </Col>
                 </Row>
             </Card>
+
+            {/* Задачи (только названия + статус) */}
+            {(() => {
+                const tasks = (project.tasks || []).filter((t) => t.status !== 'cancelled');
+                if (tasks.length === 0) return null;
+                return (
+                    <Card style={{ marginBottom: 24, borderRadius: 12 }} title={`Задачи (${tasks.length})`}>
+                        <Space direction="vertical" size={12} style={{ width: '100%' }}>
+                            {tasks.map((t) => {
+                                const info = TASK_STATUS[t.status] || { label: t.status, color: 'default' };
+                                const isDone = t.status === 'done';
+                                return (
+                                    <div key={t._id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        {isDone
+                                            ? <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                                            : <Badge status={info.color} />}
+                                        <Text
+                                            style={{
+                                                fontSize: 15,
+                                                flex: 1,
+                                                textDecoration: isDone ? 'line-through' : 'none',
+                                                color: isDone ? '#8c8c8c' : undefined,
+                                            }}
+                                        >
+                                            {t.title}
+                                        </Text>
+                                        <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                                            {info.label}
+                                        </Text>
+                                    </div>
+                                );
+                            })}
+                        </Space>
+                    </Card>
+                );
+            })()}
 
             <Row gutter={24}>
                 {/* Обновления */}
