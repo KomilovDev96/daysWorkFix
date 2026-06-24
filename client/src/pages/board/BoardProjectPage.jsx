@@ -747,6 +747,8 @@ const BoardProjectPage = () => {
             title: 'Задача',
             dataIndex: 'title',
             key: 'title',
+            width: 260,
+            fixed: 'left',
             render: (title, record) => {
                 const isFilled = Number(record.hours) > 0
                     && record.customer?.trim()
@@ -871,6 +873,7 @@ const BoardProjectPage = () => {
             title: '',
             key: 'actions',
             width: 100,
+            fixed: 'right',
             render: (_, record) => (
                 <Space>
                     <Button size="small" icon={<EditOutlined />} onClick={() => openEditTask(record)} />
@@ -999,6 +1002,7 @@ const BoardProjectPage = () => {
                                 pagination={{ pageSize: 15 }}
                                 bordered
                                 size="middle"
+                                scroll={{ x: 1400 }}
                                 locale={{ emptyText: <Empty description="Нет задач. Нажмите «Добавить задачу»" /> }}
                             />
                         ),
