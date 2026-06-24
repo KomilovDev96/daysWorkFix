@@ -17,8 +17,9 @@ router.delete('/:id', ctrl.remove);
 router.get('/:id/export', ctrl.exportExcel);
 
 // ── Клиентский портал: настройки, токен, обновления, таймлайн ──────────────────
-// Доступ только admin / projectManager (владение проверяется в контроллере).
-const manage = restrictTo('admin', 'projectManager');
+// Доступ admin / projectManager / worker; реальное право (владение проектом)
+// проверяется в контроллере (loadManageable): admin — любой проект, остальные — свой.
+const manage = restrictTo('admin', 'projectManager', 'worker');
 router.get('/:id/portal',               manage, portalCtrl.getPortal);
 router.patch('/:id/portal',             manage, portalCtrl.updatePortal);
 router.post('/:id/portal/regenerate',   manage, portalCtrl.regenerateToken);

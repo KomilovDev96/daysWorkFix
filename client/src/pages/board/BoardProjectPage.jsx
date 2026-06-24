@@ -1006,7 +1006,7 @@ const BoardProjectPage = () => {
                     { key: 'updates',  label: 'Обновления', children: <UpdatesTab projectId={currentProject._id} /> },
                     { key: 'timeline', label: 'Таймлайн',   children: <TimelineTab projectId={currentProject._id} /> },
                     { key: 'files',    label: 'Файлы',      children: <ProjectFilesTab project={currentProject} /> },
-                    ...(['admin', 'projectManager'].includes(user?.role)
+                    ...(['admin', 'projectManager', 'worker'].includes(user?.role)
                         ? [{ key: 'portal', label: 'Клиентский портал', children: <PortalSettingsTab projectId={currentProject._id} /> }]
                         : []),
                 ]}
