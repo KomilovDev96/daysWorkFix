@@ -33,6 +33,27 @@ const boardTaskSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+// Настройки публичного клиентского портала проекта.
+const portalSchema = new mongoose.Schema(
+    {
+        enabled:          { type: Boolean, default: false },
+        // Публичный токен ссылки /portal/:token. sparse — чтобы много проектов без токена не конфликтовали по unique.
+        token:            { type: String, default: null },
+        // bcrypt-хэш пароля; null = ссылка открыта без пароля (опциональная защита).
+        passwordHash:     { type: String, default: null },
+        // «Ответственный менеджер» для отображения клиенту; фолбэк на createdBy, если не задан.
+        manager:          { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        // Ручные каналы уведомлений клиента (у публичного клиента нет аккаунта).
+        notifyEmail:      { type: String, default: '' },
+        notifyTelegramId: { type: String, default: '' },
+        // Ручной override процента прогресса; null = считать по задачам.
+        manualProgress:   { type: Number, default: null, min: 0, max: 100 },
+        createdAt:        { type: Date, default: null },
+        revokedAt:        { type: Date, default: null },
+    },
+    { _id: false }
+);
+
 const boardProjectSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
@@ -46,8 +67,15 @@ const boardProjectSchema = new mongoose.Schema(
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         clients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         tasks: [boardTaskSchema],
+        portal: { type: portalSchema, default: () => ({}) },
     },
     { timestamps: true }
+);
+
+// Уникальность токена только среди документов, где он задан (sparse partial index).
+boardProjectSchema.index(
+    { 'portal.token': 1 },
+    { unique: true, partialFilterExpression: { 'portal.token': { $type: 'string' } } }
 );
 
 module.exports = mongoose.model('BoardProject', boardProjectSchema);

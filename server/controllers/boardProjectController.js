@@ -4,6 +4,7 @@ const fs   = require('fs');
 const BoardProject = require('../models/BoardProject');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+const { logProjectEvent } = require('../utils/projectEvents');
 
 const STATUS_LABELS = {
     todo: 'К выполнению',
@@ -57,6 +58,10 @@ exports.create = catchAsync(async (req, res) => {
     const populated = await BoardProject.findById(project._id)
         .populate('createdBy', 'name email');
 
+    await logProjectEvent(project._id, 'project_created', `Проект создан: ${project.name}`, {
+        actorId: req.user._id,
+    });
+
     res.status(201).json({ status: 'success', data: { project: populated } });
 });
 
@@ -68,8 +73,21 @@ exports.update = catchAsync(async (req, res, next) => {
         return next(new AppError('Нет прав для редактирования этого проекта', 403));
 
     const { tasks, ...rest } = req.body;
+    const prevDeadline = project.deadline ? new Date(project.deadline).getTime() : null;
     Object.assign(project, rest);
     await project.save();
+
+    // Таймлайн: смена дедлайна.
+    const newDeadline = project.deadline ? new Date(project.deadline).getTime() : null;
+    if (Object.prototype.hasOwnProperty.call(rest, 'deadline') && prevDeadline !== newDeadline) {
+        await logProjectEvent(project._id, 'deadline_changed',
+            project.deadline
+                ? `Дедлайн изменён на ${new Date(project.deadline).toLocaleDateString('ru-RU')}`
+                : 'Дедлайн снят', {
+            meta: { oldDeadline: prevDeadline, newDeadline },
+            actorId: req.user._id,
+        });
+    }
 
     await project.populate('createdBy', 'name email');
     await project.populate('tasks.assignedTo', 'name email');

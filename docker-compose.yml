@@ -49,6 +49,8 @@ services:
       - OLLAMA_URL=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:3b}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # Базовый публичный URL для ссылок клиентского портала в уведомлениях
+      - APP_PUBLIC_URL=${APP_PUBLIC_URL:-}
     volumes:
       - api-uploads:/app/uploads
     networks: [app]

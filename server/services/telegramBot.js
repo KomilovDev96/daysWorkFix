@@ -1423,6 +1423,24 @@ function createBot(token) {
     return bot;
 }
 
+// Module-level ссылка на запущенный бот — чтобы другие сервисы (уведомления портала)
+// могли слать сообщения, не пересоздавая Telegraf.
+let botRef = null;
+
+// Отправить произвольное сообщение пользователю по его telegramId/chatId.
+// Возвращает true при успехе. Никогда не бросает — канал уведомлений не должен
+// ронять вызывающую операцию.
+async function notifyTelegram(telegramId, text, opts = {}) {
+    if (!botRef || !telegramId) return false;
+    try {
+        await botRef.telegram.sendMessage(String(telegramId), text, { parse_mode: 'Markdown', ...opts });
+        return true;
+    } catch (e) {
+        console.error('[notifyTelegram] failed:', e.message);
+        return false;
+    }
+}
+
 function startTelegramBot() {
     const token = process.env.TELEGRAM_BOT_TOKEN;
     if (!token) {
@@ -1430,6 +1448,7 @@ function startTelegramBot() {
         return null;
     }
     const bot = createBot(token);
+    botRef = bot;
     console.log('🤖 Telegram bot launching…');
     loadDraftsFromDB().catch(() => {});
     bot.launch({ dropPendingUpdates: true })
@@ -1440,4 +1459,4 @@ function startTelegramBot() {
     return bot;
 }
 
-module.exports = { startTelegramBot };
+module.exports = { startTelegramBot, notifyTelegram };

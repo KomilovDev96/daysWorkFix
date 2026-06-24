@@ -1,0 +1,617 @@
+{
+  "/Users/macbook/Desktop/local/daysWorkFix/.claude/settings.local.json": {
+    "mtime": 1780305880.4430406,
+    "ast_hash": "f69c7e7a97d1896a5028b901fcdfee42",
+    "semantic_hash": "f69c7e7a97d1896a5028b901fcdfee42"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/eslint.config.js": {
+    "mtime": 1778825444.1272447,
+    "ast_hash": "49c8473bcfcec3aef596a5fb04a6df06",
+    "semantic_hash": "49c8473bcfcec3aef596a5fb04a6df06"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/package.json": {
+    "mtime": 1778825444.1278968,
+    "ast_hash": "54f4f74c52da600adb069bc4f8f7164d",
+    "semantic_hash": "54f4f74c52da600adb069bc4f8f7164d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/App.jsx": {
+    "mtime": 1778825444.1293266,
+    "ast_hash": "6ce018a5b8cfc78662b2c29f49e530a3",
+    "semantic_hash": "6ce018a5b8cfc78662b2c29f49e530a3"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/app/App.jsx": {
+    "mtime": 1780480140.2220545,
+    "ast_hash": "1314d00291181187a856fa37cec4703d",
+    "semantic_hash": "1314d00291181187a856fa37cec4703d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/app/providers/GuestLayout.jsx": {
+    "mtime": 1778825444.129746,
+    "ast_hash": "e28128ec2f5c81dcf98c5d16c1082b18",
+    "semantic_hash": "e28128ec2f5c81dcf98c5d16c1082b18"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/app/providers/MainLayout.jsx": {
+    "mtime": 1780480122.3028376,
+    "ast_hash": "2ec0eefe95f3ff6cdcae650a0cff6d38",
+    "semantic_hash": "2ec0eefe95f3ff6cdcae650a0cff6d38"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/app/providers/QueryProvider.jsx": {
+    "mtime": 1778825444.1299589,
+    "ast_hash": "aa2fe75132329705b483fb07c8152aaf",
+    "semantic_hash": "aa2fe75132329705b483fb07c8152aaf"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/app/providers/store.js": {
+    "mtime": 1778825444.1301417,
+    "ast_hash": "78c6192c0eb6585aea7ad4eb696f8d9c",
+    "semantic_hash": "78c6192c0eb6585aea7ad4eb696f8d9c"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/entities/user/model/authSlice.js": {
+    "mtime": 1778825444.1308134,
+    "ast_hash": "be693cc6ef884e59c1044d3628adec83",
+    "semantic_hash": "be693cc6ef884e59c1044d3628adec83"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/main.jsx": {
+    "mtime": 1778825444.1311882,
+    "ast_hash": "a0ab84eb3f69ac126da93e1e82b8ec61",
+    "semantic_hash": "a0ab84eb3f69ac126da93e1e82b8ec61"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/admin-analytics/AdminAnalyticsPage.jsx": {
+    "mtime": 1778825444.1315095,
+    "ast_hash": "c12f63ec3b598024fd67ad55d8539d41",
+    "semantic_hash": "c12f63ec3b598024fd67ad55d8539d41"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/ai-guide/AIGuidePage.jsx": {
+    "mtime": 1780404166.411687,
+    "ast_hash": "7a1e31e54923c3bbf1cafaa60ca4867b",
+    "semantic_hash": "7a1e31e54923c3bbf1cafaa60ca4867b"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/analytics/AnalyticsPage.jsx": {
+    "mtime": 1778825444.131729,
+    "ast_hash": "fccb1534edd5c4f3662761dab378d9d6",
+    "semantic_hash": "fccb1534edd5c4f3662761dab378d9d6"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/assistant/AssistantPage.jsx": {
+    "mtime": 1778825444.131945,
+    "ast_hash": "522102f2a0f855a77c7823f24595b09d",
+    "semantic_hash": "522102f2a0f855a77c7823f24595b09d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/board/BoardProjectPage.jsx": {
+    "mtime": 1778825444.1321127,
+    "ast_hash": "d5f7e3c18914f0912ad92479c77a47bc",
+    "semantic_hash": "d5f7e3c18914f0912ad92479c77a47bc"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/customer-report/CustomerReportPage.jsx": {
+    "mtime": 1778825444.1323,
+    "ast_hash": "55db5cad347ac66724a705eb625f60da",
+    "semantic_hash": "55db5cad347ac66724a705eb625f60da"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/dashboard/DashboardPage.jsx": {
+    "mtime": 1779105564.2119102,
+    "ast_hash": "c768ca6dabb0f0169e728e72ab137cbf",
+    "semantic_hash": "c768ca6dabb0f0169e728e72ab137cbf"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/day-log/DayLogDetailsPage.jsx": {
+    "mtime": 1780402577.8913627,
+    "ast_hash": "13a295458cd1d0c08345c62b685bc70f",
+    "semantic_hash": "13a295458cd1d0c08345c62b685bc70f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/login/LoginPage.jsx": {
+    "mtime": 1780480150.6991575,
+    "ast_hash": "267622c88ecdff79f4d7ed41a6d2d08b",
+    "semantic_hash": "267622c88ecdff79f4d7ed41a6d2d08b"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/managed-tasks/ManagerTasksPage.jsx": {
+    "mtime": 1780548250.4418094,
+    "ast_hash": "10bff49bd4d34c2841f2530d7918fc8f",
+    "semantic_hash": "10bff49bd4d34c2841f2530d7918fc8f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/managed-tasks/views/CalendarView.jsx": {
+    "mtime": 1778825444.133555,
+    "ast_hash": "be59f1e22202dd51a40d006608977e08",
+    "semantic_hash": "be59f1e22202dd51a40d006608977e08"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/managed-tasks/views/GanttView.jsx": {
+    "mtime": 1778825444.1336915,
+    "ast_hash": "17bb56ddff95f1eb57e9eb0a83aa2fb6",
+    "semantic_hash": "17bb56ddff95f1eb57e9eb0a83aa2fb6"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/managed-tasks/views/TableView.jsx": {
+    "mtime": 1778825444.1338255,
+    "ast_hash": "93fbef2a7d84808bbc88f65985c69c8b",
+    "semantic_hash": "93fbef2a7d84808bbc88f65985c69c8b"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/manager-work-report/ManagerWorkReportPage.jsx": {
+    "mtime": 1778825444.1340225,
+    "ast_hash": "2e839d019ccc5e27820d85f83eaece8e",
+    "semantic_hash": "2e839d019ccc5e27820d85f83eaece8e"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/portal/CustomerPortalPage.jsx": {
+    "mtime": 1778825444.1344302,
+    "ast_hash": "bddd55f63ac90582270236710f2552a1",
+    "semantic_hash": "bddd55f63ac90582270236710f2552a1"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/project-report/ProjectReportPage.jsx": {
+    "mtime": 1778825444.1346185,
+    "ast_hash": "a18cb74007885ee3dacf7fe658c0653f",
+    "semantic_hash": "a18cb74007885ee3dacf7fe658c0653f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/reminders/RemindersPage.jsx": {
+    "mtime": 1780403313.5499415,
+    "ast_hash": "c5a4cc1aee395e460c8267eb904e90bf",
+    "semantic_hash": "c5a4cc1aee395e460c8267eb904e90bf"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/reports/ReportsPage.jsx": {
+    "mtime": 1780568632.1900246,
+    "ast_hash": "98dba047b04c0bd0a8d76f869cabac7d",
+    "semantic_hash": "98dba047b04c0bd0a8d76f869cabac7d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/settings/SettingsPage.jsx": {
+    "mtime": 1778825444.1350496,
+    "ast_hash": "f958572d5a71ca7b664a8dbdbbeb56d0",
+    "semantic_hash": "f958572d5a71ca7b664a8dbdbbeb56d0"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/startup/StartupPage.jsx": {
+    "mtime": 1778825444.1352503,
+    "ast_hash": "56932c1adf91fa26e05ba1f4e0ad79f7",
+    "semantic_hash": "56932c1adf91fa26e05ba1f4e0ad79f7"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/task-panel/TaskPanelPage.jsx": {
+    "mtime": 1778825444.1354342,
+    "ast_hash": "6fdbb1f381a9b0ddfbed072620e1a733",
+    "semantic_hash": "6fdbb1f381a9b0ddfbed072620e1a733"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/templates/TemplatesPage.jsx": {
+    "mtime": 1778825444.1356409,
+    "ast_hash": "1051c327b4d604abefbc46f7f524a3db",
+    "semantic_hash": "1051c327b4d604abefbc46f7f524a3db"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/pages/users/UsersPage.jsx": {
+    "mtime": 1778866208.6627772,
+    "ast_hash": "b4afb17d98ce53cbec18428aed0c17c0",
+    "semantic_hash": "b4afb17d98ce53cbec18428aed0c17c0"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/api/apiClient.js": {
+    "mtime": 1778825444.1359835,
+    "ast_hash": "586978ddfccf34954db1e9db06c73c1f",
+    "semantic_hash": "586978ddfccf34954db1e9db06c73c1f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/api/managedTasksApi.js": {
+    "mtime": 1780480827.5174046,
+    "ast_hash": "884409d40bf49341d2a8a2a8236db679",
+    "semantic_hash": "884409d40bf49341d2a8a2a8236db679"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/lib/ProtectedRoute.jsx": {
+    "mtime": 1778825444.1364477,
+    "ast_hash": "83acb9906707c3c06d1797cf53dbfa29",
+    "semantic_hash": "83acb9906707c3c06d1797cf53dbfa29"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/ui/CreatableSelect.jsx": {
+    "mtime": 1780480903.375839,
+    "ast_hash": "17267cb924e5fb5118d8bc0e9e267f83",
+    "semantic_hash": "17267cb924e5fb5118d8bc0e9e267f83"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/ui/ErrorBoundary.jsx": {
+    "mtime": 1779105526.6935267,
+    "ast_hash": "9a4ef96b1dc1035717309cf28ddcebe2",
+    "semantic_hash": "9a4ef96b1dc1035717309cf28ddcebe2"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/ui/ExportTasksButton.jsx": {
+    "mtime": 1778825444.1366317,
+    "ast_hash": "27cfd269fc27a9215cdaaca226323b4e",
+    "semantic_hash": "27cfd269fc27a9215cdaaca226323b4e"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/shared/ui/TaskCommentsDrawer.jsx": {
+    "mtime": 1778825444.1367457,
+    "ast_hash": "e2d46299e539b4fcbc88544be8a30a8d",
+    "semantic_hash": "e2d46299e539b4fcbc88544be8a30a8d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/widgets/dashboard-cards/DashboardCards.jsx": {
+    "mtime": 1778825444.1370208,
+    "ast_hash": "2c4e9efc9c69f1ded0c800c626ea5514",
+    "semantic_hash": "2c4e9efc9c69f1ded0c800c626ea5514"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/vite.config.js": {
+    "mtime": 1778825444.1372068,
+    "ast_hash": "c641f01e0c4ef8370af67bbdf7af2354",
+    "semantic_hash": "c641f01e0c4ef8370af67bbdf7af2354"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/config/db.js": {
+    "mtime": 1778825444.1376035,
+    "ast_hash": "91a8a85ce2f214b531c5ddaf3feb5450",
+    "semantic_hash": "91a8a85ce2f214b531c5ddaf3feb5450"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/assistantController.js": {
+    "mtime": 1778908629.9100568,
+    "ast_hash": "7126d2267552030c8a43cdbdf9135b39",
+    "semantic_hash": "7126d2267552030c8a43cdbdf9135b39"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/authController.js": {
+    "mtime": 1778866068.0012984,
+    "ast_hash": "078438fcc6d21d3248cb8edb5913b4f8",
+    "semantic_hash": "078438fcc6d21d3248cb8edb5913b4f8"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/boardProjectController.js": {
+    "mtime": 1778825444.1380534,
+    "ast_hash": "c1a8e568d2a76fa493e10cbc4900cf57",
+    "semantic_hash": "c1a8e568d2a76fa493e10cbc4900cf57"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/fileController.js": {
+    "mtime": 1779105323.616633,
+    "ast_hash": "d7e63c61ba9257cfb03837687fc26dce",
+    "semantic_hash": "d7e63c61ba9257cfb03837687fc26dce"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/logController.js": {
+    "mtime": 1778825444.138223,
+    "ast_hash": "4606caf161ced06dc4938868df5fb641",
+    "semantic_hash": "4606caf161ced06dc4938868df5fb641"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/managedTaskController.js": {
+    "mtime": 1780481429.2597756,
+    "ast_hash": "84f76672359eca143d6273d3b355b3a4",
+    "semantic_hash": "84f76672359eca143d6273d3b355b3a4"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/portalController.js": {
+    "mtime": 1778825444.1385238,
+    "ast_hash": "b904aa1315cb871681d4b011ca5cf437",
+    "semantic_hash": "b904aa1315cb871681d4b011ca5cf437"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/projectController.js": {
+    "mtime": 1778825444.1385918,
+    "ast_hash": "cdd646758658a32620ecc85a9ce1fbc3",
+    "semantic_hash": "cdd646758658a32620ecc85a9ce1fbc3"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/projectTemplateController.js": {
+    "mtime": 1778825444.138667,
+    "ast_hash": "66f9090e66c10a59f3f7eadf304cba50",
+    "semantic_hash": "66f9090e66c10a59f3f7eadf304cba50"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/reminderController.js": {
+    "mtime": 1780402996.246434,
+    "ast_hash": "3d2cf4021c6f8a2da03927df38f19797",
+    "semantic_hash": "3d2cf4021c6f8a2da03927df38f19797"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/reportController.js": {
+    "mtime": 1780568624.4211082,
+    "ast_hash": "0052776fd15dbf9ddc2d27146d342f08",
+    "semantic_hash": "0052776fd15dbf9ddc2d27146d342f08"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/settingsController.js": {
+    "mtime": 1778825444.1390011,
+    "ast_hash": "68fe3a5ff08d8caddd214ec7c0f9edd1",
+    "semantic_hash": "68fe3a5ff08d8caddd214ec7c0f9edd1"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/startupController.js": {
+    "mtime": 1778825444.1390822,
+    "ast_hash": "b35d8170a9b68dee8daef0753ee36ca3",
+    "semantic_hash": "b35d8170a9b68dee8daef0753ee36ca3"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/controllers/taskController.js": {
+    "mtime": 1780314285.9932473,
+    "ast_hash": "60485841cc88f99e50ca6a7572115438",
+    "semantic_hash": "60485841cc88f99e50ca6a7572115438"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/createAdmin.js": {
+    "mtime": 1778825686.1000826,
+    "ast_hash": "59167b6d3421d1cada43e7feefc2dc09",
+    "semantic_hash": "59167b6d3421d1cada43e7feefc2dc09"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/dbInspect.js": {
+    "mtime": 1778906451.0046186,
+    "ast_hash": "12ba611f4756932e78e4d0c1720ac1fb",
+    "semantic_hash": "12ba611f4756932e78e4d0c1720ac1fb"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/db_export.json": {
+    "mtime": 1778825444.1395085,
+    "ast_hash": "84cf5f6533c52470453d52713700b6a8",
+    "semantic_hash": "84cf5f6533c52470453d52713700b6a8"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/fixIndexes.js": {
+    "mtime": 1778869597.2095215,
+    "ast_hash": "7539ee62ac1606b7bf1e21a9f616b9b2",
+    "semantic_hash": "7539ee62ac1606b7bf1e21a9f616b9b2"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/middleware/authMiddleware.js": {
+    "mtime": 1778825444.1396387,
+    "ast_hash": "099107f45695980dd5380f472425ca2d",
+    "semantic_hash": "099107f45695980dd5380f472425ca2d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/middleware/errorMiddleware.js": {
+    "mtime": 1779109074.3357773,
+    "ast_hash": "dff81d8f82040a6308eb72d6dfc9f92d",
+    "semantic_hash": "dff81d8f82040a6308eb72d6dfc9f92d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/middleware/roleMiddleware.js": {
+    "mtime": 1778825444.1397872,
+    "ast_hash": "2ce6810e4fc9941f3a30539272b2aad1",
+    "semantic_hash": "2ce6810e4fc9941f3a30539272b2aad1"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/middleware/uploadMiddleware.js": {
+    "mtime": 1778825444.1399755,
+    "ast_hash": "848d777734273d23b4453e08ee275b0f",
+    "semantic_hash": "848d777734273d23b4453e08ee275b0f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/AiInsight.js": {
+    "mtime": 1778825444.1400902,
+    "ast_hash": "dc5a38b50d04f3acbef9842f4130893b",
+    "semantic_hash": "dc5a38b50d04f3acbef9842f4130893b"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/AppSettings.js": {
+    "mtime": 1778825444.1401725,
+    "ast_hash": "feee52249c12f92d4665043e06bb7529",
+    "semantic_hash": "feee52249c12f92d4665043e06bb7529"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/AssistantKnowledge.js": {
+    "mtime": 1778907747.895656,
+    "ast_hash": "ee24e30fd8b70a22f2912b4b19d8a4d7",
+    "semantic_hash": "ee24e30fd8b70a22f2912b4b19d8a4d7"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/BoardProject.js": {
+    "mtime": 1778825444.1402433,
+    "ast_hash": "f0763ab170950e28d14df245de767a61",
+    "semantic_hash": "f0763ab170950e28d14df245de767a61"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/DayLog.js": {
+    "mtime": 1778825444.1403317,
+    "ast_hash": "e3fb89ba751b021d979554b4ced0da36",
+    "semantic_hash": "e3fb89ba751b021d979554b4ced0da36"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/ManagedTask.js": {
+    "mtime": 1780481411.3199832,
+    "ast_hash": "f5f715725fb33ce4096d69587dc72624",
+    "semantic_hash": "f5f715725fb33ce4096d69587dc72624"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/Project.js": {
+    "mtime": 1778825444.1406176,
+    "ast_hash": "b7eb6f4bb919d9c8314b32d5139da485",
+    "semantic_hash": "b7eb6f4bb919d9c8314b32d5139da485"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/ProjectComment.js": {
+    "mtime": 1778825444.1406913,
+    "ast_hash": "ad74226a894dec060df318c6696da2d4",
+    "semantic_hash": "ad74226a894dec060df318c6696da2d4"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/ProjectTemplate.js": {
+    "mtime": 1778825444.140775,
+    "ast_hash": "6b1f7577c8fe075f5caf134e3f38bc83",
+    "semantic_hash": "6b1f7577c8fe075f5caf134e3f38bc83"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/Reminder.js": {
+    "mtime": 1780402979.2789116,
+    "ast_hash": "688e3a0fa01c7e628b29cf9bf5df3d3f",
+    "semantic_hash": "688e3a0fa01c7e628b29cf9bf5df3d3f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/SavedClient.js": {
+    "mtime": 1780480783.4488568,
+    "ast_hash": "dacd5c3ab911c0bed2b2f1b659f77c4c",
+    "semantic_hash": "dacd5c3ab911c0bed2b2f1b659f77c4c"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/StartupProject.js": {
+    "mtime": 1778825444.140843,
+    "ast_hash": "a7566bd43e7b55a3f7e0d4b12ec85a5b",
+    "semantic_hash": "a7566bd43e7b55a3f7e0d4b12ec85a5b"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/Task.js": {
+    "mtime": 1780309622.0875137,
+    "ast_hash": "97c133597b5566c83c1f80f832ca0910",
+    "semantic_hash": "97c133597b5566c83c1f80f832ca0910"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/TaskFile.js": {
+    "mtime": 1778825444.1409788,
+    "ast_hash": "8997a2fbce90dead2a1dd5483e87b506",
+    "semantic_hash": "8997a2fbce90dead2a1dd5483e87b506"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/TelegramDraft.js": {
+    "mtime": 1780402577.8941727,
+    "ast_hash": "8ca8ac9d2a6cd4d7d5e5601ea8a75cd4",
+    "semantic_hash": "8ca8ac9d2a6cd4d7d5e5601ea8a75cd4"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/User.js": {
+    "mtime": 1778869588.5787876,
+    "ast_hash": "9b23f3bddd6e4a695c316150c12d980a",
+    "semantic_hash": "9b23f3bddd6e4a695c316150c12d980a"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/models/UserProject.js": {
+    "mtime": 1780307267.3569233,
+    "ast_hash": "5efd3d0ddae7008369c5d8e2c8b3be75",
+    "semantic_hash": "5efd3d0ddae7008369c5d8e2c8b3be75"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/package.json": {
+    "mtime": 1778865491.1341152,
+    "ast_hash": "4931830e42d20a8775453a6b18e54c23",
+    "semantic_hash": "4931830e42d20a8775453a6b18e54c23"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/assistantRoutes.js": {
+    "mtime": 1778907890.0803108,
+    "ast_hash": "f673a310aadb1ac5e185dd28689f69e1",
+    "semantic_hash": "f673a310aadb1ac5e185dd28689f69e1"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/authRoutes.js": {
+    "mtime": 1778866089.8977692,
+    "ast_hash": "05cc94c24a2506d8d3466158d45eb3b7",
+    "semantic_hash": "05cc94c24a2506d8d3466158d45eb3b7"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/boardProjectRoutes.js": {
+    "mtime": 1778825444.1419663,
+    "ast_hash": "49039e23a32c8eca3cb16cd420e3fda9",
+    "semantic_hash": "49039e23a32c8eca3cb16cd420e3fda9"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/fileRoutes.js": {
+    "mtime": 1778825444.1420474,
+    "ast_hash": "a5958ca941849639ea7d9c9acf519451",
+    "semantic_hash": "a5958ca941849639ea7d9c9acf519451"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/logRoutes.js": {
+    "mtime": 1778825444.142113,
+    "ast_hash": "a9ad0d3fb4651e36ddc7286dd2cb4928",
+    "semantic_hash": "a9ad0d3fb4651e36ddc7286dd2cb4928"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/managedTaskRoutes.js": {
+    "mtime": 1780480819.466413,
+    "ast_hash": "c97f5d732ebbaa7219c43e4013ee4a90",
+    "semantic_hash": "c97f5d732ebbaa7219c43e4013ee4a90"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/portalRoutes.js": {
+    "mtime": 1778825444.1423664,
+    "ast_hash": "c3d4f4a539c39e251a35573b096ca871",
+    "semantic_hash": "c3d4f4a539c39e251a35573b096ca871"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/projectRoutes.js": {
+    "mtime": 1778825444.1424332,
+    "ast_hash": "ee6fb82d86a9980668c4fe4f374d38d6",
+    "semantic_hash": "ee6fb82d86a9980668c4fe4f374d38d6"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/projectTemplateRoutes.js": {
+    "mtime": 1778825444.1425076,
+    "ast_hash": "09e985d88916d09319a570ff4331295f",
+    "semantic_hash": "09e985d88916d09319a570ff4331295f"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/reminderRoutes.js": {
+    "mtime": 1780403005.1751823,
+    "ast_hash": "0d1b0b9f63b9036c0e8b6edccd03ef51",
+    "semantic_hash": "0d1b0b9f63b9036c0e8b6edccd03ef51"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/reportRoutes.js": {
+    "mtime": 1778825444.1426911,
+    "ast_hash": "b4dce243438b48076fd3c56feb15d523",
+    "semantic_hash": "b4dce243438b48076fd3c56feb15d523"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/settingsRoutes.js": {
+    "mtime": 1778825444.1427727,
+    "ast_hash": "c2f7a4c9e3e3b9b93d6ed6243c563e61",
+    "semantic_hash": "c2f7a4c9e3e3b9b93d6ed6243c563e61"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/startupRoutes.js": {
+    "mtime": 1778825444.1428382,
+    "ast_hash": "25c3ba30e9307b1b4ef67a9d6489494b",
+    "semantic_hash": "25c3ba30e9307b1b4ef67a9d6489494b"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/routes/taskRoutes.js": {
+    "mtime": 1780314306.4024138,
+    "ast_hash": "52a13774406e89dd60bce90e115e275e",
+    "semantic_hash": "52a13774406e89dd60bce90e115e275e"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/seedKnowledge.js": {
+    "mtime": 1778907761.6494098,
+    "ast_hash": "fdeabec41376ea3ac2a04e758df19ed2",
+    "semantic_hash": "fdeabec41376ea3ac2a04e758df19ed2"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/server.js": {
+    "mtime": 1780403014.1242027,
+    "ast_hash": "bc93a0a678bed22a19ccec8759df540a",
+    "semantic_hash": "bc93a0a678bed22a19ccec8759df540a"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/services/excelService.js": {
+    "mtime": 1780402577.8953114,
+    "ast_hash": "edd23483bfe91679f2afa0f038d05333",
+    "semantic_hash": "edd23483bfe91679f2afa0f038d05333"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/services/ollamaService.js": {
+    "mtime": 1780403044.5361342,
+    "ast_hash": "19d6b14e784c0075f34f369f5e11497d",
+    "semantic_hash": "19d6b14e784c0075f34f369f5e11497d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/services/teamContextService.js": {
+    "mtime": 1778908585.4171703,
+    "ast_hash": "3e70a4dbd9c7b346fd0fd6592439ff27",
+    "semantic_hash": "3e70a4dbd9c7b346fd0fd6592439ff27"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/services/telegramBot.js": {
+    "mtime": 1780403690.992962,
+    "ast_hash": "9f89c55d90ce2da12e22da087745fc87",
+    "semantic_hash": "9f89c55d90ce2da12e22da087745fc87"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/utils/appError.js": {
+    "mtime": 1778825444.1440773,
+    "ast_hash": "8208ffc61e65b2f1f611fc7c95229ff9",
+    "semantic_hash": "8208ffc61e65b2f1f611fc7c95229ff9"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/utils/catchAsync.js": {
+    "mtime": 1778825444.144255,
+    "ast_hash": "7ef909f677a49d50622b34e019a2def9",
+    "semantic_hash": "7ef909f677a49d50622b34e019a2def9"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/utils/seedAdmin.js": {
+    "mtime": 1778825444.1444154,
+    "ast_hash": "42f5f2e0ba1e07caab20fbc5df2b84e7",
+    "semantic_hash": "42f5f2e0ba1e07caab20fbc5df2b84e7"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/.github/workflows/deploy.yml": {
+    "mtime": 1780305814.190961,
+    "ast_hash": "c01b52cc7ff894b5e4f3551df6d3d090",
+    "semantic_hash": "c01b52cc7ff894b5e4f3551df6d3d090"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/DEPLOY.md": {
+    "mtime": 1778922497.6796918,
+    "ast_hash": "c058dd5125fe81d3bc5eb5b3377b0a88",
+    "semantic_hash": "c058dd5125fe81d3bc5eb5b3377b0a88"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/README.md": {
+    "mtime": 1778953586.195302,
+    "ast_hash": "96af6dd3912cd2f7bcf1c54e30a243c7",
+    "semantic_hash": "96af6dd3912cd2f7bcf1c54e30a243c7"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/README.md": {
+    "mtime": 1778825444.1271656,
+    "ast_hash": "1c14baf77117a7d453d8a973e0b44ad1",
+    "semantic_hash": "1c14baf77117a7d453d8a973e0b44ad1"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/index.html": {
+    "mtime": 1778825444.127329,
+    "ast_hash": "eb0a3f524f3888ba854d3546dd53c302",
+    "semantic_hash": "eb0a3f524f3888ba854d3546dd53c302"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/docker-compose.yml": {
+    "mtime": 1778923312.7338097,
+    "ast_hash": "b7eeacbd4d1f99236a7900c356be04a6",
+    "semantic_hash": "b7eeacbd4d1f99236a7900c356be04a6"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/README.md": {
+    "mtime": 1778825444.1374774,
+    "ast_hash": "9908a53b99ad09e2a62e21c6f881f663",
+    "semantic_hash": "9908a53b99ad09e2a62e21c6f881f663"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/public/favicon.png": {
+    "mtime": 1778825444.1282215,
+    "ast_hash": "eedd66300e2576aab060dd02f6bbfee3",
+    "semantic_hash": "eedd66300e2576aab060dd02f6bbfee3"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/public/logo.png": {
+    "mtime": 1778825444.1285968,
+    "ast_hash": "dac1e6d0c8453351efac2c21753af683",
+    "semantic_hash": "dac1e6d0c8453351efac2c21753af683"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/public/vite.svg": {
+    "mtime": 1778825444.128747,
+    "ast_hash": "8e3a10e157f75ada21ab742c022d5430",
+    "semantic_hash": "8e3a10e157f75ada21ab742c022d5430"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/public/weeko-logo-icon.svg": {
+    "mtime": 1778825444.1288233,
+    "ast_hash": "b3e116dad1819b6b7ed30a615f02706d",
+    "semantic_hash": "b3e116dad1819b6b7ed30a615f02706d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/public/weeko-logo.svg": {
+    "mtime": 1778825444.1290162,
+    "ast_hash": "a7854c831f8166c0f5b184700d91f437",
+    "semantic_hash": "a7854c831f8166c0f5b184700d91f437"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/client/src/assets/react.svg": {
+    "mtime": 1778825444.1305974,
+    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
+    "semantic_hash": "f0402b67b6ce880f65666bb49e841696"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/uploads/file-1772769502523-456835759.jpg": {
+    "mtime": 1778825444.143474,
+    "ast_hash": "e8aad9d66c297bdf10b94560f158307a",
+    "semantic_hash": "e8aad9d66c297bdf10b94560f158307a"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/uploads/file-1773292661683-397642878.jpg": {
+    "mtime": 1778825444.1437447,
+    "ast_hash": "3f30f8987aa91da8ecfc64c95adfa84d",
+    "semantic_hash": "3f30f8987aa91da8ecfc64c95adfa84d"
+  },
+  "/Users/macbook/Desktop/local/daysWorkFix/server/uploads/file-1773658112367-678812067.jpg": {
+    "mtime": 1778825444.1439445,
+    "ast_hash": "8d599a28c24be81999b527583c002f9b",
+    "semantic_hash": "8d599a28c24be81999b527583c002f9b"
+  }
+}

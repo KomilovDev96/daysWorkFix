@@ -40,6 +40,7 @@ app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/assistant', require('./routes/assistantRoutes'));
 app.use('/api/startup', require('./routes/startupRoutes'));
 app.use('/api/portal',  require('./routes/portalRoutes'));
+app.use('/api/public',  require('./routes/publicPortalRoutes'));   // публичный портал по токену (без auth)
 app.use('/api/board-projects', require('./routes/boardProjectRoutes'));
 app.use('/api/settings',      require('./routes/settingsRoutes'));
 app.use('/api/managed-tasks', require('./routes/managedTaskRoutes'));

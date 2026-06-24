@@ -1,7 +1,9 @@
 const express = require('express');
-const ctrl    = require('../controllers/boardProjectController');
-const protect = require('../middleware/authMiddleware');
-const upload  = require('../middleware/uploadMiddleware');
+const ctrl       = require('../controllers/boardProjectController');
+const portalCtrl = require('../controllers/projectPortalController');
+const protect    = require('../middleware/authMiddleware');
+const restrictTo = require('../middleware/roleMiddleware');
+const upload     = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 router.use(protect);
@@ -13,6 +15,17 @@ router.patch('/:id', ctrl.update);
 router.delete('/:id', ctrl.remove);
 
 router.get('/:id/export', ctrl.exportExcel);
+
+// ── Клиентский портал: настройки, токен, обновления, таймлайн ──────────────────
+// Доступ только admin / projectManager (владение проверяется в контроллере).
+const manage = restrictTo('admin', 'projectManager');
+router.get('/:id/portal',               manage, portalCtrl.getPortal);
+router.patch('/:id/portal',             manage, portalCtrl.updatePortal);
+router.post('/:id/portal/regenerate',   manage, portalCtrl.regenerateToken);
+router.get('/:id/updates',              manage, portalCtrl.getUpdates);
+router.post('/:id/updates',             manage, upload.array('files', 10), portalCtrl.publishUpdate);
+router.delete('/:id/updates/:updateId', manage, portalCtrl.deleteUpdate);
+router.get('/:id/timeline',             manage, portalCtrl.getTimeline);
 
 router.post('/:id/tasks',           ctrl.addTask);
 router.patch('/:id/tasks/:taskId',  ctrl.updateTask);

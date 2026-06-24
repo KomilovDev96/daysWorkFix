@@ -3,8 +3,12 @@ import {
     Typography, Card, Button, Table, Tag, Space, Modal, Form, Input,
     Select, DatePicker, message, Popconfirm, Drawer, InputNumber,
     Row, Col, Statistic, Progress, Empty, Tooltip, Badge, Checkbox,
-    Avatar, List, Divider, Upload, Image
+    Avatar, List, Divider, Upload, Image, Tabs
 } from 'antd';
+import UpdatesTab from './tabs/UpdatesTab';
+import TimelineTab from './tabs/TimelineTab';
+import ProjectFilesTab from './tabs/ProjectFilesTab';
+import PortalSettingsTab from './tabs/PortalSettingsTab';
 import {
     PlusOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined,
     ProjectOutlined, CheckCircleOutlined, ClockCircleOutlined,
@@ -937,54 +941,75 @@ const BoardProjectPage = () => {
                 </Space>
             </div>
 
-            {/* Stats */}
-            <Row gutter={16} style={{ marginBottom: 16 }}>
-                <Col span={4}>
-                    <Card size="small">
-                        <Statistic title="Всего задач" value={stats.total} prefix={<UnorderedListOutlined />} />
-                    </Card>
-                </Col>
-                <Col span={4}>
-                    <Card size="small">
-                        <Statistic title="Выполнено" value={stats.done} valueStyle={{ color: '#3f8600' }} prefix={<CheckCircleOutlined />} />
-                    </Card>
-                </Col>
-                <Col span={4}>
-                    <Card size="small">
-                        <Statistic title="Часов" value={stats.hours} suffix="ч" prefix={<ClockCircleOutlined />} />
-                    </Card>
-                </Col>
-                <Col span={4}>
-                    <Card size="small">
-                        <Statistic
-                            title="Оплачено"
-                            value={stats.paid}
-                            suffix={`/ ${stats.total}`}
-                            valueStyle={{ color: stats.paid === stats.total && stats.total > 0 ? '#3f8600' : '#faad14' }}
-                        />
-                    </Card>
-                </Col>
-                <Col span={8}>
-                    <Card size="small">
-                        <Text type="secondary">Прогресс</Text>
-                        <Progress
-                            percent={stats.rate}
-                            status={stats.rate === 100 ? 'success' : 'active'}
-                            style={{ marginTop: 6 }}
-                        />
-                    </Card>
-                </Col>
-            </Row>
-
-            {/* Task table */}
-            <Table
-                columns={taskColumns}
-                dataSource={currentProject.tasks}
-                rowKey="_id"
-                pagination={{ pageSize: 15 }}
-                bordered
-                size="middle"
-                locale={{ emptyText: <Empty description="Нет задач. Нажмите «Добавить задачу»" /> }}
+            {/* Tabs: Обзор / Задачи / Обновления / Таймлайн / Файлы / Клиентский портал */}
+            <Tabs
+                defaultActiveKey="overview"
+                items={[
+                    {
+                        key: 'overview',
+                        label: 'Обзор',
+                        children: (
+                            <Row gutter={16} style={{ marginBottom: 16 }}>
+                                <Col xs={12} md={4}>
+                                    <Card size="small">
+                                        <Statistic title="Всего задач" value={stats.total} prefix={<UnorderedListOutlined />} />
+                                    </Card>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Card size="small">
+                                        <Statistic title="Выполнено" value={stats.done} valueStyle={{ color: '#3f8600' }} prefix={<CheckCircleOutlined />} />
+                                    </Card>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Card size="small">
+                                        <Statistic title="Часов" value={stats.hours} suffix="ч" prefix={<ClockCircleOutlined />} />
+                                    </Card>
+                                </Col>
+                                <Col xs={12} md={4}>
+                                    <Card size="small">
+                                        <Statistic
+                                            title="Оплачено"
+                                            value={stats.paid}
+                                            suffix={`/ ${stats.total}`}
+                                            valueStyle={{ color: stats.paid === stats.total && stats.total > 0 ? '#3f8600' : '#faad14' }}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col xs={24} md={8}>
+                                    <Card size="small">
+                                        <Text type="secondary">Прогресс</Text>
+                                        <Progress
+                                            percent={stats.rate}
+                                            status={stats.rate === 100 ? 'success' : 'active'}
+                                            style={{ marginTop: 6 }}
+                                        />
+                                    </Card>
+                                </Col>
+                            </Row>
+                        ),
+                    },
+                    {
+                        key: 'tasks',
+                        label: `Задачи (${stats.total})`,
+                        children: (
+                            <Table
+                                columns={taskColumns}
+                                dataSource={currentProject.tasks}
+                                rowKey="_id"
+                                pagination={{ pageSize: 15 }}
+                                bordered
+                                size="middle"
+                                locale={{ emptyText: <Empty description="Нет задач. Нажмите «Добавить задачу»" /> }}
+                            />
+                        ),
+                    },
+                    { key: 'updates',  label: 'Обновления', children: <UpdatesTab projectId={currentProject._id} /> },
+                    { key: 'timeline', label: 'Таймлайн',   children: <TimelineTab projectId={currentProject._id} /> },
+                    { key: 'files',    label: 'Файлы',      children: <ProjectFilesTab project={currentProject} /> },
+                    ...(['admin', 'projectManager'].includes(user?.role)
+                        ? [{ key: 'portal', label: 'Клиентский портал', children: <PortalSettingsTab projectId={currentProject._id} /> }]
+                        : []),
+                ]}
             />
 
             {/* Edit Project Modal */}

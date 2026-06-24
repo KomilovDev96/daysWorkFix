@@ -19,6 +19,7 @@ import UsersPage           from '../pages/users/UsersPage';
 import TemplatesPage       from '../pages/templates/TemplatesPage';
 import BoardProjectPage    from '../pages/board/BoardProjectPage';
 import CustomerPortalPage  from '../pages/portal/CustomerPortalPage';
+import ClientPortalPublicPage from '../pages/portal-public/ClientPortalPublicPage';
 import GuestLayout         from './providers/GuestLayout';
 import ProjectReportPage   from '../pages/project-report/ProjectReportPage';
 import CustomerReportPage  from '../pages/customer-report/CustomerReportPage';
@@ -71,6 +72,9 @@ const App = () => (
                     <ErrorBoundary>
                     <Routes>
                         <Route path="/login" element={<LoginPage />} />
+
+                        {/* Публичный клиентский портал по токену — без авторизации */}
+                        <Route path="/portal/:token" element={<ClientPortalPublicPage />} />
 
                         {/* Гостевой портал */}
                         <Route element={<ProtectedRoute allowedRoles={['guest']} />}>
