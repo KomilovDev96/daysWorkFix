@@ -40,6 +40,7 @@ jobs:
             cd "$APP/server"
             node fixIndexes.js || echo "fixIndexes skipped"
             node seedKnowledge.js || echo "seedKnowledge skipped"
+            node scripts/cleanupOrphanEvents.js || echo "cleanupOrphanEvents skipped"
 
             echo "===== Reload pm2 ====="
             pm2 reload daysworkfix-server --update-env
