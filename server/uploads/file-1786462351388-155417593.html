@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fabrio — Production Control Center: что добавили</title>
+<meta name="description" content="Кто, куда и в каком порядке заходит в новой части системы — план производства, назначения, бригады, дашборд. Со схемами и стрелками." />
+<style>
+  :root{
+    --paper: #EEF0F4;
+    --surface: #FFFFFF;
+    --surface-2: #E4E7EF;
+    --ink: #1E2233;
+    --ink-soft: #565C72;
+    --ink-faint: #7A8098;
+    --line: #D6DAE5;
+    --indigo: #35408C;
+    --indigo-deep: #232C66;
+    --indigo-tint: #E4E7F5;
+    --sage: #3F7A54;
+    --sage-tint: #E4F0E7;
+    --amber: #96661C;
+    --amber-tint: #F5EBDA;
+    --rust: #9C4430;
+    --rust-tint: #F4E4E0;
+    --shadow: 0 1px 2px rgba(30,34,51,0.06), 0 8px 24px -12px rgba(30,34,51,0.18);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper: #171A22; --surface: #1E212C; --surface-2: #262A38; --ink: #E7E8EE; --ink-soft: #A0A5BA;
+      --ink-faint: #7A8098; --line: #333748; --indigo: #8C9AE0; --indigo-deep: #B7C0EE; --indigo-tint: #232A44;
+      --sage: #7FCB94; --sage-tint: #1F3327; --amber: #D9A65B; --amber-tint: #362A16; --rust: #E08571; --rust-tint: #3A211C;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #171A22; --surface: #1E212C; --surface-2: #262A38; --ink: #E7E8EE; --ink-soft: #A0A5BA;
+    --ink-faint: #7A8098; --line: #333748; --indigo: #8C9AE0; --indigo-deep: #B7C0EE; --indigo-tint: #232A44;
+    --sage: #7FCB94; --sage-tint: #1F3327; --amber: #D9A65B; --amber-tint: #362A16; --rust: #E08571; --rust-tint: #3A211C;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"]{
+    --paper: #EEF0F4; --surface: #FFFFFF; --surface-2: #E4E7EF; --ink: #1E2233; --ink-soft: #565C72;
+    --ink-faint: #7A8098; --line: #D6DAE5; --indigo: #35408C; --indigo-deep: #232C66; --indigo-tint: #E4E7F5;
+    --sage: #3F7A54; --sage-tint: #E4F0E7; --amber: #96661C; --amber-tint: #F5EBDA; --rust: #9C4430; --rust-tint: #F4E4E0;
+    --shadow: 0 1px 2px rgba(30,34,51,0.06), 0 8px 24px -12px rgba(30,34,51,0.18);
+  }
+
+  *{ box-sizing: border-box; }
+  html{ font-size: 17px; }
+  body{
+    margin:0; background: var(--paper); color: var(--ink);
+    font-family: var(--font-body); line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  ::selection{ background: var(--indigo-tint); color: var(--ink); }
+  a{ color: var(--indigo); }
+  a:focus-visible, button:focus-visible, summary:focus-visible{ outline: 2px solid var(--indigo); outline-offset: 2px; border-radius: 3px; }
+  h1,h2,h3{ font-family: var(--font-display); text-wrap: balance; color: var(--ink); }
+  code, .mono{ font-family: var(--font-mono); }
+
+  .masthead{ border-bottom: 1px solid var(--line); background: var(--surface); }
+  .masthead-inner{ max-width: 1120px; margin: 0 auto; padding: 40px 32px 28px; }
+  .eyebrow{ font-family: var(--font-mono); font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--indigo); display:flex; align-items:center; gap:10px; }
+  .eyebrow .dot{ width:6px; height:6px; border-radius:50%; background: var(--indigo); display:inline-block; }
+  h1{ font-size: 2.05rem; font-weight: 700; margin: 10px 0 8px; letter-spacing: -0.01em; }
+  .subtitle{ color: var(--ink-soft); font-size: 1.05rem; max-width: 68ch; margin: 0 0 18px; }
+  .meta-strip{ display:flex; flex-wrap:wrap; gap: 10px 22px; font-size: 0.85rem; color: var(--ink-faint); border-top: 1px solid var(--line); padding-top: 14px; }
+  .meta-strip b{ color: var(--ink-soft); font-weight: 600; }
+
+  .shell{ max-width: 1120px; margin: 0 auto; padding: 36px 32px 100px; display: grid; grid-template-columns: 232px minmax(0,1fr); gap: 48px; align-items: start; }
+  nav.index{ position: sticky; top: 24px; align-self: start; }
+  nav.index .index-title{ font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
+  nav.index ol{ list-style: none; margin:0; padding:0; border-left: 1px solid var(--line); }
+  nav.index li{ margin:0; }
+  nav.index a{ display:block; padding: 7px 0 7px 16px; margin-left: -1px; border-left: 2px solid transparent; text-decoration:none; color: var(--ink-soft); font-size: 0.9rem; }
+  nav.index a:hover{ color: var(--indigo); border-left-color: var(--line); }
+  nav.index .index-sub{ list-style:none; margin:0; padding:0 0 6px 12px; }
+  nav.index .index-sub a{ font-size: 0.82rem; padding: 4px 0 4px 16px; color: var(--ink-faint); }
+
+  main{ min-width:0; }
+  section{ margin-bottom: 56px; scroll-margin-top: 20px; }
+  section h2{ font-size: 1.5rem; margin: 0 0 6px; display:flex; align-items:baseline; gap:10px; }
+  section > .section-kicker{ font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); margin: 0 0 4px; }
+  section > p.lead{ color: var(--ink-soft); max-width: 68ch; margin: 10px 0 20px; }
+
+  .card{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 26px 28px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .card h3{ font-size: 1.15rem; margin: 0 0 4px; }
+  .card .tagline{ color: var(--ink-soft); font-size: 0.95rem; margin: 0 0 18px; }
+
+  /* pipeline / arrow flow */
+  .flow{ display:flex; flex-wrap:wrap; align-items:stretch; gap: 0; margin: 8px 0 4px; }
+  .flow-node{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; min-width: 150px; flex: 1 1 150px; box-shadow: var(--shadow); }
+  .flow-node .k{ font-family: var(--font-mono); font-size: 0.66rem; text-transform:uppercase; letter-spacing:0.06em; color: var(--ink-faint); }
+  .flow-node .t{ font-weight:700; margin: 4px 0 5px; font-size: 1.02rem; }
+  .flow-node .d{ font-size: 0.85rem; color: var(--ink-soft); }
+  .flow-node.hub{ border-color: var(--indigo); background: var(--indigo-tint); }
+  .flow-node.good{ border-color: var(--sage); }
+  .flow-arrow{ display:flex; align-items:center; justify-content:center; color: var(--ink-faint); padding: 0 10px; font-size: 1.4rem; flex: 0 0 auto; }
+  @media (max-width: 640px){ .flow{ flex-direction:column; } .flow-arrow{ transform: rotate(90deg); padding: 8px 0; } }
+
+  /* role journey — numbered steps with a screen tag */
+  .steps{ display:flex; flex-direction:column; gap: 12px; }
+  .step{ display:flex; gap: 16px; align-items:flex-start; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .step .num{ flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; background: var(--role-color, var(--indigo)); color: #fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.02rem; }
+  .step .body{ flex:1; min-width:0; }
+  .step .body h3{ font-size: 1.05rem; margin: 2px 0 5px; font-family: var(--font-body); font-weight:700; display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+  .step .body p{ margin: 0; color: var(--ink-soft); font-size: 0.94rem; }
+  .step .screen{ font-family: var(--font-mono); font-size: 0.72rem; background: var(--surface-2); color: var(--ink-soft); padding: 2px 9px; border-radius: 999px; font-weight:500; }
+
+  .role-block{ margin-bottom: 30px; }
+  .role-head{ display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .role-avatar{ width:38px; height:38px; border-radius:50%; background: var(--role-color, var(--indigo)); color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex:0 0 auto; }
+  .role-head h3{ margin:0; font-size:1.2rem; font-family: var(--font-body); font-weight:700; }
+  .role-head .role-sub{ color: var(--ink-faint); font-size: 0.85rem; }
+
+  /* click-through map */
+  .click-map{ display:flex; flex-direction:column; gap: 10px; }
+  .click-row{ display:flex; flex-wrap:wrap; align-items:center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; box-shadow: var(--shadow); font-size: 0.92rem; }
+  .click-row .from{ font-weight:700; }
+  .click-row .via{ color: var(--ink-faint); font-family: var(--font-mono); font-size: 0.78rem; }
+  .click-row .arrow{ color: var(--indigo); }
+  .click-row .to{ color: var(--indigo-deep); font-weight:600; }
+
+  .pill{ display:inline-flex; align-items:center; gap:6px; padding: 3px 10px; border-radius: 999px; font-size: 0.78rem; font-weight:600; white-space:nowrap; }
+  .pill.sage{ background: var(--sage-tint); color: var(--sage); }
+  .pill.amber{ background: var(--amber-tint); color: var(--amber); }
+  .pill.rust{ background: var(--rust-tint); color: var(--rust); }
+  .pill.indigo{ background: var(--indigo-tint); color: var(--indigo); }
+  .pill.neutral{ background: var(--surface-2); color: var(--ink-soft); }
+
+  .callout{ border-left: 4px solid var(--indigo); background: var(--indigo-tint); padding: 14px 18px; border-radius: 0 10px 10px 0; font-size: 0.96rem; margin: 18px 0; }
+  .callout.warn{ border-left-color: var(--amber); background: var(--amber-tint); }
+  .callout b{ color: var(--ink); }
+
+  table.spec{ width:100%; border-collapse: collapse; font-size: 0.9rem; }
+  table.spec th, table.spec td{ text-align:left; padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align:top; }
+  table.spec th{ color: var(--ink-faint); font-weight:600; font-size: 0.76rem; text-transform:uppercase; letter-spacing:0.04em; }
+  table.spec td.ctr{ text-align:center; }
+  .table-wrap{ overflow-x:auto; }
+
+  .map-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap: 12px; }
+  .map-card{ background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 16px 14px; box-shadow: var(--shadow); }
+  .map-card .num{ font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-faint); }
+  .map-card h3{ font-size: 0.98rem; margin: 4px 0 6px; font-family: var(--font-body); font-weight:700; }
+  .map-card p{ font-size: 0.84rem; color: var(--ink-soft); margin:0; }
+  .map-card .route{ display:block; margin-top:10px; font-family: var(--font-mono); font-size: 0.72rem; color: var(--indigo); word-break: break-all; }
+
+  details.faq{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px 22px; margin-bottom: 10px; box-shadow: var(--shadow); }
+  details.faq summary{ cursor:pointer; list-style:none; padding: 16px 0; font-weight: 600; font-size: 1.0rem; display:flex; align-items:center; justify-content:space-between; gap: 14px; }
+  details.faq summary::-webkit-details-marker{ display:none; }
+  details.faq summary::after{ content: "+"; font-family: var(--font-mono); color: var(--indigo); font-size: 1.3rem; flex: 0 0 auto; }
+  details.faq[open] summary::after{ content: "−"; }
+  details.faq .a{ padding: 0 0 18px; color: var(--ink-soft); font-size: 0.95rem; max-width: 64ch; }
+  details.faq .a p{ margin: 0 0 10px; }
+  details.faq .a p:last-child{ margin-bottom:0; }
+
+  footer{ max-width: 1120px; margin: 0 auto; padding: 24px 32px 60px; color: var(--ink-faint); font-size: 0.84rem; border-top: 1px solid var(--line); }
+
+  @media (max-width: 860px){
+    .shell{ grid-template-columns: 1fr; }
+    nav.index{ position:static; border-bottom: 1px solid var(--line); padding-bottom: 20px; margin-bottom: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="eyebrow"><span class="dot"></span>Fabrio · что изменилось в производстве</div>
+    <h1>Production Control Center — кто куда заходит и в каком порядке</h1>
+    <p class="subtitle">
+      Три волны изменений поверх производственного модуля: живой дашборд по факту выработки, бригады с закреплённым
+      бригадиром и план «сколько и к какому сроку». Ниже — не список полей, а маршруты: кто, что открывает, что
+      нажимает и что происходит дальше, со стрелками.
+    </p>
+    <div class="meta-strip">
+      <span><b>Актуально на:</b> 11 августа 2026</span>
+      <span><b>Роли в примерах:</b> Начальник производства · Бригадир · Швея (рабочий)</span>
+      <span><b>Смежные документы:</b> proizvodstvo-instruktsiya.html · shveya-doska-instruktsiya.html</span>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="index" aria-label="Оглавление">
+    <div class="index-title">Оглавление</div>
+    <ol>
+      <li><a href="#idea">Главная идея</a></li>
+      <li><a href="#konteyner">Куда это встроено</a></li>
+      <li><a href="#rol-manager">Путь начальника производства</a></li>
+      <li><a href="#rol-brigadir">Путь бригадира</a></li>
+      <li><a href="#rol-rabochiy">Путь рабочего</a></li>
+      <li><a href="#klik-karta">Как связаны экраны</a>
+        <ol class="index-sub">
+          <li><a href="#dashboard-map">С дашборда</a></li>
+          <li><a href="#journey-map">С Order Journey</a></li>
+        </ol>
+      </li>
+      <li><a href="#model">Модель данных</a></li>
+      <li><a href="#prava">Права доступа</a></li>
+      <li><a href="#faq">Вопросы и ответы</a></li>
+      <li><a href="#karta">Файлы для навигации</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="idea">
+      <p class="section-kicker">01 — суть</p>
+      <h2>Главная идея: план → назначение → факт → проверка</h2>
+      <p class="lead">Раньше дашборд показывал только «сколько уже сделали». Теперь у каждого этапа заказа есть ещё
+      и «сколько должно быть сделано и к какому сроку» — и система сама сравнивает одно с другим.</p>
+
+      <div class="flow">
+        <div class="flow-node">
+          <div class="k">начальник производства</div>
+          <div class="t">План</div>
+          <div class="d">Сколько единиц этапа должно быть готово и к какой дате.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="k">начальник производства</div>
+          <div class="t">Назначение</div>
+          <div class="d">Кто именно из рабочих это делает и сколько лично ему поручено.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node hub">
+          <div class="k">рабочий сдаёт отчёт</div>
+          <div class="t">Факт</div>
+          <div class="d">Реально произведённое количество и брак — из этого момента система уже не переписывает историю.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node good">
+          <div class="k">считается само</div>
+          <div class="t">План vs Факт</div>
+          <div class="d">«Не начато / По графику / Отстаёт / Опережает / Выполнено» — обновляется каждые 15 секунд.</div>
+        </div>
+      </div>
+
+      <p style="color:var(--ink-soft); font-size:0.92rem; margin-top:18px;">Отдельная, самостоятельная ось — <b>кто за кого отвечает</b>:</p>
+      <div class="flow">
+        <div class="flow-node">
+          <div class="k">бригадир</div>
+          <div class="t">Бригада</div>
+          <div class="d">Группа рабочих, закреплённая за одним ответственным.</div>
+        </div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">
+          <div class="k">видно везде</div>
+          <div class="t">«Ответственный» на дашборде</div>
+          <div class="d">Дашборд сам вычисляет, чей это рабочий, и подставляет бригадира — вручную это нигде не выбирают.</div>
+        </div>
+      </div>
+
+      <div class="callout">
+        План и назначение — это <b>не одно и то же</b>. План — сколько нужно сделать. Назначение — кто конкретно
+        это делает. Можно задать план ещё до того, как назначен хоть один рабочий — например, чтобы забронировать
+        срок для этапа «Пошив», пока «Раскрой» ещё не закончен.
+      </div>
+    </section>
+
+    <section id="konteyner">
+      <p class="section-kicker">02 — контекст</p>
+      <h2>Куда это встроено</h2>
+      <p class="lead">Новое не заменяет старое — оно достроено поверх уже существующего производственного модуля,
+      без второй параллельной системы учёта.</p>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="spec">
+            <thead><tr><th>Что уже было</th><th>Что достроили</th></tr></thead>
+            <tbody>
+              <tr><td>Доска коробок (Batch → Box), Табло цеха — учёт по «Старт/Готово»</td><td class="mono">не тронуто</td></tr>
+              <tr><td>Отчёты о выработке (production-reports) — свободные отчёты работника</td><td class="mono">не тронуто, по-прежнему пишут факт</td></tr>
+              <tr><td>Учёт количества по факту (Stage Quantity Ledger)</td><td>стал основой нового дашборда «Дашборд производства»</td></tr>
+              <tr><td>Назначения работы (кто сколько шьёт)</td><td>получили ответственного бригадира и плановое количество</td></tr>
+              <tr><td>—</td><td><b>Бригады</b> — кто из рабочих за каким бригадиром закреплён</td></tr>
+              <tr><td>—</td><td><b>План этапа</b> — сколько и к какому сроку</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="rol-manager" class="role-block" style="--role-color: var(--indigo);">
+      <p class="section-kicker">03 — маршрут</p>
+      <h2>Путь начальника производства</h2>
+      <p class="lead">Одно утро: проверить, что происходит, закрепить ответственных, поставить план, назначить людей.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="body">
+            <h3>Открывает дашборд <span class="screen">Производство (потоки) → Дашборд производства</span></h3>
+            <p>Видит все заказы в работе: текущий этап, план на этом этапе, прогресс, кто отвечает, сколько сделано,
+            сколько осталось, брак, статус плана. Можно отфильтровать по бригадиру, этапу, статусу плана
+            («Отстаёт», «По графику»…) или показать только просроченные.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="body">
+            <h3>Разворачивает строку заказа (+) <span class="screen">там же, на дашборде</span></h3>
+            <p>Видит все этапы заказа по очереди — не только текущий: «Раскрой» уже идёт, а «Пошив» ещё вообще без
+            плана и без единого назначенного рабочего. Именно тут видно, где нужно действовать дальше.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="body">
+            <h3>Заходит в «Бригады» <span class="screen">Производство (потоки) → Бригады</span></h3>
+            <p>Если у рабочего ещё нет бригадира — жмёт «Назначить рабочего», выбирает рабочего и бригадира.
+            Если рабочего нужно перевести в другую бригаду — то же самое действие: старая привязка тихо
+            закрывается, новая открывается, история производства за прошлые дни не переписывается.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">4</div>
+          <div class="body">
+            <h3>Ставит план <span class="screen">клик «Задать план» на этапе</span></h3>
+            <p>Открывается панель: сколько уже назначено/сделано (для справки) и два поля — плановое количество и
+            срок. Сохранил — статус плана сразу посчитался («Не начато», потому что ещё ничего не сделано).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">5</div>
+          <div class="body">
+            <h3>Создаёт назначения <span class="screen">Производство (потоки) → Назначения работы</span></h3>
+            <p>Указывает партию, этап, рабочего и сколько лично ему поручено. Это то количество, с которым дальше
+            сравнивается факт именно этого рабочего.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">6</div>
+          <div class="body">
+            <h3>Дальше просто следит <span class="screen">Дашборд производства — сам обновляется</span></h3>
+            <p>Как только рабочий сдаёт отчёт — цифры на дашборде обновляются в течение 15 секунд, без перезагрузки
+            страницы. Отдельно нажимать «обновить» не нужно.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rol-brigadir" class="role-block" style="--role-color: var(--sage);">
+      <p class="section-kicker">04 — маршрут</p>
+      <h2>Путь бригадира</h2>
+      <p class="lead">Бригадиру не назначают отдельную роль в системе с нуля — он просто тот, за кем в «Бригадах»
+      закрепили рабочих. С этого момента он появляется на дашборде как «Ответственный».</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="body">
+            <h3>Его называют ответственным автоматически <span class="screen">колонка «Ответственный» на дашборде</span></h3>
+            <p>Как только хотя бы один его рабочий что-то производит на этапе заказа — имя бригадира само появляется
+            в этой колонке. Если на одном этапе работают люди из двух разных бригад — покажутся оба бригадира.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="body">
+            <h3>Открывает карточку своей бригады <span class="screen">клик по своему имени → «Бригада бригадира»</span></h3>
+            <p>Видит всех своих рабочих, у каждого — сколько активных заказов, общий прогресс (сделано / поручено),
+            и статус: «В работе» или «Отставание» (если у кого-то давно нет движения, а поручено ещё много).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="body">
+            <h3>Разворачивает рабочего <span class="screen">там же, стрелка раскрытия строки</span></h3>
+            <p>Видит по каждому назначению этого рабочего: заказ, этап, поручено/сделано/брак/осталось и темп
+            (штук в час). Отсюда же можно кликнуть на имя рабочего и открыть его личную сводку.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="rol-rabochiy" class="role-block" style="--role-color: var(--amber);">
+      <p class="section-kicker">05 — маршрут</p>
+      <h2>Путь рабочего</h2>
+      <p class="lead">Для самого рабочего почти ничего не меняется — он по-прежнему работает с планшета. Меняется то,
+      что происходит с его отчётом дальше.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <div class="body">
+            <h3>Заходит на планшет <span class="screen">/tablet/my-work — «Моя работа»</span></h3>
+            <p>Видит список того, что лично ему поручено: заказ, этап, сколько нужно сделать всего и сколько уже
+            сдано по этому поручению.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <div class="body">
+            <h3>Сдаёт отчёт о выработке <span class="screen">форма «Сдать»</span></h3>
+            <p>Вводит количество и брак (если есть). Это тот самый момент, который система запоминает навсегда —
+            дальнейшая смена бригадира или изменение плана этот факт уже не тронет.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <div class="body">
+            <h3>Дальше уже не его забота <span class="screen">видно у бригадира и на дашборде</span></h3>
+            <p>Прогресс по его назначению, по бригаде его бригадира и по всему заказу пересчитывается сам —
+            в течение 15 секунд, без каких-либо дополнительных действий рабочего.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="klik-karta">
+      <p class="section-kicker">06 — навигация</p>
+      <h2>Как связаны экраны между собой</h2>
+      <p class="lead">Почти всё, что нужно начальнику производства, открывается прямо с дашборда, без перехода на
+      отдельные страницы — клик открывает панель поверх текущего экрана.</p>
+
+      <h3 id="dashboard-map" style="font-size:1.05rem; margin: 22px 0 10px;">С дашборда производства</h3>
+      <div class="click-map">
+        <div class="click-row">
+          <span class="from">Строка заказа</span><span class="via">клик «N рабочих»</span>
+          <span class="arrow">→</span><span class="to">Панель «Рабочие на этапе»</span>
+          <span class="via">клик по имени</span><span class="arrow">→</span><span class="to">Личная сводка рабочего</span>
+        </div>
+        <div class="click-row">
+          <span class="from">Строка заказа</span><span class="via">клик по имени бригадира в «Ответственный»</span>
+          <span class="arrow">→</span><span class="to">Панель «Бригада бригадира»</span>
+        </div>
+        <div class="click-row">
+          <span class="from">Строка заказа</span><span class="via">клик «План: N» / «Задать план»</span>
+          <span class="arrow">→</span><span class="to">Панель «План производства» — создать / изменить / удалить</span>
+        </div>
+        <div class="click-row">
+          <span class="from">Строка заказа</span><span class="via">клик «+» слева</span>
+          <span class="arrow">→</span><span class="to">Разворот: все этапы заказа по очереди, с планом и бригадиром на каждом</span>
+        </div>
+        <div class="click-row">
+          <span class="from">Строка заказа</span><span class="via">клик по остальной части строки</span>
+          <span class="arrow">→</span><span class="to">Order Journey этого заказа (полная история)</span>
+        </div>
+      </div>
+
+      <h3 id="journey-map" style="font-size:1.05rem; margin: 26px 0 10px;">С Order Journey</h3>
+      <p style="color:var(--ink-soft); font-size:0.92rem; margin:0 0 12px;">Блок «Назначения работы» на странице
+      заказа — это буквально тот же самый блок, что разворачивается на дашборде по «+». Показывает одно и то же,
+      обновляется одинаково.</p>
+      <div class="click-map">
+        <div class="click-row">
+          <span class="from">Блок «Назначения работы»</span><span class="via">клик «План: N» на этапе</span>
+          <span class="arrow">→</span><span class="to">Та же панель «План производства»</span>
+        </div>
+        <div class="click-row">
+          <span class="from">Блок «Назначения работы»</span><span class="via">стрелка раскрытия строки</span>
+          <span class="arrow">→</span><span class="to">Таблица рабочих этого этапа (поручено/сделано/брак/темп)</span>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        Живое обновление — это опрос раз в 15 секунд (в системе нет отдельного канала «пуш-уведомлений» для этого).
+        После вашего собственного действия (сохранили план, назначили бригадира) экран обновляется сразу же, не
+        дожидаясь этих 15 секунд.
+      </div>
+    </section>
+
+    <section id="model">
+      <p class="section-kicker">07 — под капотом</p>
+      <h2>Модель данных, если нужно разобраться глубже</h2>
+      <p class="lead">Три новых «факта» про заказ — план, назначение и «кто за кого отвечает» — хранятся отдельно
+      друг от друга и никогда не переписывают то, что реально произвели.</p>
+
+      <div class="flow">
+        <div class="flow-node hub"><div class="k">заказ</div><div class="t">Order</div><div class="d">Один заказ клиента.</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="k">план</div><div class="t">ProductionStagePlan</div><div class="d">Сколько и к какой дате — по одному этапу заказа.</div></div>
+      </div>
+      <div class="flow" style="margin-top:10px;">
+        <div class="flow-node hub"><div class="k">заказ</div><div class="t">Order</div><div class="d">Тот же заказ.</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node"><div class="k">кому поручено</div><div class="t">ProductionAssignment</div><div class="d">Рабочий + этап + сколько лично ему.</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node good"><div class="k">факт, навсегда</div><div class="t">Stage Quantity Ledger</div><div class="d">Что реально произвёл рабочий — не редактируется задним числом.</div></div>
+      </div>
+      <div class="flow" style="margin-top:10px;">
+        <div class="flow-node"><div class="k">отдельно</div><div class="t">WorkerSupervision</div><div class="d">Рабочий → бригадир, с датой начала/конца привязки.</div></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node good"><div class="k">только для чтения</div><div class="t">Дашборд сам считает</div><div class="d">«Ответственный» = бригадир текущих рабочих на этапе — нигде не хранится отдельно.</div></div>
+      </div>
+
+      <div class="callout">
+        Если бригадира сегодня поменяли — то, что рабочий произвёл <b>вчера</b>, всё равно останется числиться за
+        вчерашним бригадиром, если кто-то посмотрит историю. Смена бригадира не «переписывает» прошлое, она просто
+        закрывает старую привязку и открывает новую.
+      </div>
+    </section>
+
+    <section id="prava">
+      <p class="section-kicker">08 — доступ</p>
+      <h2>Кто что может нажимать</h2>
+      <div class="card">
+        <div class="table-wrap">
+          <table class="spec">
+            <thead><tr><th>Раздел</th><th>Смотреть</th><th>Создавать</th><th>Менять</th><th>Удалять</th></tr></thead>
+            <tbody>
+              <tr><td>Дашборд производства</td><td class="ctr">✓</td><td class="ctr">—</td><td class="ctr">—</td><td class="ctr">—</td></tr>
+              <tr><td>Бригады (кто за кем закреплён)</td><td class="ctr">✓</td><td class="ctr">✓</td><td class="ctr"><span class="pill neutral">n/a¹</span></td><td class="ctr">✓</td></tr>
+              <tr><td>План этапа</td><td class="ctr">✓</td><td class="ctr">✓</td><td class="ctr">✓</td><td class="ctr">✓</td></tr>
+              <tr><td>Назначения работы</td><td class="ctr">✓</td><td class="ctr">✓</td><td class="ctr">✓</td><td class="ctr">—²</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.82rem; color:var(--ink-faint); margin: 14px 0 0;">
+          ¹ Привязку рабочего к бригадиру не «меняют» — новую создают, старая сама закрывается.<br>
+          ² Назначение не удаляют, а отменяют (статус «Отменено») — история по нему сохраняется.
+        </p>
+      </div>
+      <p style="color:var(--ink-soft); font-size:0.9rem;">Дают эти права ролям «Начальник цеха» и «Начальник
+      производства» — полностью; роли «Директор» — только «Смотреть».</p>
+    </section>
+
+    <section id="faq">
+      <p class="section-kicker">09 — вопросы</p>
+      <h2>Частые вопросы</h2>
+
+      <details class="faq">
+        <summary>Можно поставить план, пока ни один человек ещё не назначен?</summary>
+        <div class="a"><p>Да, это специально так и задумано. На дашборде такой этап будет виден с планом, но с
+        пометкой «Не начато» и без ответственного, пока не появится хотя бы один рабочий.</p></div>
+      </details>
+
+      <details class="faq">
+        <summary>Что значит статус плана «Отстаёт», если ещё вообще ничего не произвели?</summary>
+        <div class="a"><p>Значит, что срок плана уже прошёл, а факта — ноль. Это осознанно отличается от «Не
+        начато»: «Не начато» — это нормально, когда до срока ещё есть время; «Отстаёт» — сигнал, что пора
+        обратить внимание.</p></div>
+      </details>
+
+      <details class="faq">
+        <summary>Один этап заказа шьют сразу две бригады — это нормально?</summary>
+        <div class="a"><p>Да. В колонке «Ответственный» в этом случае покажутся оба бригадира — система не пытается
+        выбрать «главного», просто перечисляет всех, чьи рабочие реально задействованы на этом этапе.</p></div>
+      </details>
+
+      <details class="faq">
+        <summary>Если удалить план — пропадёт то, что уже произвели?</summary>
+        <div class="a"><p>Нет. План — это только цель («сколько и когда»). Удаление плана убирает только эту цель;
+        всё, что реально произведено (Stage Quantity Ledger), никак не связано с существованием плана и никуда
+        не денется.</p></div>
+      </details>
+    </section>
+
+    <section id="karta">
+      <p class="section-kicker">10 — для разработчиков</p>
+      <h2>Файлы для навигации</h2>
+      <p class="lead">Где искать код, если понадобится что-то поправить или расширить.</p>
+      <div class="map-grid">
+        <div class="map-card">
+          <div class="num">backend</div>
+          <h3>Дашборд / план (агрегация)</h3>
+          <p>Сборка строк дашборда, разбивка по этапам заказа, статус плана.</p>
+          <span class="route">backend/src/modules/production-dashboard/</span>
+        </div>
+        <div class="map-card">
+          <div class="num">backend</div>
+          <h3>Планирование</h3>
+          <p>Создание/изменение/удаление плана этапа, доменная логика статуса.</p>
+          <span class="route">backend/src/modules/production-planning/</span>
+        </div>
+        <div class="map-card">
+          <div class="num">backend</div>
+          <h3>Бригады</h3>
+          <p>Кто за кем закреплён, с историей во времени.</p>
+          <span class="route">backend/src/modules/workforce-supervision/</span>
+        </div>
+        <div class="map-card">
+          <div class="num">backend</div>
+          <h3>Назначения работы</h3>
+          <p>Кому и сколько поручено на этапе партии.</p>
+          <span class="route">backend/src/modules/production-assignments/</span>
+        </div>
+        <div class="map-card">
+          <div class="num">frontend</div>
+          <h3>Дашборд производства</h3>
+          <p>Главная страница, таблица заказов, фильтры.</p>
+          <span class="route">frontend/src/pages/production-dashboard/</span>
+        </div>
+        <div class="map-card">
+          <div class="num">frontend</div>
+          <h3>Блок «Назначения работы»</h3>
+          <p>Переиспользуется и на дашборде (разворот строки), и на Order Journey.</p>
+          <span class="route">frontend/src/widgets/order-journey/ui/OrderJourneyWorkAssignments.tsx</span>
+        </div>
+        <div class="map-card">
+          <div class="num">frontend</div>
+          <h3>Панель «План производства»</h3>
+          <p>Создание/редактирование/удаление плана этапа.</p>
+          <span class="route">frontend/src/features/production-plan-edit/</span>
+        </div>
+        <div class="map-card">
+          <div class="num">frontend</div>
+          <h3>Страница «Бригады»</h3>
+          <p>Назначить/убрать рабочего из бригады.</p>
+          <span class="route">frontend/src/pages/workforce-supervision/</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  Описывает изменения производственного модуля Fabrio по состоянию на 11 августа 2026 — живой дашборд по факту
+  выработки, бригады с закреплённым бригадиром и план «сколько и к какому сроку» поверх уже существующих
+  назначений работы и учёта количества. Про доску коробок и табло цеха — см. proizvodstvo-instruktsiya.html и
+  shveya-doska-instruktsiya.html, они не изменились.
+</footer>
+
+</body>
+</html>

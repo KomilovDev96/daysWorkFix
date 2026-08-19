@@ -1,0 +1,49 @@
+[
+  {"title":"Task board: comments CRUD, activities timeline, SSE realtime, notifications","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":5,"actualHours":5,"date":"2026-07-01","description":"CRUD комментариев, лента активности, переход с SSE на polling, стор нотификаций","project":"smart-space"},
+  {"title":"Sidebar: редизайн иконок и цветовых тем","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-01","description":"Несколько итераций цветовых схем, LED-рамки, замена иконок на Lucide","project":"smart-space"},
+
+  {"title":"CI/CD config","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":1,"actualHours":1,"date":"2026-07-02","description":null,"project":"smart-space"},
+  {"title":"Attendance: страница больничных/отпусков + фикс модалки review","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-02","description":null,"project":"smart-space"},
+
+  {"title":"Inventory: категории, выдача единиц, поиск моделей","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":4,"actualHours":4,"date":"2026-07-03","description":"Inline-управление категориями, одиночная/групповая выдача, рефакторинг select-полей","project":"smart-space"},
+  {"title":"Admin panel: восстановление уволенных сотрудников","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":1,"actualHours":1,"date":"2026-07-03","description":null,"project":"smart-space"},
+
+  {"title":"HR Analytics Dashboard на ECharts","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":4,"actualHours":4,"date":"2026-07-06","description":null,"project":"smart-space"},
+  {"title":"Профиль пользователя: поле пола","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":1,"actualHours":1,"date":"2026-07-06","description":null,"project":"smart-space"},
+  {"title":"Inventory: дерево комнат, пагинация, фильтры + настройка AI-ассистента","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":4,"actualHours":4,"date":"2026-07-06","description":null,"project":"smart-space"},
+
+  {"title":"AI-ассистент: доработки","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-07","description":null,"project":"smart-space"},
+  {"title":"Онбординг-туториал + статус выплаты реферальной награды","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-07","description":null,"project":"smart-space"},
+
+  {"title":"Attendance: интеграция","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-08","description":null,"project":"smart-space"},
+
+  {"title":"Исправление багов","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-09","description":null,"project":"smart-space"},
+
+  {"title":"Документооборот: шаблоны, согласование, генерация docx, редактор","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":8,"actualHours":8,"date":"2026-07-11","description":"Split-screen редактор создания и ревью документов, маршруты согласования, история проверок","project":"smart-space"},
+  {"title":"Перенос ссылки обучения в шапку + включение приложения ENERGY","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":1,"actualHours":1,"date":"2026-07-11","description":null,"project":"smart-space"},
+
+  {"title":"Билд-фиксы + баннер","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-13","description":null,"project":"smart-space"},
+
+  {"title":"Kitchen: список заказов, долговые заказы, продажи за наличку","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":4,"actualHours":4,"date":"2026-07-14","description":null,"project":"smart-space"},
+
+  {"title":"Геймификация (gameFikasiya) + фикс пользователей FZO","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":4,"actualHours":4,"date":"2026-07-15","description":null,"project":"smart-space"},
+  {"title":"Attendance dark mode фикс + фикс AI-ассистента + уведомления","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-15","description":null,"project":"smart-space"},
+
+  {"title":"Уведомления, wallet-cashier и inventory notification link","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-16","description":null,"project":"smart-space"},
+
+  {"title":"Task board: доработки","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-17","description":null,"project":"smart-space"},
+
+  {"title":"Геймификация: финализация merge","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":1,"actualHours":1,"date":"2026-07-18","description":null,"project":"smart-space"},
+
+  {"title":"Coins: турниры, управление товарами магазина","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":4,"actualHours":4,"date":"2026-07-20","description":"UI турниров, кэширование, загрузка изображений, уведомления, сортировка товаров","project":"smart-space"},
+  {"title":"Редизайн шапки: баланс, кнопки, компактная высота","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-20","description":null,"project":"smart-space"},
+  {"title":"Фикс тёмной темы на странице профиля + фильтры страницы команды","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-20","description":null,"project":"smart-space"},
+  {"title":"HR CRM: статус заявки, уведомления","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-20","description":null,"project":"smart-space"},
+
+  {"title":"Фикс страницы профиля + merge Team/HR страниц","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-21","description":null,"project":"smart-space"},
+  {"title":"Фикс подразделений + экспорт inventory в Excel","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":2,"actualHours":2,"date":"2026-07-21","description":null,"project":"smart-space"},
+
+  {"title":"Admin: страница отчёта по планам обучения","client":null,"type":"daily","kind":"work","status":"completed","estimatedHours":3,"actualHours":3,"date":"2026-07-24","description":null,"project":"smart-space"},
+
+  {"title":"Модуль обучения (планы, курсы, тесты) в админке","client":null,"type":"daily","kind":"work","status":"in_progress","estimatedHours":8,"actualHours":6,"date":"2026-07-28","description":"Страницы AdminPlansPage, AdminCoursesPage, AdminTestsPage, вкладки планов — работа продолжается","project":"smart-space"}
+]

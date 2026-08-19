@@ -217,6 +217,11 @@ const ClientPortalPublicPage = () => {
                                         >
                                             {t.title}
                                         </Text>
+                                        {t.hours > 0 && (
+                                            <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                                                <ClockCircleOutlined style={{ marginRight: 4 }} />{t.hours} ч
+                                            </Text>
+                                        )}
                                         <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
                                             {info.label}
                                         </Text>
