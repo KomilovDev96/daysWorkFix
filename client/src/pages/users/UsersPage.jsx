@@ -101,6 +101,7 @@ const UsersPage = () => {
             name: user.name,
             email: user.email,
             role: user.role,
+            specialization: user.specialization || undefined,
         });
         setIsModalVisible(true);
     };
@@ -125,6 +126,17 @@ const UsersPage = () => {
             render: (role) => {
                 const map = { admin: ['АДМИН', 'volcano'], projectManager: ['МЕНЕДЖЕР', 'purple'], worker: ['СОТРУДНИК', 'green'], guest: ['ГОСТЬ', 'blue'] };
                 const [label, color] = map[role] || [role, 'default'];
+                return <Tag color={color}>{label}</Tag>;
+            },
+        },
+        {
+            title: 'Специализация',
+            dataIndex: 'specialization',
+            key: 'specialization',
+            render: (spec) => {
+                const map = { frontend: ['FRONTEND', 'geekblue'], backend: ['BACKEND', 'cyan'], pm: ['PM', 'purple'] };
+                if (!spec || !map[spec]) return <Tag color="default">—</Tag>;
+                const [label, color] = map[spec];
                 return <Tag color={color}>{label}</Tag>;
             },
         },
@@ -265,6 +277,17 @@ const UsersPage = () => {
                             <Select.Option value="projectManager">Менеджер</Select.Option>
                             <Select.Option value="admin">Админ</Select.Option>
                             <Select.Option value="guest">Гость (Заказчик)</Select.Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item
+                        name="specialization"
+                        label="Специализация исполнителя (опционально)"
+                    >
+                        <Select allowClear placeholder="Не задана">
+                            <Select.Option value="frontend">Frontend</Select.Option>
+                            <Select.Option value="backend">Backend</Select.Option>
+                            <Select.Option value="pm">Project Manager</Select.Option>
                         </Select>
                     </Form.Item>
 

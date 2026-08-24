@@ -15,7 +15,10 @@ const boardTaskSchema = new mongoose.Schema(
             default: 'medium',
         },
         hours: { type: Number, default: 0, min: 0 },
+        amount: { type: Number, default: 0, min: 0 },
         isPaid: { type: Boolean, default: false },
+        // Роль исполнителя для группировки задач без привязки к конкретному User (напр. при массовом импорте).
+        execRole: { type: String, enum: ['frontend', 'backend', 'pm', null], default: null },
         customer: { type: String, default: '' },
         system: { type: String, default: '' },
         assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
@@ -54,6 +57,18 @@ const portalSchema = new mongoose.Schema(
     { _id: false }
 );
 
+// Публичный API для приёма выполненных задач от стороннего исполнителя (фронтенд/бэкенд/пм)
+// без входа в систему — по постоянному токену проекта.
+const taskApiSchema = new mongoose.Schema(
+    {
+        enabled:   { type: Boolean, default: false },
+        token:     { type: String, default: null },
+        createdAt: { type: Date, default: null },
+        revokedAt: { type: Date, default: null },
+    },
+    { _id: false }
+);
+
 const boardProjectSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
@@ -68,6 +83,7 @@ const boardProjectSchema = new mongoose.Schema(
         clients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         tasks: [boardTaskSchema],
         portal: { type: portalSchema, default: () => ({}) },
+        taskApi: { type: taskApiSchema, default: () => ({}) },
     },
     { timestamps: true }
 );
@@ -76,6 +92,10 @@ const boardProjectSchema = new mongoose.Schema(
 boardProjectSchema.index(
     { 'portal.token': 1 },
     { unique: true, partialFilterExpression: { 'portal.token': { $type: 'string' } } }
+);
+boardProjectSchema.index(
+    { 'taskApi.token': 1 },
+    { unique: true, partialFilterExpression: { 'taskApi.token': { $type: 'string' } } }
 );
 
 module.exports = mongoose.model('BoardProject', boardProjectSchema);

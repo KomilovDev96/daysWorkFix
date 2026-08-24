@@ -15,7 +15,8 @@ import {
     UnorderedListOutlined, ArrowLeftOutlined, ExclamationCircleOutlined,
     TeamOutlined, UserAddOutlined, UserDeleteOutlined, MessageOutlined,
     SendOutlined, PaperClipOutlined, UploadOutlined, FileImageOutlined,
-    FilePdfOutlined, FileOutlined, EyeOutlined
+    FilePdfOutlined, FileOutlined, EyeOutlined, LinkOutlined,
+    ApiOutlined, CopyOutlined, ReloadOutlined
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
@@ -370,15 +371,212 @@ const CommentsDrawer = ({ open, project, user, onClose }) => {
     );
 };
 
+// ── Task API Drawer ───────────────────────────────────────────────────────────
+// Публичный API для приёма выполненных задач от фронтендщика/бэкендщика/пм без входа в систему.
+const MODULE_META = {
+    frontend: { label: 'Frontend', color: 'geekblue' },
+    backend: { label: 'Backend', color: 'cyan' },
+    pm: { label: 'PM', color: 'purple' },
+};
+
+const buildTaskApiCurl = (endpoint, moduleKey) => `curl -X POST "${endpoint}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "title": "Название задачи",
+    "execRole": "${moduleKey}",
+    "hours": 3,
+    "amount": 150000,
+    "customer": "Имя заказчика",
+    "notes": "Комментарий (необязательно)"
+  }'`;
+
+const buildTaskApiBulkCurl = (endpoint) => `curl -X POST "${endpoint}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "tasks": [
+      { "title": "Задача 1", "execRole": "frontend", "hours": 2, "amount": 100000 },
+      { "title": "Задача 2", "execRole": "backend",  "hours": 3, "amount": 150000 }
+    ]
+  }'`;
+
+const buildTaskApiFileCurl = (endpoint) => `curl -X POST "${endpoint}" \\
+  -F "title=Название задачи" \\
+  -F "execRole=frontend" \\
+  -F "hours=3" \\
+  -F "amount=150000" \\
+  -F "files=@/путь/к/скриншоту.png" \\
+  -F "files=@/путь/к/файлу2.pdf"`;
+
+const TaskApiDrawer = ({ open, project, onClose }) => {
+    const queryClient = useQueryClient();
+
+    const { data: taskApi, isLoading } = useQuery({
+        queryKey: ['task-api', project?._id],
+        queryFn: async () => {
+            const { data } = await apiClient.get(`/board-projects/${project._id}/task-api`);
+            return data.data.taskApi;
+        },
+        enabled: !!project?._id && open,
+    });
+
+    const toggle = useMutation({
+        mutationFn: (enabled) => apiClient.patch(`/board-projects/${project._id}/task-api`, { enabled }),
+        onSuccess: ({ data }) => {
+            queryClient.setQueryData(['task-api', project._id], data.data.taskApi);
+            message.success(data.data.taskApi.enabled ? 'API включён' : 'API выключен');
+        },
+        onError: () => message.error('Не удалось изменить статус API'),
+    });
+
+    const regenerate = useMutation({
+        mutationFn: () => apiClient.post(`/board-projects/${project._id}/task-api/regenerate`),
+        onSuccess: ({ data }) => {
+            queryClient.setQueryData(['task-api', project._id], data.data.taskApi);
+            message.success('Новый ключ создан, старый больше не работает');
+        },
+        onError: () => message.error('Не удалось создать новый ключ'),
+    });
+
+    const copy = (text, label = 'Скопировано') => {
+        navigator.clipboard.writeText(text);
+        message.success(label);
+    };
+
+    const endpoint = taskApi?.token ? `${API_BASE}/api/public/task-api/${taskApi.token}/tasks` : null;
+
+    return (
+        <Drawer
+            title={<Space><ApiOutlined />Публичный API для задач: {project?.name}</Space>}
+            open={open}
+            onClose={onClose}
+            width={520}
+        >
+            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                Дайте эту ссылку и ключ фронтендщику, бэкендщику или пм — они смогут присылать сделанные
+                задачи (с ценой и часами) напрямую в нужный модуль, без входа в систему.
+            </Text>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <Text strong>API включён</Text>
+                <Checkbox
+                    checked={!!taskApi?.enabled}
+                    disabled={isLoading || toggle.isPending}
+                    onChange={(e) => toggle.mutate(e.target.checked)}
+                />
+            </div>
+
+            {taskApi?.enabled && endpoint && (
+                <>
+                    <Text strong style={{ display: 'block', marginBottom: 6 }}>Ссылка (endpoint)</Text>
+                    <Space.Compact style={{ width: '100%', marginBottom: 12 }}>
+                        <Input value={endpoint} readOnly />
+                        <Button icon={<CopyOutlined />} onClick={() => copy(endpoint, 'Ссылка скопирована')} />
+                    </Space.Compact>
+
+                    <Popconfirm
+                        title="Сгенерировать новый ключ?"
+                        description="Старая ссылка перестанет работать."
+                        onConfirm={() => regenerate.mutate()}
+                    >
+                        <Button icon={<ReloadOutlined />} loading={regenerate.isPending} style={{ marginBottom: 20 }}>
+                            Новый ключ
+                        </Button>
+                    </Popconfirm>
+
+                    <Divider>Пример запроса — одна задача</Divider>
+
+                    {Object.entries(MODULE_META).map(([key, { label, color }]) => {
+                        const curl = buildTaskApiCurl(endpoint, key);
+                        return (
+                            <div key={key} style={{ marginBottom: 16 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                    <Tag color={color}>{label}</Tag>
+                                    <Button size="small" icon={<CopyOutlined />} onClick={() => copy(curl, `Пример для ${label} скопирован`)}>
+                                        Копировать
+                                    </Button>
+                                </div>
+                                <pre style={{
+                                    background: '#f5f5f5', padding: 12, borderRadius: 6,
+                                    fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0,
+                                }}>
+                                    {curl}
+                                </pre>
+                            </div>
+                        );
+                    })}
+
+                    <Divider>Пакетная отправка — несколько задач сразу</Divider>
+
+                    <div style={{ marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <Text strong>Пример пакета (до 100 задач за запрос)</Text>
+                            <Button
+                                size="small"
+                                icon={<CopyOutlined />}
+                                onClick={() => copy(buildTaskApiBulkCurl(endpoint), 'Пример пакета скопирован')}
+                            >
+                                Копировать
+                            </Button>
+                        </div>
+                        <pre style={{
+                            background: '#f5f5f5', padding: 12, borderRadius: 6,
+                            fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0,
+                        }}>
+                            {buildTaskApiBulkCurl(endpoint)}
+                        </pre>
+                    </div>
+
+                    <Divider>Задача с файлами (скриншоты, PDF)</Divider>
+
+                    <Text type="secondary" style={{ display: 'block', marginBottom: 6, fontSize: 12 }}>
+                        Файлы прикладываются только к одиночной задаче (не к пакету) — запрос отправляется как
+                        multipart/form-data вместо JSON, до 10 файлов, поле <b>files</b> можно повторять.
+                    </Text>
+                    <div style={{ marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <Text strong>Пример с файлами (multipart)</Text>
+                            <Button
+                                size="small"
+                                icon={<CopyOutlined />}
+                                onClick={() => copy(buildTaskApiFileCurl(endpoint), 'Пример с файлами скопирован')}
+                            >
+                                Копировать
+                            </Button>
+                        </div>
+                        <pre style={{
+                            background: '#f5f5f5', padding: 12, borderRadius: 6,
+                            fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0,
+                        }}>
+                            {buildTaskApiFileCurl(endpoint)}
+                        </pre>
+                    </div>
+
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        Поле <b>amount</b> — это цена задачи. Поле <b>execRole</b> обязательно в каждой задаче
+                        (frontend / backend / pm) и определяет, в какой модуль она попадёт. Задачи создаются сразу
+                        со статусом «Выполнено». Для нескольких задач за раз — оберните их в <b>"tasks": [...]</b>.
+                    </Text>
+                </>
+            )}
+
+            {!taskApi?.enabled && !isLoading && (
+                <Empty description="API выключен. Включите переключателем выше." />
+            )}
+        </Drawer>
+    );
+};
+
 const BoardProjectPage = () => {
     const queryClient = useQueryClient();
     const user = useSelector((state) => state.auth.user);
 
     const [selectedProject, setSelectedProject] = useState(null);
+    const [selectedModule, setSelectedModule] = useState(null);
     const [projectModal, setProjectModal] = useState({ open: false, item: null });
     const [taskModal, setTaskModal] = useState({ open: false, item: null });
     const [clientsDrawer, setClientsDrawer] = useState({ open: false, project: null });
     const [commentsDrawer, setCommentsDrawer] = useState({ open: false, project: null });
+    const [taskApiDrawer, setTaskApiDrawer] = useState({ open: false, project: null });
     const [filesDrawer, setFilesDrawer] = useState({ open: false, task: null });
     const [clientForm] = Form.useForm();
     const [projectForm] = Form.useForm();
@@ -432,7 +630,10 @@ const BoardProjectPage = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['board-projects'] });
             message.success('Проект удалён');
-            if (selectedProject) setSelectedProject(null);
+            if (selectedProject) {
+                setSelectedProject(null);
+                setSelectedModule(null);
+            }
         },
         onError: () => message.error('Не удалось удалить проект'),
     });
@@ -548,7 +749,7 @@ const BoardProjectPage = () => {
         if (taskModal.item) {
             updateTask.mutate({ projectId: currentProject._id, taskId: taskModal.item._id, body });
         } else {
-            addTask.mutate({ projectId: currentProject._id, body });
+            addTask.mutate({ projectId: currentProject._id, body: { ...body, execRole: selectedModule } });
         }
     };
 
@@ -576,8 +777,7 @@ const BoardProjectPage = () => {
 
     // ── Stats ──────────────────────────────────────────────────────────────────
 
-    const getProjectStats = (p) => {
-        const tasks = p.tasks || [];
+    const computeStats = (tasks) => {
         const done = tasks.filter((t) => t.status === 'done').length;
         const hours = Number(tasks.reduce((s, t) => s + (Number(t.hours) || 0), 0).toFixed(1));
         const rate = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
@@ -586,7 +786,206 @@ const BoardProjectPage = () => {
             (t) => Number(t.hours) > 0 && t.customer?.trim() && t.system?.trim() && t.dueDate
         ).length;
         const paid = tasks.filter((t) => t.isPaid).length;
-        return { total: tasks.length, done, hours, rate, filled, paid };
+        const paidHours = Number(tasks.filter((t) => t.isPaid).reduce((s, t) => s + (Number(t.hours) || 0), 0).toFixed(1));
+        const unpaidHours = Number((hours - paidHours).toFixed(1));
+        return { total: tasks.length, done, hours, rate, filled, paid, paidHours, unpaidHours };
+    };
+
+    const getProjectStats = (p) => computeStats(p.tasks || []);
+
+    // Задачи, относящиеся к текущему пользователю: у воркера — только назначенные на него,
+    // у остальных ролей — все задачи проекта (полный обзор).
+    const getRelevantTasks = (p) => {
+        const tasks = p.tasks || [];
+        if (user?.role === 'worker') {
+            return tasks.filter((t) => String(t.assignedTo?._id) === String(user._id));
+        }
+        return tasks;
+    };
+
+    // Заказ считается «оплаченным», если по нему есть задачи и все они оплачены.
+    const isProjectPaid = (p) => {
+        const relevant = getRelevantTasks(p);
+        return relevant.length > 0 && relevant.every((t) => t.isPaid);
+    };
+
+    const getProjectSpecializations = (p) => {
+        const relevant = getRelevantTasks(p);
+        const fromAssignee = relevant.map((t) => t.assignedTo?.specialization);
+        const fromExecRole = relevant.map((t) => t.execRole);
+        return [...new Set([...fromAssignee, ...fromExecRole].filter(Boolean))];
+    };
+
+    // Задачи проекта, относящиеся к конкретному модулю (Frontend/Backend/PM).
+    // Внутри уже открытого проекта показываем все задачи модуля, а не только назначенные
+    // текущему пользователю — ограничение по роли действует лишь на списке проектов.
+    const getModuleTasks = (p, moduleKey) => {
+        const tasks = p.tasks || [];
+        return tasks.filter((t) => (t.execRole || t.assignedTo?.specialization) === moduleKey);
+    };
+
+    const SPEC_LABELS = {
+        frontend: ['FRONTEND', 'geekblue'],
+        backend: ['BACKEND', 'cyan'],
+        pm: ['PM', 'purple'],
+    };
+
+    const copyPortalLink = (p) => {
+        const link = `${window.location.origin}/portal/${p.portal.token}`;
+        navigator.clipboard.writeText(link);
+        message.success('Ссылка портала скопирована');
+    };
+
+    const renderProjectCard = (p) => {
+        const stats = getProjectStats(p);
+        const statusInfo = PROJECT_STATUS[p.status] || { label: p.status, color: 'default' };
+        const specs = getProjectSpecializations(p);
+        return (
+            <Col xs={24} sm={12} lg={8} key={p._id}>
+                <Card
+                    hoverable
+                    onClick={() => setSelectedProject(p)}
+                    style={{ cursor: 'pointer' }}
+                    actions={[
+                        <Tooltip title="Экспорт Excel" key="excel">
+                            <Button
+                                type="text" size="small" icon={<FileExcelOutlined />}
+                                style={{ color: '#217346' }}
+                                onClick={(e) => { e.stopPropagation(); handleExcel(p); }}
+                            >
+                                Excel
+                            </Button>
+                        </Tooltip>,
+                        <Button
+                            key="edit" type="text" size="small" icon={<EditOutlined />}
+                            onClick={(e) => { e.stopPropagation(); openEditProject(p); }}
+                        >
+                            Изменить
+                        </Button>,
+                        <Popconfirm
+                            key="del" title="Удалить проект и все задачи?"
+                            onConfirm={(e) => { deleteProject.mutate(p._id); }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <Button type="text" size="small" danger icon={<DeleteOutlined />}>
+                                Удалить
+                            </Button>
+                        </Popconfirm>,
+                        ...(p.portal?.enabled && p.portal?.token ? [
+                            <Tooltip title="Скопировать ссылку портала" key="portal-link">
+                                <Button
+                                    type="text" size="small" icon={<LinkOutlined />}
+                                    onClick={(e) => { e.stopPropagation(); copyPortalLink(p); }}
+                                >
+                                    Ссылка
+                                </Button>
+                            </Tooltip>,
+                        ] : []),
+                    ]}
+                >
+                    <div style={{ marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <Text strong style={{ fontSize: 16 }}>{p.name}</Text>
+                            <Badge status={statusInfo.color} text={statusInfo.label} />
+                        </div>
+                        {p.description && (
+                            <Text type="secondary" style={{ fontSize: 13 }}>
+                                {p.description.length > 80 ? p.description.slice(0, 80) + '…' : p.description}
+                            </Text>
+                        )}
+                    </div>
+
+                    {specs.length > 0 && (
+                        <div style={{ marginBottom: 10 }}>
+                            {specs.map((spec) => {
+                                const [label, color] = SPEC_LABELS[spec] || [spec, 'default'];
+                                return <Tag key={spec} color={color}>{label}</Tag>;
+                            })}
+                        </div>
+                    )}
+
+                    {/* Индикатор заполненности задач */}
+                    <div style={{ marginBottom: 10 }}>
+                        {stats.total === 0 ? (
+                            <Tag color="default">Задачи не добавлены</Tag>
+                        ) : stats.filled === stats.total ? (
+                            <Tag color="green">✓ Все задачи заполнены</Tag>
+                        ) : (
+                            <Tag color="orange">
+                                Заполнено {stats.filled} / {stats.total}
+                            </Tag>
+                        )}
+                    </div>
+
+                    <Row gutter={8} style={{ marginBottom: 12 }}>
+                        <Col span={8}>
+                            <Statistic title="Задач" value={stats.total} valueStyle={{ fontSize: 20 }} />
+                        </Col>
+                        <Col span={8}>
+                            <Statistic title="Готово" value={stats.done} valueStyle={{ fontSize: 20, color: '#3f8600' }} />
+                        </Col>
+                        <Col span={8}>
+                            <Statistic title="Часов" value={stats.hours} valueStyle={{ fontSize: 20 }} />
+                        </Col>
+                    </Row>
+
+                    <Progress
+                        percent={stats.rate}
+                        size="small"
+                        status={stats.rate === 100 ? 'success' : 'active'}
+                        format={(pct) => `${pct}%`}
+                    />
+
+                    {p.deadline && (
+                        <div style={{ marginTop: 8 }}>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                Дедлайн: {dayjs(p.deadline).format('DD.MM.YYYY')}
+                            </Text>
+                        </div>
+                    )}
+                </Card>
+            </Col>
+        );
+    };
+
+    const renderModuleCard = (moduleKey) => {
+        const [label, color] = SPEC_LABELS[moduleKey];
+        const tasks = getModuleTasks(currentProject, moduleKey);
+        const stats = computeStats(tasks);
+        return (
+            <Col xs={24} sm={8} key={moduleKey}>
+                <Card
+                    hoverable
+                    onClick={() => setSelectedModule(moduleKey)}
+                    style={{ cursor: 'pointer', textAlign: 'center' }}
+                >
+                    <Tag color={color} style={{ fontSize: 14, padding: '4px 14px', marginBottom: 16 }}>
+                        {label}
+                    </Tag>
+                    <Row gutter={8}>
+                        <Col span={8}>
+                            <Statistic title="Задач" value={stats.total} valueStyle={{ fontSize: 20 }} />
+                        </Col>
+                        <Col span={8}>
+                            <Statistic title="Готово" value={stats.done} valueStyle={{ fontSize: 20, color: '#3f8600' }} />
+                        </Col>
+                        <Col span={8}>
+                            <Statistic title="Часов" value={stats.hours} valueStyle={{ fontSize: 20 }} />
+                        </Col>
+                    </Row>
+                    <Progress
+                        percent={stats.rate}
+                        size="small"
+                        status={stats.rate === 100 ? 'success' : 'active'}
+                        style={{ marginTop: 16 }}
+                    />
+                    <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', gap: 8 }}>
+                        <Tag color="green">✅ Оплачено {stats.paidHours} ч</Tag>
+                        <Tag color="red">❌ Не оплачено {stats.unpaidHours} ч</Tag>
+                    </div>
+                </Card>
+            </Col>
+        );
     };
 
     // ── Project list view ──────────────────────────────────────────────────────
@@ -610,99 +1009,44 @@ const BoardProjectPage = () => {
                     <Empty description="Нет проектов. Создайте первый!" />
                 )}
 
-                <Row gutter={[16, 16]}>
-                    {projects?.map((p) => {
-                        const stats = getProjectStats(p);
-                        const statusInfo = PROJECT_STATUS[p.status] || { label: p.status, color: 'default' };
-                        return (
-                            <Col xs={24} sm={12} lg={8} key={p._id}>
-                                <Card
-                                    hoverable
-                                    onClick={() => setSelectedProject(p)}
-                                    style={{ cursor: 'pointer' }}
-                                    actions={[
-                                        <Tooltip title="Экспорт Excel" key="excel">
-                                            <Button
-                                                type="text" size="small" icon={<FileExcelOutlined />}
-                                                style={{ color: '#217346' }}
-                                                onClick={(e) => { e.stopPropagation(); handleExcel(p); }}
-                                            >
-                                                Excel
-                                            </Button>
-                                        </Tooltip>,
-                                        <Button
-                                            key="edit" type="text" size="small" icon={<EditOutlined />}
-                                            onClick={(e) => { e.stopPropagation(); openEditProject(p); }}
-                                        >
-                                            Изменить
-                                        </Button>,
-                                        <Popconfirm
-                                            key="del" title="Удалить проект и все задачи?"
-                                            onConfirm={(e) => { deleteProject.mutate(p._id); }}
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <Button type="text" size="small" danger icon={<DeleteOutlined />}>
-                                                Удалить
-                                            </Button>
-                                        </Popconfirm>,
-                                    ]}
-                                >
-                                    <div style={{ marginBottom: 12 }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                            <Text strong style={{ fontSize: 16 }}>{p.name}</Text>
-                                            <Badge status={statusInfo.color} text={statusInfo.label} />
-                                        </div>
-                                        {p.description && (
-                                            <Text type="secondary" style={{ fontSize: 13 }}>
-                                                {p.description.length > 80 ? p.description.slice(0, 80) + '…' : p.description}
-                                            </Text>
-                                        )}
-                                    </div>
-
-                                    {/* Индикатор заполненности задач */}
-                                    <div style={{ marginBottom: 10 }}>
-                                        {stats.total === 0 ? (
-                                            <Tag color="default">Задачи не добавлены</Tag>
-                                        ) : stats.filled === stats.total ? (
-                                            <Tag color="green">✓ Все задачи заполнены</Tag>
-                                        ) : (
-                                            <Tag color="orange">
-                                                Заполнено {stats.filled} / {stats.total}
-                                            </Tag>
-                                        )}
-                                    </div>
-
-                                    <Row gutter={8} style={{ marginBottom: 12 }}>
-                                        <Col span={8}>
-                                            <Statistic title="Задач" value={stats.total} valueStyle={{ fontSize: 20 }} />
-                                        </Col>
-                                        <Col span={8}>
-                                            <Statistic title="Готово" value={stats.done} valueStyle={{ fontSize: 20, color: '#3f8600' }} />
-                                        </Col>
-                                        <Col span={8}>
-                                            <Statistic title="Часов" value={stats.hours} valueStyle={{ fontSize: 20 }} />
-                                        </Col>
-                                    </Row>
-
-                                    <Progress
-                                        percent={stats.rate}
-                                        size="small"
-                                        status={stats.rate === 100 ? 'success' : 'active'}
-                                        format={(pct) => `${pct}%`}
-                                    />
-
-                                    {p.deadline && (
-                                        <div style={{ marginTop: 8 }}>
-                                            <Text type="secondary" style={{ fontSize: 12 }}>
-                                                Дедлайн: {dayjs(p.deadline).format('DD.MM.YYYY')}
-                                            </Text>
+                {!isLoading && !!projects?.length && (
+                    <>
+                        {(() => {
+                            const filtered = projects;
+                            const paidProjects = filtered.filter(isProjectPaid);
+                            const unpaidProjects = filtered.filter((p) => !isProjectPaid(p));
+                            return (
+                                <>
+                                    {unpaidProjects.length > 0 && (
+                                        <div style={{ marginBottom: 28 }}>
+                                            <Title level={4} style={{ marginBottom: 12 }}>
+                                                Не оплачено <Tag color="orange">{unpaidProjects.length}</Tag>
+                                            </Title>
+                                            <Row gutter={[16, 16]}>
+                                                {unpaidProjects.map(renderProjectCard)}
+                                            </Row>
                                         </div>
                                     )}
-                                </Card>
-                            </Col>
-                        );
-                    })}
-                </Row>
+
+                                    {paidProjects.length > 0 && (
+                                        <div>
+                                            <Title level={4} style={{ marginBottom: 12 }}>
+                                                Оплачено <Tag color="green">{paidProjects.length}</Tag>
+                                            </Title>
+                                            <Row gutter={[16, 16]}>
+                                                {paidProjects.map(renderProjectCard)}
+                                            </Row>
+                                        </div>
+                                    )}
+
+                                    {filtered.length === 0 && (
+                                        <Empty description="Нет заказов по выбранному фильтру" />
+                                    )}
+                                </>
+                            );
+                        })()}
+                    </>
+                )}
 
                 {/* Create/Edit Project Modal */}
                 <Modal
@@ -737,9 +1081,47 @@ const BoardProjectPage = () => {
         );
     }
 
+    // ── Module selection (Frontend / Backend / PM) ───────────────────────────────
+
+    if (!selectedModule) {
+        return (
+            <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                    <Space>
+                        <Button icon={<ArrowLeftOutlined />} onClick={() => setSelectedProject(null)}>
+                            Все проекты
+                        </Button>
+                        <Title level={3} style={{ margin: 0 }}>{currentProject.name}</Title>
+                    </Space>
+                    {(user?.role === 'admin' || String(currentProject.createdBy?._id || currentProject.createdBy) === String(user?._id)) && (
+                        <Button
+                            icon={<ApiOutlined />}
+                            onClick={() => setTaskApiDrawer({ open: true, project: currentProject })}
+                        >
+                            API для задач
+                        </Button>
+                    )}
+                </div>
+
+                <Title level={4} style={{ marginBottom: 16 }}>Выберите модуль</Title>
+
+                <Row gutter={[16, 16]}>
+                    {['frontend', 'backend', 'pm'].map(renderModuleCard)}
+                </Row>
+
+                <TaskApiDrawer
+                    open={taskApiDrawer.open}
+                    project={taskApiDrawer.project}
+                    onClose={() => setTaskApiDrawer({ open: false, project: null })}
+                />
+            </div>
+        );
+    }
+
     // ── Task list view (inside project) ───────────────────────────────────────
 
-    const stats = getProjectStats(currentProject);
+    const moduleTasks = getModuleTasks(currentProject, selectedModule);
+    const stats = computeStats(moduleTasks);
     const statusInfo = PROJECT_STATUS[currentProject.status] || { label: currentProject.status, color: 'default' };
 
     const taskColumns = [
@@ -893,12 +1275,13 @@ const BoardProjectPage = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <Space>
-                    <Button icon={<ArrowLeftOutlined />} onClick={() => setSelectedProject(null)}>
-                        Все проекты
+                    <Button icon={<ArrowLeftOutlined />} onClick={() => setSelectedModule(null)}>
+                        Модули
                     </Button>
                     <Title level={3} style={{ margin: 0 }}>
                         {currentProject.name}
                     </Title>
+                    <Tag color={SPEC_LABELS[selectedModule]?.[1]}>{SPEC_LABELS[selectedModule]?.[0]}</Tag>
                     <Badge status={statusInfo.color} text={statusInfo.label} />
                 </Space>
                 <Space>
@@ -926,7 +1309,7 @@ const BoardProjectPage = () => {
                         icon={<FileExcelOutlined />}
                         style={{ color: '#217346', borderColor: '#217346' }}
                         onClick={() => handleExcel(currentProject)}
-                        disabled={!currentProject.tasks?.length}
+                        disabled={!moduleTasks.length}
                     >
                         Экспорт Excel
                     </Button>
@@ -934,7 +1317,7 @@ const BoardProjectPage = () => {
                         icon={<FileExcelOutlined />}
                         style={{ color: '#DC2626', borderColor: '#DC2626' }}
                         onClick={() => handleExcel(currentProject, true)}
-                        disabled={!currentProject.tasks?.some(t => !t.isPaid)}
+                        disabled={!moduleTasks.some(t => !t.isPaid)}
                     >
                         ❌ Неоплаченные
                     </Button>
@@ -953,32 +1336,52 @@ const BoardProjectPage = () => {
                         label: 'Обзор',
                         children: (
                             <Row gutter={16} style={{ marginBottom: 16 }}>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={3}>
                                     <Card size="small">
                                         <Statistic title="Всего задач" value={stats.total} prefix={<UnorderedListOutlined />} />
                                     </Card>
                                 </Col>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={3}>
                                     <Card size="small">
                                         <Statistic title="Выполнено" value={stats.done} valueStyle={{ color: '#3f8600' }} prefix={<CheckCircleOutlined />} />
                                     </Card>
                                 </Col>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={3}>
                                     <Card size="small">
                                         <Statistic title="Часов" value={stats.hours} suffix="ч" prefix={<ClockCircleOutlined />} />
                                     </Card>
                                 </Col>
-                                <Col xs={12} md={4}>
+                                <Col xs={12} md={3}>
                                     <Card size="small">
                                         <Statistic
-                                            title="Оплачено"
+                                            title="Оплачено задач"
                                             value={stats.paid}
                                             suffix={`/ ${stats.total}`}
                                             valueStyle={{ color: stats.paid === stats.total && stats.total > 0 ? '#3f8600' : '#faad14' }}
                                         />
                                     </Card>
                                 </Col>
-                                <Col xs={24} md={8}>
+                                <Col xs={12} md={3}>
+                                    <Card size="small">
+                                        <Statistic
+                                            title="✅ Оплачено часов"
+                                            value={stats.paidHours}
+                                            suffix="ч"
+                                            valueStyle={{ color: '#3f8600' }}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col xs={12} md={3}>
+                                    <Card size="small">
+                                        <Statistic
+                                            title="❌ Не оплачено часов"
+                                            value={stats.unpaidHours}
+                                            suffix="ч"
+                                            valueStyle={{ color: '#cf1322' }}
+                                        />
+                                    </Card>
+                                </Col>
+                                <Col xs={24} md={6}>
                                     <Card size="small">
                                         <Text type="secondary">Прогресс</Text>
                                         <Progress
@@ -997,7 +1400,7 @@ const BoardProjectPage = () => {
                         children: (
                             <Table
                                 columns={taskColumns}
-                                dataSource={currentProject.tasks}
+                                dataSource={moduleTasks}
                                 rowKey="_id"
                                 pagination={{ pageSize: 15 }}
                                 bordered

@@ -23,6 +23,12 @@ const userSchema = new mongoose.Schema({
         enum: ['admin', 'projectManager', 'worker', 'guest'],
         default: 'worker',
     },
+    // Специализация исполнителя — только для группировки/отображения, на права доступа не влияет.
+    specialization: {
+        type: String,
+        enum: ['frontend', 'backend', 'pm', null],
+        default: null,
+    },
     telegramId: {
         type: String,
         default: null,

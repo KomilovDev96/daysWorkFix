@@ -23,12 +23,14 @@ const PRIORITY_LABELS = {
 // ── Projects ──────────────────────────────────────────────────────────────────
 
 exports.getAll = catchAsync(async (req, res) => {
-    // Admin видит все проекты; остальные — только свои
-    const filter = req.user.role === 'admin' ? {} : { createdBy: req.user._id };
+    // Admin видит все проекты; остальные — свои созданные + те, где назначены на задачу
+    const filter = req.user.role === 'admin'
+        ? {}
+        : { $or: [{ createdBy: req.user._id }, { 'tasks.assignedTo': req.user._id }] };
 
     const projects = await BoardProject.find(filter)
         .populate('createdBy', 'name email')
-        .populate('tasks.assignedTo', 'name email')
+        .populate('tasks.assignedTo', 'name email specialization')
         .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -41,7 +43,7 @@ exports.getAll = catchAsync(async (req, res) => {
 exports.getOne = catchAsync(async (req, res, next) => {
     const project = await BoardProject.findById(req.params.id)
         .populate('createdBy', 'name email')
-        .populate('tasks.assignedTo', 'name email');
+        .populate('tasks.assignedTo', 'name email specialization');
 
     if (!project) return next(new AppError('Проект не найден', 404));
 
@@ -90,7 +92,7 @@ exports.update = catchAsync(async (req, res, next) => {
     }
 
     await project.populate('createdBy', 'name email');
-    await project.populate('tasks.assignedTo', 'name email');
+    await project.populate('tasks.assignedTo', 'name email specialization');
 
     res.status(200).json({ status: 'success', data: { project } });
 });
@@ -116,7 +118,7 @@ exports.addTask = catchAsync(async (req, res, next) => {
     await project.save();
 
     await project.populate('createdBy', 'name email');
-    await project.populate('tasks.assignedTo', 'name email');
+    await project.populate('tasks.assignedTo', 'name email specialization');
 
     res.status(201).json({ status: 'success', data: { project } });
 });
@@ -132,7 +134,7 @@ exports.updateTask = catchAsync(async (req, res, next) => {
     await project.save();
 
     await project.populate('createdBy', 'name email');
-    await project.populate('tasks.assignedTo', 'name email');
+    await project.populate('tasks.assignedTo', 'name email specialization');
 
     res.status(200).json({ status: 'success', data: { project } });
 });
@@ -170,7 +172,7 @@ exports.uploadTaskFile = catchAsync(async (req, res, next) => {
 
     await project.save();
     await project.populate('createdBy', 'name email');
-    await project.populate('tasks.assignedTo', 'name email');
+    await project.populate('tasks.assignedTo', 'name email specialization');
 
     res.status(201).json({ status: 'success', data: { project } });
 });
@@ -200,7 +202,7 @@ exports.deleteTaskFile = catchAsync(async (req, res, next) => {
 exports.exportExcel = catchAsync(async (req, res, next) => {
     const project = await BoardProject.findById(req.params.id)
         .populate('createdBy', 'name email')
-        .populate('tasks.assignedTo', 'name email');
+        .populate('tasks.assignedTo', 'name email specialization');
 
     if (!project) return next(new AppError('Проект не найден', 404));
 

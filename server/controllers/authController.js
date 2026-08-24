@@ -52,7 +52,7 @@ exports.getWorkers = catchAsync(async (req, res, next) => {
     if (!['admin', 'projectManager'].includes(req.user.role))
         return next(new AppError('Доступ запрещён', 403));
 
-    const workers = await User.find({ role: 'worker' }).select('name email role');
+    const workers = await User.find({ role: 'worker' }).select('name email role specialization');
     res.status(200).json({ status: 'success', data: { users: workers } });
 });
 
@@ -101,6 +101,7 @@ exports.createUser = catchAsync(async (req, res, next) => {
         email:    req.body.email,
         password: req.body.password,
         role:     req.body.role || 'worker',
+        specialization: req.body.specialization || null,
         telegramLinkCode,
     });
     user.password = undefined;
@@ -137,6 +138,7 @@ exports.updateUser = catchAsync(async (req, res, next) => {
     if (req.body.email)    user.email    = req.body.email;
     if (req.body.password) user.password = req.body.password;
     if (isAdmin && req.body.role) user.role = req.body.role;
+    if (isAdmin && 'specialization' in req.body) user.specialization = req.body.specialization || null;
 
     await user.save();
     user.password = undefined;

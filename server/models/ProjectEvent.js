@@ -8,6 +8,7 @@ const EVENT_TYPES = [
     'file_added',
     'deadline_changed',
     'progress_changed',
+    'task_submitted_api',
 ];
 
 const projectEventSchema = new mongoose.Schema(

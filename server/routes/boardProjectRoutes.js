@@ -1,6 +1,7 @@
 const express = require('express');
 const ctrl       = require('../controllers/boardProjectController');
 const portalCtrl = require('../controllers/projectPortalController');
+const taskApiCtrl = require('../controllers/projectTaskApiController');
 const protect    = require('../middleware/authMiddleware');
 const restrictTo = require('../middleware/roleMiddleware');
 const upload     = require('../middleware/uploadMiddleware');
@@ -27,6 +28,12 @@ router.get('/:id/updates',              manage, portalCtrl.getUpdates);
 router.post('/:id/updates',             manage, upload.array('files', 10), portalCtrl.publishUpdate);
 router.delete('/:id/updates/:updateId', manage, portalCtrl.deleteUpdate);
 router.get('/:id/timeline',             manage, portalCtrl.getTimeline);
+
+// ── Публичный API для задач: постоянный токен, по которому фронтендщик/бэкендщик/пм
+// отправляют выполненные задачи без входа в систему (см. routes/publicTaskApiRoutes.js).
+router.get('/:id/task-api',             manage, taskApiCtrl.getTaskApi);
+router.patch('/:id/task-api',           manage, taskApiCtrl.updateTaskApi);
+router.post('/:id/task-api/regenerate', manage, taskApiCtrl.regenerateToken);
 
 router.post('/:id/tasks',           ctrl.addTask);
 router.patch('/:id/tasks/:taskId',  ctrl.updateTask);
