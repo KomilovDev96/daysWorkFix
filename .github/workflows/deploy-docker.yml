@@ -1,0 +1,47 @@
+name: Deploy to Production (Docker)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PROD2_SSH_HOST }}
+          username: ${{ secrets.PROD2_SSH_USER }}
+          key: ${{ secrets.PROD2_SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            APP=/root/daysWorkfix
+            cd "$APP"
+
+            echo "===== Pulling latest code ====="
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "===== Build images ====="
+            docker compose -f docker-compose.prod.yml --env-file .env build
+
+            echo "===== Up ====="
+            docker compose -f docker-compose.prod.yml --env-file .env up -d
+
+            echo "===== Migrations (idempotent) ====="
+            docker compose -f docker-compose.prod.yml exec -T api node fixIndexes.js || echo "fixIndexes skipped"
+            docker compose -f docker-compose.prod.yml exec -T api node seedKnowledge.js || echo "seedKnowledge skipped"
+            docker compose -f docker-compose.prod.yml exec -T api node scripts/cleanupOrphanEvents.js || echo "cleanupOrphanEvents skipped"
+
+            echo "===== Cleanup old images ====="
+            docker image prune -f
+
+            echo "===== Health check ====="
+            sleep 3
+            curl -fsS https://daysworkfix.uz >/dev/null && echo "Site: OK"
+
+            echo "===== Done ====="

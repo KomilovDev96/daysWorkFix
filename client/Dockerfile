@@ -11,6 +11,8 @@ COPY . .
 ARG VITE_API_URL=/
 ENV VITE_API_URL=$VITE_API_URL
 
+# Явный лимит heap V8 — на слабых хостах Node иначе занижает его сам и падает по OOM
+ENV NODE_OPTIONS=--max-old-space-size=2048
 RUN npm run build
 
 # Раздача статики через nginx
