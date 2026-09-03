@@ -152,6 +152,119 @@ exports.deleteTask = catchAsync(async (req, res, next) => {
     res.status(204).json({ status: 'success', data: null });
 });
 
+// ── Sprints ───────────────────────────────────────────────────────────────────
+// Спринт — именованный блок задач (напр. «Спринт 1»). Только один спринт активен
+// одновременно: при активации нового все остальные автоматически завершаются,
+// чтобы клиентский портал всегда показывал ровно один текущий снимок.
+
+const assertProjectOwner = (project, user, next) => {
+    if (user.role !== 'admin' && String(project.createdBy) !== String(user._id)) {
+        next(new AppError('Нет прав для управления этим проектом', 403));
+        return false;
+    }
+    return true;
+};
+
+exports.getSprints = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    res.status(200).json({ status: 'success', data: { sprints: project.sprints } });
+});
+
+exports.createSprint = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    const { name, description } = req.body;
+    if (!name?.trim()) return next(new AppError('Название спринта обязательно', 400));
+
+    // Завершаем предыдущий активный спринт — активен всегда только один.
+    project.sprints.forEach((s) => {
+        if (s.status === 'active') {
+            s.status = 'completed';
+            s.completedAt = new Date();
+        }
+    });
+
+    project.sprints.push({
+        name: name.trim(),
+        description: description?.trim() || '',
+        status: 'active',
+        createdBy: req.user._id,
+    });
+    await project.save();
+
+    const sprint = project.sprints[project.sprints.length - 1];
+    await logProjectEvent(project._id, 'sprint_started', `Начат спринт: ${sprint.name}`, {
+        meta: { sprintId: sprint._id },
+        actorId: req.user._id,
+    });
+
+    res.status(201).json({ status: 'success', data: { sprints: project.sprints } });
+});
+
+exports.updateSprint = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    const sprint = project.sprints.id(req.params.sprintId);
+    if (!sprint) return next(new AppError('Спринт не найден', 404));
+
+    const { name, description, status, visibleToClient } = req.body;
+    if (name !== undefined) sprint.name = name.trim();
+    if (description !== undefined) sprint.description = description?.trim() || '';
+    if (visibleToClient !== undefined) sprint.visibleToClient = !!visibleToClient;
+
+    if (status !== undefined && status !== sprint.status) {
+        if (status === 'active') {
+            // Активируя этот спринт, завершаем остальные активные.
+            project.sprints.forEach((s) => {
+                if (String(s._id) !== String(sprint._id) && s.status === 'active') {
+                    s.status = 'completed';
+                    s.completedAt = new Date();
+                }
+            });
+            sprint.status = 'active';
+            sprint.completedAt = null;
+            await project.save();
+            await logProjectEvent(project._id, 'sprint_started', `Возобновлён спринт: ${sprint.name}`, {
+                meta: { sprintId: sprint._id }, actorId: req.user._id,
+            });
+        } else if (status === 'completed') {
+            sprint.status = 'completed';
+            sprint.completedAt = new Date();
+            await project.save();
+            await logProjectEvent(project._id, 'sprint_completed', `Завершён спринт: ${sprint.name}`, {
+                meta: { sprintId: sprint._id }, actorId: req.user._id,
+            });
+        }
+    } else {
+        await project.save();
+    }
+
+    res.status(200).json({ status: 'success', data: { sprints: project.sprints } });
+});
+
+exports.deleteSprint = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    const sprint = project.sprints.id(req.params.sprintId);
+    if (!sprint) return next(new AppError('Спринт не найден', 404));
+
+    // Задачи спринта не удаляются — просто теряют привязку (возвращаются в бэклог).
+    project.tasks.forEach((t) => {
+        if (String(t.sprint) === String(sprint._id)) t.sprint = null;
+    });
+    sprint.deleteOne();
+    await project.save();
+
+    res.status(204).json({ status: 'success', data: null });
+});
+
 // ── Task files ────────────────────────────────────────────────────────────────
 
 exports.uploadTaskFile = catchAsync(async (req, res, next) => {

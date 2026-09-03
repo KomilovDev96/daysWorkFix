@@ -134,7 +134,7 @@ const UsersPage = () => {
             dataIndex: 'specialization',
             key: 'specialization',
             render: (spec) => {
-                const map = { frontend: ['FRONTEND', 'geekblue'], backend: ['BACKEND', 'cyan'], pm: ['PM', 'purple'] };
+                const map = { frontend: ['FRONTEND', 'geekblue'], backend: ['BACKEND', 'cyan'], pm: ['PM', 'purple'], tester: ['TESTER', 'volcano'] };
                 if (!spec || !map[spec]) return <Tag color="default">—</Tag>;
                 const [label, color] = map[spec];
                 return <Tag color={color}>{label}</Tag>;
@@ -288,6 +288,7 @@ const UsersPage = () => {
                             <Select.Option value="frontend">Frontend</Select.Option>
                             <Select.Option value="backend">Backend</Select.Option>
                             <Select.Option value="pm">Project Manager</Select.Option>
+                            <Select.Option value="tester">Tester</Select.Option>
                         </Select>
                     </Form.Item>
 

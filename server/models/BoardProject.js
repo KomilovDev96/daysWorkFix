@@ -18,12 +18,14 @@ const boardTaskSchema = new mongoose.Schema(
         amount: { type: Number, default: 0, min: 0 },
         isPaid: { type: Boolean, default: false },
         // Роль исполнителя для группировки задач без привязки к конкретному User (напр. при массовом импорте).
-        execRole: { type: String, enum: ['frontend', 'backend', 'pm', null], default: null },
+        execRole: { type: String, enum: ['frontend', 'backend', 'pm', 'tester', null], default: null },
         customer: { type: String, default: '' },
         system: { type: String, default: '' },
         assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         dueDate: { type: Date, default: null },
         notes: { type: String, default: '' },
+        // Спринт (накопительная партия задач), к которому относится задача; null = вне спринтов (бэклог/легаси).
+        sprint: { type: mongoose.Schema.Types.ObjectId, default: null },
         files: [
             {
                 originalName: { type: String },
@@ -57,6 +59,21 @@ const portalSchema = new mongoose.Schema(
     { _id: false }
 );
 
+// Спринт — именованный блок/партия задач (напр. «Спринт 1»). Показываем клиенту по одному
+// активному спринту за раз через публичный портал, старые скрываются автоматически.
+const sprintSchema = new mongoose.Schema(
+    {
+        name: { type: String, required: true, trim: true },
+        description: { type: String, default: '' },
+        status: { type: String, enum: ['active', 'completed'], default: 'active' },
+        // Разрешение показывать этот спринт в клиентском портале (по умолчанию — да, пока активен).
+        visibleToClient: { type: Boolean, default: true },
+        createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
+        completedAt: { type: Date, default: null },
+    },
+    { timestamps: true }
+);
+
 // Публичный API для приёма выполненных задач от стороннего исполнителя (фронтенд/бэкенд/пм)
 // без входа в систему — по постоянному токену проекта.
 const taskApiSchema = new mongoose.Schema(
@@ -82,6 +99,7 @@ const boardProjectSchema = new mongoose.Schema(
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         clients: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         tasks: [boardTaskSchema],
+        sprints: [sprintSchema],
         portal: { type: portalSchema, default: () => ({}) },
         taskApi: { type: taskApiSchema, default: () => ({}) },
     },

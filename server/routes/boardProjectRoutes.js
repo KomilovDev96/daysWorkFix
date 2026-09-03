@@ -35,6 +35,12 @@ router.get('/:id/task-api',             manage, taskApiCtrl.getTaskApi);
 router.patch('/:id/task-api',           manage, taskApiCtrl.updateTaskApi);
 router.post('/:id/task-api/regenerate', manage, taskApiCtrl.regenerateToken);
 
+// ── Спринты: именованные блоки задач, из которых один активный показывается в портале ──
+router.get('/:id/sprints',                manage, ctrl.getSprints);
+router.post('/:id/sprints',               manage, ctrl.createSprint);
+router.patch('/:id/sprints/:sprintId',    manage, ctrl.updateSprint);
+router.delete('/:id/sprints/:sprintId',   manage, ctrl.deleteSprint);
+
 router.post('/:id/tasks',           ctrl.addTask);
 router.patch('/:id/tasks/:taskId',  ctrl.updateTask);
 router.delete('/:id/tasks/:taskId', ctrl.deleteTask);

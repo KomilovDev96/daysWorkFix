@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
     // Специализация исполнителя — только для группировки/отображения, на права доступа не влияет.
     specialization: {
         type: String,
-        enum: ['frontend', 'backend', 'pm', null],
+        enum: ['frontend', 'backend', 'pm', 'tester', null],
         default: null,
     },
     telegramId: {

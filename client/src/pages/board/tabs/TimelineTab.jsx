@@ -2,7 +2,7 @@ import React from 'react';
 import { Timeline, Typography, Empty, Spin } from 'antd';
 import {
     CheckCircleOutlined, ClockCircleOutlined, FlagOutlined, FileAddOutlined,
-    CalendarOutlined, RocketOutlined,
+    CalendarOutlined, RocketOutlined, TrophyOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -17,6 +17,8 @@ const EVENT_ICON = {
     file_added:       <FileAddOutlined style={{ color: '#722ed1' }} />,
     deadline_changed: <CalendarOutlined style={{ color: '#faad14' }} />,
     progress_changed: <ClockCircleOutlined style={{ color: '#1677ff' }} />,
+    sprint_started:   <RocketOutlined style={{ color: '#722ed1' }} />,
+    sprint_completed: <TrophyOutlined style={{ color: '#faad14' }} />,
 };
 
 const TimelineTab = ({ projectId }) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Typography, Card, Button, Table, Tag, Space, Modal, Form, Input,
     Select, DatePicker, message, Popconfirm, Drawer, InputNumber,
@@ -9,6 +9,7 @@ import UpdatesTab from './tabs/UpdatesTab';
 import TimelineTab from './tabs/TimelineTab';
 import ProjectFilesTab from './tabs/ProjectFilesTab';
 import PortalSettingsTab from './tabs/PortalSettingsTab';
+import SprintsTab from './tabs/SprintsTab';
 import {
     PlusOutlined, EditOutlined, DeleteOutlined, FileExcelOutlined,
     ProjectOutlined, CheckCircleOutlined, ClockCircleOutlined,
@@ -16,7 +17,7 @@ import {
     TeamOutlined, UserAddOutlined, UserDeleteOutlined, MessageOutlined,
     SendOutlined, PaperClipOutlined, UploadOutlined, FileImageOutlined,
     FilePdfOutlined, FileOutlined, EyeOutlined, LinkOutlined,
-    ApiOutlined, CopyOutlined, ReloadOutlined
+    ApiOutlined, CopyOutlined, ReloadOutlined, UserOutlined, RocketOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
@@ -377,6 +378,7 @@ const MODULE_META = {
     frontend: { label: 'Frontend', color: 'geekblue' },
     backend: { label: 'Backend', color: 'cyan' },
     pm: { label: 'PM', color: 'purple' },
+    tester: { label: 'Tester', color: 'volcano' },
 };
 
 const buildTaskApiCurl = (endpoint, moduleKey) => `curl -X POST "${endpoint}" \\
@@ -566,12 +568,149 @@ const TaskApiDrawer = ({ open, project, onClose }) => {
     );
 };
 
+// ── Канбан задач модуля ─────────────────────────────────────────────────────────
+const KANBAN_COLUMNS = [
+    { key: 'todo', label: 'К выполнению', color: '#8c8c8c', bg: '#f5f5f5', border: '#d9d9d9' },
+    { key: 'in_progress', label: 'В процессе', color: '#1677ff', bg: '#e6f4ff', border: '#91caff' },
+    { key: 'done', label: 'Выполнено', color: '#52c41a', bg: '#f6ffed', border: '#b7eb8f' },
+];
+
+const TaskKanbanCard = ({ task, onEdit, onDelete, onMove, onFiles, onTogglePaid }) => {
+    const isFilled = Number(task.hours) > 0 && task.customer?.trim() && task.system?.trim() && task.dueDate;
+    const priorityInfo = TASK_PRIORITY[task.priority] || { label: task.priority, color: 'default' };
+    const overdue = task.dueDate && task.status !== 'done' && dayjs(task.dueDate).isBefore(dayjs(), 'day');
+    const currentIdx = KANBAN_COLUMNS.findIndex((c) => c.key === task.status);
+    const nextCol = KANBAN_COLUMNS[currentIdx + 1];
+    const prevCol = KANBAN_COLUMNS[currentIdx - 1];
+
+    return (
+        <Card size="small" style={{ marginBottom: 8 }} bodyStyle={{ padding: '10px 12px' }}>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'flex-start', marginBottom: 6 }}>
+                <Tooltip title={isFilled ? 'Заполнено' : 'Не все поля заполнены'}>
+                    {isFilled
+                        ? <CheckCircleOutlined style={{ color: '#52c41a', marginTop: 3 }} />
+                        : <ExclamationCircleOutlined style={{ color: '#faad14', marginTop: 3 }} />}
+                </Tooltip>
+                <Text strong style={{ fontSize: 13, flex: 1 }}>{task.title}</Text>
+            </div>
+
+            {task.description && (
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
+                    {task.description.length > 70 ? task.description.slice(0, 70) + '…' : task.description}
+                </Text>
+            )}
+
+            <Space size={4} wrap style={{ marginBottom: 8 }}>
+                <Tag color={priorityInfo.color} style={{ margin: 0 }}>{priorityInfo.label}</Tag>
+                {task.hours > 0 && <Tag color="blue" style={{ margin: 0 }}>{task.hours} ч</Tag>}
+                {task.customer && <Tag color="gold" style={{ margin: 0 }}>{task.customer}</Tag>}
+                {task.assignedTo?.name && (
+                    <Tag icon={<UserOutlined />} style={{ margin: 0 }}>{task.assignedTo.name}</Tag>
+                )}
+                {task.dueDate && (
+                    <Tag color={overdue ? 'red' : 'default'} style={{ margin: 0 }}>
+                        до {dayjs(task.dueDate).format('DD.MM')}{overdue ? ' ⚠️' : ''}
+                    </Tag>
+                )}
+            </Space>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
+                <Space size={4}>
+                    {prevCol && (
+                        <Tooltip title={`Вернуть в «${prevCol.label}»`}>
+                            <Button size="small" onClick={() => onMove(task, prevCol.key)}>←</Button>
+                        </Tooltip>
+                    )}
+                    {nextCol && (
+                        <Tooltip title={`Переместить в «${nextCol.label}»`}>
+                            <Button size="small" type="primary" ghost onClick={() => onMove(task, nextCol.key)}>→</Button>
+                        </Tooltip>
+                    )}
+                </Space>
+                <Space size={4}>
+                    <Tooltip title={task.isPaid ? 'Оплачено' : 'Не оплачено'}>
+                        <Checkbox checked={!!task.isPaid} onChange={(e) => onTogglePaid(task, e.target.checked)} />
+                    </Tooltip>
+                    <Button size="small" icon={<PaperClipOutlined />}
+                        type={task.files?.length ? 'primary' : 'default'} ghost={!!task.files?.length}
+                        onClick={() => onFiles(task)}>
+                        {task.files?.length || ''}
+                    </Button>
+                    <Button size="small" icon={<EditOutlined />} onClick={() => onEdit(task)} />
+                    <Popconfirm title="Удалить задачу?" onConfirm={() => onDelete(task)}>
+                        <Button size="small" danger icon={<DeleteOutlined />} />
+                    </Popconfirm>
+                </Space>
+            </div>
+        </Card>
+    );
+};
+
+const TaskKanbanColumn = ({ col, tasks, ...cardProps }) => (
+    <div style={{ flex: '1 1 240px', minWidth: 240, maxWidth: 340 }}>
+        <div style={{
+            background: col.bg, border: `1px solid ${col.border}`, borderRadius: 8,
+            padding: '8px 12px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+            <Text strong style={{ color: col.color, fontSize: 13 }}>{col.label}</Text>
+            <Badge count={tasks.length} style={{ background: col.color, marginLeft: 'auto' }} />
+        </div>
+        {tasks.length === 0 ? (
+            <div style={{ border: `1px dashed ${col.border}`, borderRadius: 6, padding: 16, textAlign: 'center', color: '#bbb', fontSize: 12 }}>
+                Нет задач
+            </div>
+        ) : (
+            tasks.map((t) => <TaskKanbanCard key={t._id} task={t} {...cardProps} />)
+        )}
+    </div>
+);
+
+const TaskKanbanBoard = ({ tasks, onEdit, onDelete, onMove, onFiles, onTogglePaid }) => {
+    const cancelled = tasks.filter((t) => t.status === 'cancelled');
+    // Прогресс считается от общей суммы задач текущей доски (модуль + спринт) —
+    // двигается сразу, как только карточка попадает в колонку «Выполнено».
+    const total = tasks.length - cancelled.length;
+    const done = tasks.filter((t) => t.status === 'done').length;
+    const percent = total ? Math.round((done / total) * 100) : 0;
+    return (
+        <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                <Progress
+                    percent={percent}
+                    status={percent === 100 ? 'success' : 'active'}
+                    style={{ flex: 1, maxWidth: 420 }}
+                />
+                <Text type="secondary" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
+                    Готово {done} из {total}
+                </Text>
+            </div>
+            <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 8, alignItems: 'flex-start' }}>
+                {KANBAN_COLUMNS.map((col) => (
+                    <TaskKanbanColumn
+                        key={col.key}
+                        col={col}
+                        tasks={tasks.filter((t) => t.status === col.key)}
+                        onEdit={onEdit} onDelete={onDelete} onMove={onMove}
+                        onFiles={onFiles} onTogglePaid={onTogglePaid}
+                    />
+                ))}
+            </div>
+            {cancelled.length > 0 && (
+                <Text type="secondary" style={{ fontSize: 12, display: 'block', marginTop: 12 }}>
+                    Отменённых задач: {cancelled.length}
+                </Text>
+            )}
+        </div>
+    );
+};
+
 const BoardProjectPage = () => {
     const queryClient = useQueryClient();
     const user = useSelector((state) => state.auth.user);
 
     const [selectedProject, setSelectedProject] = useState(null);
     const [selectedModule, setSelectedModule] = useState(null);
+    const [selectedSprintId, setSelectedSprintId] = useState('all');
     const [projectModal, setProjectModal] = useState({ open: false, item: null });
     const [taskModal, setTaskModal] = useState({ open: false, item: null });
     const [clientsDrawer, setClientsDrawer] = useState({ open: false, project: null });
@@ -602,6 +741,14 @@ const BoardProjectPage = () => {
 
     // Keep selectedProject in sync after mutations
     const currentProject = projects?.find((p) => p._id === selectedProject?._id) || selectedProject;
+    const sprints = currentProject?.sprints || [];
+    const activeSprint = sprints.find((s) => s.status === 'active') || null;
+
+    // При открытии проекта — сразу переключаемся на его активный спринт (если он есть).
+    useEffect(() => {
+        setSelectedSprintId(activeSprint ? activeSprint._id : 'all');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedProject?._id]);
 
     // ── Mutations ──────────────────────────────────────────────────────────────
 
@@ -749,7 +896,12 @@ const BoardProjectPage = () => {
         if (taskModal.item) {
             updateTask.mutate({ projectId: currentProject._id, taskId: taskModal.item._id, body });
         } else {
-            addTask.mutate({ projectId: currentProject._id, body: { ...body, execRole: selectedModule } });
+            const sprint = selectedSprintId === 'none'
+                ? null
+                : selectedSprintId === 'all'
+                    ? (activeSprint?._id || null)
+                    : selectedSprintId;
+            addTask.mutate({ projectId: currentProject._id, body: { ...body, execRole: selectedModule, sprint } });
         }
     };
 
@@ -821,13 +973,20 @@ const BoardProjectPage = () => {
     // текущему пользователю — ограничение по роли действует лишь на списке проектов.
     const getModuleTasks = (p, moduleKey) => {
         const tasks = p.tasks || [];
-        return tasks.filter((t) => (t.execRole || t.assignedTo?.specialization) === moduleKey);
+        return tasks
+            .filter((t) => (t.execRole || t.assignedTo?.specialization) === moduleKey)
+            .filter((t) => {
+                if (selectedSprintId === 'all') return true;
+                if (selectedSprintId === 'none') return !t.sprint;
+                return String(t.sprint) === String(selectedSprintId);
+            });
     };
 
     const SPEC_LABELS = {
         frontend: ['FRONTEND', 'geekblue'],
         backend: ['BACKEND', 'cyan'],
         pm: ['PM', 'purple'],
+        tester: ['ТЕСТИРОВЩИК', 'volcano'],
     };
 
     const copyPortalLink = (p) => {
@@ -953,7 +1112,7 @@ const BoardProjectPage = () => {
         const tasks = getModuleTasks(currentProject, moduleKey);
         const stats = computeStats(tasks);
         return (
-            <Col xs={24} sm={8} key={moduleKey}>
+            <Col xs={24} sm={12} lg={6} key={moduleKey}>
                 <Card
                     hoverable
                     onClick={() => setSelectedModule(moduleKey)}
@@ -1103,10 +1262,36 @@ const BoardProjectPage = () => {
                     )}
                 </div>
 
+                {/* Переключатель спринта — влияет на то, какие задачи видны в модулях ниже */}
+                {sprints.length > 0 && (
+                    <Card size="small" style={{ marginBottom: 20, background: '#fafafa' }}>
+                        <Space wrap align="center">
+                            <RocketOutlined style={{ color: '#1677ff' }} />
+                            <Text strong>Спринт:</Text>
+                            <Select
+                                value={selectedSprintId}
+                                onChange={setSelectedSprintId}
+                                style={{ minWidth: 220 }}
+                                options={[
+                                    { value: 'all', label: 'Все спринты' },
+                                    ...sprints.slice().reverse().map((s) => ({
+                                        value: s._id,
+                                        label: `${s.name} ${s.status === 'active' ? '🟢 активен' : '✓ завершён'}`,
+                                    })),
+                                    { value: 'none', label: 'Без спринта (бэклог)' },
+                                ]}
+                            />
+                            {activeSprint && (
+                                <Tag color="green">Активный: {activeSprint.name}</Tag>
+                            )}
+                        </Space>
+                    </Card>
+                )}
+
                 <Title level={4} style={{ marginBottom: 16 }}>Выберите модуль</Title>
 
                 <Row gutter={[16, 16]}>
-                    {['frontend', 'backend', 'pm'].map(renderModuleCard)}
+                    {['frontend', 'backend', 'pm', 'tester'].map(renderModuleCard)}
                 </Row>
 
                 <TaskApiDrawer
@@ -1397,6 +1582,22 @@ const BoardProjectPage = () => {
                     {
                         key: 'tasks',
                         label: `Задачи (${stats.total})`,
+                        children: moduleTasks.length === 0 ? (
+                            <Empty description="Нет задач. Нажмите «Добавить задачу»" />
+                        ) : (
+                            <TaskKanbanBoard
+                                tasks={moduleTasks}
+                                onEdit={openEditTask}
+                                onDelete={(task) => deleteTask.mutate({ projectId: currentProject._id, taskId: task._id })}
+                                onMove={(task, status) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { status } })}
+                                onFiles={(task) => setFilesDrawer({ open: true, task })}
+                                onTogglePaid={(task, isPaid) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { isPaid } })}
+                            />
+                        ),
+                    },
+                    {
+                        key: 'table',
+                        label: 'Таблица',
                         children: (
                             <Table
                                 columns={taskColumns}
@@ -1414,7 +1615,10 @@ const BoardProjectPage = () => {
                     { key: 'timeline', label: 'Таймлайн',   children: <TimelineTab projectId={currentProject._id} /> },
                     { key: 'files',    label: 'Файлы',      children: <ProjectFilesTab project={currentProject} /> },
                     ...(['admin', 'projectManager', 'worker'].includes(user?.role)
-                        ? [{ key: 'portal', label: 'Клиентский портал', children: <PortalSettingsTab projectId={currentProject._id} /> }]
+                        ? [
+                            { key: 'sprints', label: 'Спринты', children: <SprintsTab project={currentProject} /> },
+                            { key: 'portal', label: 'Клиентский портал', children: <PortalSettingsTab projectId={currentProject._id} /> },
+                        ]
                         : []),
                 ]}
             />

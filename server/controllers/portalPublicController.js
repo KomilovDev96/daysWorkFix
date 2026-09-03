@@ -13,7 +13,8 @@ const ACCESS_TTL = '12h';
 const findByToken = (token) =>
     BoardProject.findOne({ 'portal.token': token, 'portal.enabled': true })
         .populate('portal.manager', 'name')
-        .populate('createdBy', 'name');
+        .populate('createdBy', 'name')
+        .populate('tasks.assignedTo', 'name');
 
 // Проверить пароль-доступ к защищённому порталу.
 // Токен доступа приходит как Bearer-заголовок или ?access=<jwt>.

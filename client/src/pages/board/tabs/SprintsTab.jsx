@@ -1,0 +1,149 @@
+import React, { useState } from 'react';
+import {
+    Card, Button, Modal, Form, Input, Space, Tag, Typography, Empty,
+    Popconfirm, message, Switch, Tooltip,
+} from 'antd';
+import {
+    PlusOutlined, RocketOutlined, FlagOutlined, DeleteOutlined,
+    EditOutlined, CheckCircleOutlined, EyeOutlined, EyeInvisibleOutlined,
+} from '@ant-design/icons';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import apiClient from '../../../shared/api/apiClient';
+
+const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
+
+// Спринты — именованные блоки задач («Спринт 1», «Спринт 2», ...). Активен всегда
+// только один: он и уходит «снимком» в клиентский портал, остальные скрыты по умолчанию.
+const SprintsTab = ({ project }) => {
+    const queryClient = useQueryClient();
+    const [modal, setModal] = useState({ open: false, item: null });
+    const [form] = Form.useForm();
+
+    const sprints = (project?.sprints || []).slice().reverse();
+
+    const invalidate = () => queryClient.invalidateQueries({ queryKey: ['board-projects'] });
+
+    const createSprint = useMutation({
+        mutationFn: (body) => apiClient.post(`/board-projects/${project._id}/sprints`, body),
+        onSuccess: () => { invalidate(); message.success('Спринт создан'); setModal({ open: false, item: null }); },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось создать спринт'),
+    });
+
+    const updateSprint = useMutation({
+        mutationFn: ({ sprintId, body }) => apiClient.patch(`/board-projects/${project._id}/sprints/${sprintId}`, body),
+        onSuccess: () => { invalidate(); message.success('Спринт обновлён'); },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось обновить спринт'),
+    });
+
+    const deleteSprint = useMutation({
+        mutationFn: (sprintId) => apiClient.delete(`/board-projects/${project._id}/sprints/${sprintId}`),
+        onSuccess: () => { invalidate(); message.success('Спринт удалён, задачи вернулись в бэклог'); },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось удалить спринт'),
+    });
+
+    const openCreate = () => { form.resetFields(); setModal({ open: true, item: null }); };
+
+    const handleCreate = async () => {
+        const values = await form.validateFields();
+        createSprint.mutate(values);
+    };
+
+    return (
+        <div style={{ maxWidth: 760 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                    <Title level={5} style={{ margin: 0 }}>Спринты проекта</Title>
+                    <Text type="secondary">
+                        Активный спринт виден клиенту в портале как снимок доски; старые скрыты автоматически.
+                    </Text>
+                </div>
+                <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+                    Новый спринт
+                </Button>
+            </div>
+
+            {sprints.length === 0 && (
+                <Empty description="Спринтов пока нет — задачи видны как единый список без разбивки" />
+            )}
+
+            {sprints.map((s) => (
+                <Card key={s._id} size="small" style={{ marginBottom: 12, borderRadius: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                        <Space direction="vertical" size={2} style={{ flex: 1 }}>
+                            <Space size={8} wrap>
+                                <Text strong style={{ fontSize: 15 }}>{s.name}</Text>
+                                {s.status === 'active'
+                                    ? <Tag color="green" icon={<RocketOutlined />}>Активен</Tag>
+                                    : <Tag icon={<FlagOutlined />}>Завершён</Tag>}
+                                {!s.visibleToClient && (
+                                    <Tooltip title="Не показывается клиенту, даже если активен">
+                                        <Tag icon={<EyeInvisibleOutlined />}>Скрыт от клиента</Tag>
+                                    </Tooltip>
+                                )}
+                            </Space>
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                                Начат {dayjs(s.createdAt).format('DD.MM.YYYY')}
+                                {s.completedAt ? ` · завершён ${dayjs(s.completedAt).format('DD.MM.YYYY')}` : ''}
+                            </Text>
+                            {s.description && <Paragraph style={{ margin: '4px 0 0' }}>{s.description}</Paragraph>}
+                        </Space>
+
+                        <Space direction="vertical" align="end" size={6}>
+                            <Space size={4}>
+                                <Text type="secondary" style={{ fontSize: 12 }}>Видно клиенту</Text>
+                                <Switch
+                                    size="small"
+                                    checked={!!s.visibleToClient}
+                                    loading={updateSprint.isPending}
+                                    onChange={(checked) => updateSprint.mutate({ sprintId: s._id, body: { visibleToClient: checked } })}
+                                />
+                            </Space>
+                            <Space size={4}>
+                                {s.status === 'completed' ? (
+                                    <Button size="small" icon={<RocketOutlined />}
+                                        onClick={() => updateSprint.mutate({ sprintId: s._id, body: { status: 'active' } })}>
+                                        Сделать активным
+                                    </Button>
+                                ) : (
+                                    <Button size="small" icon={<CheckCircleOutlined />}
+                                        onClick={() => updateSprint.mutate({ sprintId: s._id, body: { status: 'completed' } })}>
+                                        Завершить
+                                    </Button>
+                                )}
+                                <Popconfirm title="Удалить спринт? Задачи вернутся в бэклог." onConfirm={() => deleteSprint.mutate(s._id)}>
+                                    <Button size="small" danger icon={<DeleteOutlined />} />
+                                </Popconfirm>
+                            </Space>
+                        </Space>
+                    </div>
+                </Card>
+            ))}
+
+            <Modal
+                title="Новый спринт"
+                open={modal.open}
+                onOk={handleCreate}
+                onCancel={() => setModal({ open: false, item: null })}
+                confirmLoading={createSprint.isPending}
+                okText="Создать"
+                cancelText="Отмена"
+            >
+                <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                    Текущий активный спринт автоматически завершится и перестанет быть виден клиенту.
+                </Text>
+                <Form form={form} layout="vertical">
+                    <Form.Item name="name" label="Название" rules={[{ required: true, message: 'Введите название' }]}>
+                        <Input placeholder="Например: Спринт 1" />
+                    </Form.Item>
+                    <Form.Item name="description" label="Описание">
+                        <TextArea rows={3} placeholder="Что входит в этот спринт" />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        </div>
+    );
+};
+
+export default SprintsTab;
