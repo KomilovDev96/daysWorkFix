@@ -21,6 +21,9 @@ const SprintPortalPublicPage = () => {
             return data.data.project;
         },
         retry: false,
+        // Живое обновление доски: клиент видит перемещения карточек без перезагрузки страницы.
+        refetchInterval: 5000,
+        refetchIntervalInBackground: true,
     });
 
     if (isLoading) return <Spin size="large" style={{ display: 'block', margin: '120px auto' }} />;
