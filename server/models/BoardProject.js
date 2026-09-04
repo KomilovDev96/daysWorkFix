@@ -65,7 +65,7 @@ const sprintSchema = new mongoose.Schema(
     {
         name: { type: String, required: true, trim: true },
         description: { type: String, default: '' },
-        status: { type: String, enum: ['active', 'completed'], default: 'active' },
+        status: { type: String, enum: ['planning', 'active', 'completed'], default: 'active' },
         // Разрешение показывать этот спринт в клиентском портале (по умолчанию — да, пока активен).
         visibleToClient: { type: Boolean, default: true },
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },

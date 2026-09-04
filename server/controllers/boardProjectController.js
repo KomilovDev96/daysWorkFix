@@ -179,27 +179,36 @@ exports.createSprint = catchAsync(async (req, res, next) => {
     const { name, description } = req.body;
     if (!name?.trim()) return next(new AppError('Название спринта обязательно', 400));
 
-    // Завершаем предыдущий активный спринт — активен всегда только один.
-    project.sprints.forEach((s) => {
-        if (s.status === 'active') {
-            s.status = 'completed';
-            s.completedAt = new Date();
-        }
-    });
+    // status: 'planning' — будущий/запланированный спринт, не влияет на остальные и не
+    // показывается клиенту, пока не станет активным. По умолчанию — 'active' (как раньше).
+    const status = ['planning', 'active'].includes(req.body.status) ? req.body.status : 'active';
+
+    // Завершаем предыдущий активный спринт — активен всегда только один. Планируемый
+    // спринт создаётся «в стороне» и текущий активный не трогает.
+    if (status === 'active') {
+        project.sprints.forEach((s) => {
+            if (s.status === 'active') {
+                s.status = 'completed';
+                s.completedAt = new Date();
+            }
+        });
+    }
 
     project.sprints.push({
         name: name.trim(),
         description: description?.trim() || '',
-        status: 'active',
+        status,
         createdBy: req.user._id,
     });
     await project.save();
 
     const sprint = project.sprints[project.sprints.length - 1];
-    await logProjectEvent(project._id, 'sprint_started', `Начат спринт: ${sprint.name}`, {
-        meta: { sprintId: sprint._id },
-        actorId: req.user._id,
-    });
+    if (status === 'active') {
+        await logProjectEvent(project._id, 'sprint_started', `Начат спринт: ${sprint.name}`, {
+            meta: { sprintId: sprint._id },
+            actorId: req.user._id,
+        });
+    }
 
     res.status(201).json({ status: 'success', data: { sprints: project.sprints } });
 });
@@ -239,6 +248,11 @@ exports.updateSprint = catchAsync(async (req, res, next) => {
             await logProjectEvent(project._id, 'sprint_completed', `Завершён спринт: ${sprint.name}`, {
                 meta: { sprintId: sprint._id }, actorId: req.user._id,
             });
+        } else if (status === 'planning') {
+            // Возврат в план не трогает остальные спринты — просто снимает флаг активности/завершения.
+            sprint.status = 'planning';
+            sprint.completedAt = null;
+            await project.save();
         }
     } else {
         await project.save();

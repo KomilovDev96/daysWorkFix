@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
     Card, Button, Modal, Form, Input, Space, Tag, Typography, Empty,
-    Popconfirm, message, Switch, Tooltip,
+    Popconfirm, message, Switch, Tooltip, Radio,
 } from 'antd';
 import {
     PlusOutlined, RocketOutlined, FlagOutlined, DeleteOutlined,
     EditOutlined, CheckCircleOutlined, EyeOutlined, EyeInvisibleOutlined,
+    ClockCircleOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -43,7 +44,11 @@ const SprintsTab = ({ project }) => {
         onError: (e) => message.error(e.response?.data?.message || 'Не удалось удалить спринт'),
     });
 
-    const openCreate = () => { form.resetFields(); setModal({ open: true, item: null }); };
+    const openCreate = () => {
+        form.resetFields();
+        form.setFieldsValue({ status: 'active' });
+        setModal({ open: true, item: null });
+    };
 
     const handleCreate = async () => {
         const values = await form.validateFields();
@@ -74,9 +79,9 @@ const SprintsTab = ({ project }) => {
                         <Space direction="vertical" size={2} style={{ flex: 1 }}>
                             <Space size={8} wrap>
                                 <Text strong style={{ fontSize: 15 }}>{s.name}</Text>
-                                {s.status === 'active'
-                                    ? <Tag color="green" icon={<RocketOutlined />}>Активен</Tag>
-                                    : <Tag icon={<FlagOutlined />}>Завершён</Tag>}
+                                {s.status === 'active' && <Tag color="green" icon={<RocketOutlined />}>Активен</Tag>}
+                                {s.status === 'completed' && <Tag icon={<FlagOutlined />}>Завершён</Tag>}
+                                {s.status === 'planning' && <Tag color="default" icon={<ClockCircleOutlined />}>Запланирован</Tag>}
                                 {!s.visibleToClient && (
                                     <Tooltip title="Не показывается клиенту, даже если активен">
                                         <Tag icon={<EyeInvisibleOutlined />}>Скрыт от клиента</Tag>
@@ -101,7 +106,7 @@ const SprintsTab = ({ project }) => {
                                 />
                             </Space>
                             <Space size={4}>
-                                {s.status === 'completed' ? (
+                                {s.status !== 'active' ? (
                                     <Button size="small" icon={<RocketOutlined />}
                                         onClick={() => updateSprint.mutate({ sprintId: s._id, body: { status: 'active' } })}>
                                         Сделать активным
@@ -130,15 +135,25 @@ const SprintsTab = ({ project }) => {
                 okText="Создать"
                 cancelText="Отмена"
             >
-                <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-                    Текущий активный спринт автоматически завершится и перестанет быть виден клиенту.
-                </Text>
                 <Form form={form} layout="vertical">
                     <Form.Item name="name" label="Название" rules={[{ required: true, message: 'Введите название' }]}>
-                        <Input placeholder="Например: Спринт 1" />
+                        <Input placeholder="Например: Спринт 3" />
                     </Form.Item>
                     <Form.Item name="description" label="Описание">
                         <TextArea rows={3} placeholder="Что входит в этот спринт" />
+                    </Form.Item>
+                    <Form.Item name="status" label="Статус">
+                        <Radio.Group>
+                            <Radio value="active">Активный — сразу видно клиенту</Radio>
+                            <Radio value="planning">Запланирован — не виден клиенту, текущий активный не трогаем</Radio>
+                        </Radio.Group>
+                    </Form.Item>
+                    <Form.Item noStyle shouldUpdate={(prev, cur) => prev.status !== cur.status}>
+                        {({ getFieldValue }) => getFieldValue('status') === 'active' && (
+                            <Text type="warning" style={{ display: 'block', marginTop: -8 }}>
+                                Текущий активный спринт автоматически завершится и перестанет быть виден клиенту.
+                            </Text>
+                        )}
                     </Form.Item>
                 </Form>
             </Modal>
