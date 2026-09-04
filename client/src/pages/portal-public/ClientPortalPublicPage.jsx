@@ -29,15 +29,29 @@ const TASK_STATUS = {
     done:        { label: 'Готово',       color: 'success' },
 };
 
-const EVENT_ICON = {
-    project_created:  <RocketOutlined style={{ color: '#1677ff' }} />,
-    stage_completed:  <FlagOutlined style={{ color: '#52c41a' }} />,
-    update_published: <CheckCircleOutlined style={{ color: '#6ba932' }} />,
-    file_added:       <FileAddOutlined style={{ color: '#722ed1' }} />,
-    deadline_changed: <CalendarOutlined style={{ color: '#faad14' }} />,
-    progress_changed: <ClockCircleOutlined style={{ color: '#1677ff' }} />,
-    sprint_started:   <RocketOutlined style={{ color: '#722ed1' }} />,
-    sprint_completed: <TrophyOutlined style={{ color: '#faad14' }} />,
+const EVENT_META = {
+    project_created:    { icon: <RocketOutlined />,      color: '#1677ff' },
+    stage_completed:    { icon: <FlagOutlined />,         color: '#52c41a' },
+    update_published:   { icon: <CheckCircleOutlined />,  color: '#6ba932' },
+    file_added:         { icon: <FileAddOutlined />,      color: '#722ed1' },
+    deadline_changed:   { icon: <CalendarOutlined />,     color: '#faad14' },
+    progress_changed:   { icon: <ClockCircleOutlined />,  color: '#1677ff' },
+    sprint_started:     { icon: <RocketOutlined />,       color: '#722ed1' },
+    sprint_completed:   { icon: <TrophyOutlined />,       color: '#faad14' },
+    task_submitted_api: { icon: <FileAddOutlined />,      color: '#08979c' },
+};
+const DEFAULT_EVENT_META = { icon: <ClockCircleOutlined />, color: '#8c8c8c' };
+
+// Группирует события таймлайна по дню — чтобы не повторять дату на каждой строке.
+const groupTimelineByDay = (events) => {
+    const groups = [];
+    (events || []).forEach((e) => {
+        const day = dayjs(e.createdAt).format('YYYY-MM-DD');
+        let group = groups.find((g) => g.day === day);
+        if (!group) { group = { day, items: [] }; groups.push(group); }
+        group.items.push(e);
+    });
+    return groups;
 };
 
 const fileSrc = (url) => `${PUBLIC_API_BASE}/${url}`.replace(/([^:])\/\/+/g, '$1/');
@@ -326,21 +340,41 @@ const ClientPortalPublicPage = () => {
                     {(!project.timeline || project.timeline.length === 0) && (
                         <Empty description="Событий пока нет" />
                     )}
-                    {project.timeline?.length > 0 && (
-                        <Timeline
-                            items={project.timeline.map((e) => ({
-                                dot: EVENT_ICON[e.type],
-                                children: (
-                                    <div>
-                                        <Text style={{ fontSize: 13 }}>{e.title}</Text>
-                                        <div><Text type="secondary" style={{ fontSize: 11 }}>
-                                            {dayjs(e.createdAt).format('DD.MM.YYYY HH:mm')}
-                                        </Text></div>
-                                    </div>
-                                ),
-                            }))}
-                        />
-                    )}
+                    {groupTimelineByDay(project.timeline).map((group) => (
+                        <div key={group.day} style={{ marginBottom: 18 }}>
+                            <Text strong style={{ fontSize: 12, color: '#8c8c8c' }}>
+                                {dayjs(group.day).format('DD.MM.YYYY')}
+                            </Text>
+                            <Timeline
+                                style={{ marginTop: 10 }}
+                                items={group.items.map((e) => {
+                                    const meta = EVENT_META[e.type] || DEFAULT_EVENT_META;
+                                    return {
+                                        dot: (
+                                            <div style={{
+                                                width: 26, height: 26, borderRadius: '50%', background: '#fff',
+                                                border: `2px solid ${meta.color}`, color: meta.color,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
+                                            }}>
+                                                {meta.icon}
+                                            </div>
+                                        ),
+                                        children: (
+                                            <div style={{
+                                                background: '#fafafa', borderRadius: 8,
+                                                padding: '8px 12px', marginTop: -3,
+                                            }}>
+                                                <Text style={{ fontSize: 13 }}>{e.title}</Text>
+                                                <div><Text type="secondary" style={{ fontSize: 11 }}>
+                                                    {dayjs(e.createdAt).format('HH:mm')}
+                                                </Text></div>
+                                            </div>
+                                        ),
+                                    };
+                                })}
+                            />
+                        </div>
+                    ))}
                 </Col>
             </Row>
 
