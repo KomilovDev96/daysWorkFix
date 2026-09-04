@@ -1,5 +1,5 @@
 // Единая формула прогресса проекта (совпадает с фронтовой логикой портала).
-// tasksOverride — если передан, считаем по нему (напр. по задачам активного спринта),
+// tasksOverride — если передан, считаем по нему (напр. по задачам видимых спринтов),
 // иначе — по всем задачам проекта (используется внутренними уведомлениями).
 const computeProgress = (project, tasksOverride = null) => {
     const tasks = tasksOverride || project.tasks || [];
@@ -53,25 +53,49 @@ const publicEvent = (e) => ({
     createdAt: e.createdAt,
 });
 
+// Извлекает номер спринта из названия («Спринт 3» → 3) для естественной сортировки
+// в клиентском портале; если номера нет — уходит в конец списка.
+const sprintNumber = (name) => {
+    const m = String(name || '').match(/(\d+)/);
+    return m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER;
+};
+
 // Полная публичная проекция проекта для портала клиента.
 // manager — уже populated-объект (name) или null.
 //
-// Спринты: если у проекта есть хотя бы один спринт, клиенту показывается СНИМОК только
-// активного видимого спринта (старые/скрытые спринты и их задачи наружу не идут).
+// Спринты: клиенту показываются ВСЕ спринты, кроме завершённых (active + planning) —
+// то есть текущая работа и весь согласованный роадмап впереди, но без старой истории.
+// Каждый скрытый вручную (visibleToClient=false) или завершённый спринт наружу не идёт.
 // Проекты без спринтов (легаси/ещё не разбитые) — показывают все задачи как раньше.
 const publicProjectView = (project, { updates = [], events = [] } = {}) => {
-    const sprints = project.sprints || [];
-    const activeSprint = sprints.find((s) => s.status === 'active' && s.visibleToClient) || null;
+    const allSprints = project.sprints || [];
+    const hasSprints = allSprints.length > 0;
 
-    let visibleTasks = project.tasks || [];
-    if (sprints.length > 0) {
-        visibleTasks = activeSprint
-            ? visibleTasks.filter((t) => String(t.sprint) === String(activeSprint._id))
-            : [];
-    }
-    visibleTasks = visibleTasks.filter((t) => t.status !== 'cancelled');
+    const visibleSprints = allSprints
+        .filter((s) => s.status !== 'completed' && s.visibleToClient)
+        .slice()
+        .sort((a, b) => sprintNumber(a.name) - sprintNumber(b.name));
 
-    const progress = computeProgress(project, sprints.length > 0 ? visibleTasks : null);
+    const sprintsView = visibleSprints.map((s) => ({
+        _id: s._id,
+        name: s.name,
+        description: s.description,
+        status: s.status,
+        tasks: (project.tasks || [])
+            .filter((t) => String(t.sprint) === String(s._id) && t.status !== 'cancelled')
+            .map(publicTask),
+    }));
+
+    const legacyTasks = hasSprints
+        ? []
+        : (project.tasks || []).filter((t) => t.status !== 'cancelled');
+
+    const progress = computeProgress(
+        project,
+        hasSprints ? (project.tasks || []).filter((t) =>
+            visibleSprints.some((s) => String(s._id) === String(t.sprint))) : null
+    );
+
     const manager = project.portal?.manager || project.createdBy || null;
 
     return {
@@ -81,13 +105,36 @@ const publicProjectView = (project, { updates = [], events = [] } = {}) => {
         deadline: project.deadline || null,
         manager: manager ? { name: manager.name } : null,
         progress,
-        hasSprints: sprints.length > 0,
-        activeSprint: activeSprint ? { name: activeSprint.name, description: activeSprint.description } : null,
-        tasks: visibleTasks.map(publicTask),
+        hasSprints,
+        sprints: sprintsView,
+        tasks: legacyTasks.map(publicTask),
         updates: updates.map(publicUpdate),
         timeline: events.map(publicEvent),
         updatedAt: project.updatedAt,
     };
 };
 
-module.exports = { computeProgress, publicProjectView, publicUpdate, publicEvent };
+// Публичная проекция ОДНОГО спринта для его отдельной ссылки (/sprint-portal/:token).
+// В отличие от publicProjectView, здесь неважно active/planning/completed — раз клиенту
+// выдали именно эту ссылку, значит спринт нужно показать вне зависимости от общего статуса.
+const publicSprintView = (project, sprint) => {
+    const tasks = (project.tasks || [])
+        .filter((t) => String(t.sprint) === String(sprint._id) && t.status !== 'cancelled')
+        .map(publicTask);
+    const manager = project.portal?.manager || project.createdBy || null;
+
+    return {
+        name: project.name,
+        manager: manager ? { name: manager.name } : null,
+        updatedAt: project.updatedAt,
+        sprint: {
+            _id: sprint._id,
+            name: sprint.name,
+            description: sprint.description,
+            status: sprint.status,
+            tasks,
+        },
+    };
+};
+
+module.exports = { computeProgress, publicProjectView, publicSprintView, publicUpdate, publicEvent };

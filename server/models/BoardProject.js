@@ -68,6 +68,10 @@ const sprintSchema = new mongoose.Schema(
         status: { type: String, enum: ['planning', 'active', 'completed'], default: 'active' },
         // Разрешение показывать этот спринт в клиентском портале (по умолчанию — да, пока активен).
         visibleToClient: { type: Boolean, default: true },
+        // Отдельная публичная ссылка именно на этот спринт (/sprint-portal/:token), независимая
+        // от общего портала проекта. Работает для любого статуса (active/planning/completed) —
+        // в отличие от общего портала, где скрыты завершённые; но подчиняется visibleToClient.
+        token: { type: String, default: null },
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         completedAt: { type: Date, default: null },
     },
@@ -114,6 +118,10 @@ boardProjectSchema.index(
 boardProjectSchema.index(
     { 'taskApi.token': 1 },
     { unique: true, partialFilterExpression: { 'taskApi.token': { $type: 'string' } } }
+);
+boardProjectSchema.index(
+    { 'sprints.token': 1 },
+    { unique: true, partialFilterExpression: { 'sprints.token': { $type: 'string' } } }
 );
 
 module.exports = mongoose.model('BoardProject', boardProjectSchema);

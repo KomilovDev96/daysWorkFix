@@ -16,5 +16,6 @@ const accessLimiter = rateLimit({
 router.get('/portal/:token',          ctrl.getPortal);
 router.post('/portal/:token/access',  accessLimiter, ctrl.verifyAccess);
 router.get('/portal/:token/updates',  ctrl.getUpdates);
+router.get('/sprint-portal/:token',   ctrl.getSprintPortal);
 
 module.exports = router;

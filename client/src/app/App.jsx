@@ -20,6 +20,7 @@ import TemplatesPage       from '../pages/templates/TemplatesPage';
 import BoardProjectPage    from '../pages/board/BoardProjectPage';
 import CustomerPortalPage  from '../pages/portal/CustomerPortalPage';
 import ClientPortalPublicPage from '../pages/portal-public/ClientPortalPublicPage';
+import SprintPortalPublicPage from '../pages/portal-public/SprintPortalPublicPage';
 import GuestLayout         from './providers/GuestLayout';
 import ProjectReportPage   from '../pages/project-report/ProjectReportPage';
 import CustomerReportPage  from '../pages/customer-report/CustomerReportPage';
@@ -75,6 +76,8 @@ const App = () => (
 
                         {/* Публичный клиентский портал по токену — без авторизации */}
                         <Route path="/portal/:token" element={<ClientPortalPublicPage />} />
+                        {/* Отдельная ссылка на один спринт — снимок конкретного спринта с прогрессом */}
+                        <Route path="/sprint-portal/:token" element={<SprintPortalPublicPage />} />
 
                         {/* Гостевой портал */}
                         <Route element={<ProtectedRoute allowedRoles={['guest']} />}>

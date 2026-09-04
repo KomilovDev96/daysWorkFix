@@ -5,6 +5,7 @@ const BoardProject = require('../models/BoardProject');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { logProjectEvent } = require('../utils/projectEvents');
+const { generateUniquePortalToken } = require('../utils/portalToken');
 
 const STATUS_LABELS = {
     todo: 'К выполнению',
@@ -277,6 +278,23 @@ exports.deleteSprint = catchAsync(async (req, res, next) => {
     await project.save();
 
     res.status(204).json({ status: 'success', data: null });
+});
+
+// POST /:id/sprints/:sprintId/link — выдать (или перевыпустить) отдельную публичную
+// ссылку на конкретный спринт. Старая ссылка при этом перестаёт работать.
+exports.regenerateSprintLink = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    const sprint = project.sprints.id(req.params.sprintId);
+    if (!sprint) return next(new AppError('Спринт не найден', 404));
+
+    sprint.token = await generateUniquePortalToken(BoardProject, 'sprints.token');
+    await project.save();
+
+    const link = `${(process.env.APP_PUBLIC_URL || '').replace(/\/+$/, '')}/sprint-portal/${sprint.token}`;
+    res.status(200).json({ status: 'success', data: { token: sprint.token, link } });
 });
 
 // ── Task files ────────────────────────────────────────────────────────────────

@@ -6,7 +6,7 @@ import {
 import {
     PlusOutlined, RocketOutlined, FlagOutlined, DeleteOutlined,
     EditOutlined, CheckCircleOutlined, EyeOutlined, EyeInvisibleOutlined,
-    ClockCircleOutlined,
+    ClockCircleOutlined, LinkOutlined, ReloadOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -43,6 +43,21 @@ const SprintsTab = ({ project }) => {
         onSuccess: () => { invalidate(); message.success('Спринт удалён, задачи вернулись в бэклог'); },
         onError: (e) => message.error(e.response?.data?.message || 'Не удалось удалить спринт'),
     });
+
+    const getSprintLink = useMutation({
+        mutationFn: (sprintId) => apiClient.post(`/board-projects/${project._id}/sprints/${sprintId}/link`),
+        onSuccess: ({ data }) => {
+            invalidate();
+            navigator.clipboard.writeText(data.data.link);
+            message.success('Ссылка на спринт скопирована');
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось получить ссылку'),
+    });
+
+    const copySprintLink = (token) => {
+        navigator.clipboard.writeText(`${window.location.origin}/sprint-portal/${token}`);
+        message.success('Ссылка на спринт скопирована');
+    };
 
     const openCreate = () => {
         form.resetFields();
@@ -120,6 +135,25 @@ const SprintsTab = ({ project }) => {
                                 <Popconfirm title="Удалить спринт? Задачи вернутся в бэклог." onConfirm={() => deleteSprint.mutate(s._id)}>
                                     <Button size="small" danger icon={<DeleteOutlined />} />
                                 </Popconfirm>
+                            </Space>
+                            <Space size={4}>
+                                {s.token ? (
+                                    <>
+                                        <Button size="small" icon={<LinkOutlined />} onClick={() => copySprintLink(s.token)}>
+                                            Ссылка для клиента
+                                        </Button>
+                                        <Popconfirm title="Обновить ссылку? Старая перестанет работать." onConfirm={() => getSprintLink.mutate(s._id)}>
+                                            <Tooltip title="Новая ссылка">
+                                                <Button size="small" icon={<ReloadOutlined />} loading={getSprintLink.isPending} />
+                                            </Tooltip>
+                                        </Popconfirm>
+                                    </>
+                                ) : (
+                                    <Button size="small" icon={<LinkOutlined />} loading={getSprintLink.isPending}
+                                        onClick={() => getSprintLink.mutate(s._id)}>
+                                        Ссылка для клиента
+                                    </Button>
+                                )}
                             </Space>
                         </Space>
                     </div>

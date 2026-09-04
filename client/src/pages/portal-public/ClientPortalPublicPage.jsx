@@ -7,11 +7,12 @@ import {
 import {
     CheckCircleOutlined, ClockCircleOutlined, FlagOutlined, FileAddOutlined,
     CalendarOutlined, RocketOutlined, LinkOutlined, LockOutlined, PaperClipOutlined,
-    TrophyOutlined, UserOutlined,
+    TrophyOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import publicApi, { PUBLIC_API_BASE } from '../../shared/api/publicApi';
+import { SprintKanban } from './SprintKanban';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -37,88 +38,6 @@ const EVENT_ICON = {
     progress_changed: <ClockCircleOutlined style={{ color: '#1677ff' }} />,
     sprint_started:   <RocketOutlined style={{ color: '#722ed1' }} />,
     sprint_completed: <TrophyOutlined style={{ color: '#faad14' }} />,
-};
-
-const ROLE_META = {
-    frontend: { label: 'Frontend', color: '#2f54eb' },
-    backend:  { label: 'Backend',  color: '#08979c' },
-    pm:       { label: 'PM',       color: '#722ed1' },
-    tester:   { label: 'Тестировщик', color: '#d4380d' },
-    other:    { label: 'Другое',   color: '#8c8c8c' },
-};
-
-const KANBAN_COLS = [
-    { key: 'todo',        label: 'К выполнению' },
-    { key: 'in_progress', label: 'В процессе' },
-    { key: 'done',        label: 'Готово' },
-];
-
-// ── Мини-карточка задачи в клиентском канбане (только для чтения) ────────────
-const PublicKanbanCard = ({ task }) => (
-    <Card size="small" style={{ marginBottom: 8, borderRadius: 8 }} bodyStyle={{ padding: '8px 10px' }}>
-        <Text style={{ fontSize: 13 }}>{task.title}</Text>
-        <div style={{ marginTop: 4, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {task.hours > 0 && (
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                    <ClockCircleOutlined style={{ marginRight: 3 }} />{task.hours} ч
-                </Text>
-            )}
-            {task.assignedTo?.name && (
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                    <UserOutlined style={{ marginRight: 3 }} />{task.assignedTo.name}
-                </Text>
-            )}
-        </div>
-    </Card>
-);
-
-// ── Канбан-снимок текущего спринта: роль → статус ─────────────────────────────
-const SprintKanban = ({ tasks }) => {
-    const byRole = {};
-    tasks.forEach((t) => {
-        const role = ROLE_META[t.execRole] ? t.execRole : 'other';
-        if (!byRole[role]) byRole[role] = [];
-        byRole[role].push(t);
-    });
-    const roles = Object.keys(byRole).sort((a, b) =>
-        Object.keys(ROLE_META).indexOf(a) - Object.keys(ROLE_META).indexOf(b));
-
-    if (roles.length === 0) return <Empty description="В этом спринте пока нет задач" />;
-
-    return (
-        <Space direction="vertical" size={20} style={{ width: '100%' }}>
-            {roles.map((role) => {
-                const meta = ROLE_META[role];
-                const roleTasks = byRole[role];
-                return (
-                    <div key={role}>
-                        <Tag color={meta.color} style={{ marginBottom: 10, fontSize: 12, padding: '2px 10px' }}>
-                            {meta.label} · {roleTasks.length}
-                        </Tag>
-                        <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }}>
-                            {KANBAN_COLS.map((col) => {
-                                const colTasks = roleTasks.filter((t) => t.status === col.key);
-                                return (
-                                    <div key={col.key} style={{ flex: '1 1 200px', minWidth: 200, maxWidth: 280 }}>
-                                        <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 6 }}>
-                                            {col.label} ({colTasks.length})
-                                        </Text>
-                                        {colTasks.length === 0 ? (
-                                            <div style={{ border: '1px dashed #e0e0e0', borderRadius: 6, padding: 12, textAlign: 'center', color: '#bbb', fontSize: 12 }}>
-                                                —
-                                            </div>
-                                        ) : (
-                                            colTasks.map((t) => <PublicKanbanCard key={t._id} task={t} />)
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                );
-            })}
-        </Space>
-    );
 };
 
 const fileSrc = (url) => `${PUBLIC_API_BASE}/${url}`.replace(/([^:])\/\/+/g, '$1/');
@@ -277,25 +196,49 @@ const ClientPortalPublicPage = () => {
                 </Row>
             </Card>
 
-            {/* Спринт-канбан (проекты, разбитые на спринты) */}
+            {/* Спринт-канбан (проекты, разбитые на спринты) — показываем все спринты, кроме завершённых */}
             {project.hasSprints && (
-                <Card
-                    style={{ marginBottom: 24, borderRadius: 12 }}
-                    title={
-                        project.activeSprint
-                            ? <Space><RocketOutlined style={{ color: '#722ed1' }} />Текущий спринт: {project.activeSprint.name}</Space>
-                            : 'Текущий спринт'
-                    }
-                >
-                    {project.activeSprint?.description && (
-                        <Paragraph type="secondary" style={{ marginTop: -4, marginBottom: 16 }}>
-                            {project.activeSprint.description}
-                        </Paragraph>
-                    )}
-                    {project.activeSprint
-                        ? <SprintKanban tasks={project.tasks || []} />
-                        : <Empty description="Нет активного спринта — ожидайте обновления от команды" />}
-                </Card>
+                project.sprints.length === 0 ? (
+                    <Card style={{ marginBottom: 24, borderRadius: 12 }}>
+                        <Empty description="Нет активных или запланированных спринтов — ожидайте обновления от команды" />
+                    </Card>
+                ) : (
+                    project.sprints.map((s) => {
+                        const sTasks = s.tasks || [];
+                        const sDone = sTasks.filter((t) => t.status === 'done').length;
+                        const sPercent = sTasks.length ? Math.round((sDone / sTasks.length) * 100) : 0;
+                        return (
+                            <Card
+                                key={s._id}
+                                style={{ marginBottom: 24, borderRadius: 12 }}
+                                title={
+                                    <Space wrap>
+                                        {s.status === 'active'
+                                            ? <RocketOutlined style={{ color: '#52c41a' }} />
+                                            : <ClockCircleOutlined style={{ color: '#8c8c8c' }} />}
+                                        {s.name}
+                                        <Tag color={s.status === 'active' ? 'green' : 'default'}>
+                                            {s.status === 'active' ? 'Активен' : 'Запланирован'}
+                                        </Tag>
+                                    </Space>
+                                }
+                                extra={sTasks.length > 0 && (
+                                    <Space>
+                                        <Progress percent={sPercent} size="small" style={{ width: 100 }} />
+                                        <Text type="secondary" style={{ fontSize: 12 }}>{sDone}/{sTasks.length}</Text>
+                                    </Space>
+                                )}
+                            >
+                                {s.description && (
+                                    <Paragraph type="secondary" style={{ marginTop: -4, marginBottom: 16 }}>
+                                        {s.description}
+                                    </Paragraph>
+                                )}
+                                <SprintKanban tasks={sTasks} />
+                            </Card>
+                        );
+                    })
+                )
             )}
 
             {/* Задачи (только названия + статус) — легаси-вид для проектов без спринтов */}

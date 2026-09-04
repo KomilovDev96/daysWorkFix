@@ -5,7 +5,7 @@ const ProjectUpdate = require('../models/ProjectUpdate');
 const ProjectEvent = require('../models/ProjectEvent');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { publicProjectView, publicUpdate } = require('../utils/portalSerializer');
+const { publicProjectView, publicSprintView, publicUpdate } = require('../utils/portalSerializer');
 
 const ACCESS_TTL = '12h';
 
@@ -95,5 +95,25 @@ exports.getUpdates = catchAsync(async (req, res, next) => {
     res.status(200).json({
         status: 'success',
         data: { updates: updates.map(publicUpdate), page },
+    });
+});
+
+// GET /api/public/sprint-portal/:token — отдельная ссылка на один спринт.
+// Не требует portal.enabled/пароль проекта — своя, самостоятельная ссылка;
+// но подчиняется visibleToClient конкретного спринта (можно отозвать вручную).
+exports.getSprintPortal = catchAsync(async (req, res, next) => {
+    const { token } = req.params;
+    const project = await BoardProject.findOne({ 'sprints.token': token })
+        .populate('portal.manager', 'name')
+        .populate('createdBy', 'name')
+        .populate('tasks.assignedTo', 'name');
+    if (!project) return next(new AppError('Ссылка не найдена', 404));
+
+    const sprint = project.sprints.find((s) => s.token === token);
+    if (!sprint || !sprint.visibleToClient) return next(new AppError('Ссылка не найдена', 404));
+
+    res.status(200).json({
+        status: 'success',
+        data: { project: publicSprintView(project, sprint) },
     });
 });
