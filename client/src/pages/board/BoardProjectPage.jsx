@@ -3,7 +3,7 @@ import {
     Typography, Card, Button, Table, Tag, Space, Modal, Form, Input,
     Select, DatePicker, message, Popconfirm, Drawer, InputNumber,
     Row, Col, Statistic, Progress, Empty, Tooltip, Badge, Checkbox,
-    Avatar, List, Divider, Upload, Image, Tabs
+    Avatar, List, Divider, Upload, Image, Tabs, Popover
 } from 'antd';
 import UpdatesTab from './tabs/UpdatesTab';
 import TimelineTab from './tabs/TimelineTab';
@@ -575,7 +575,44 @@ const KANBAN_COLUMNS = [
     { key: 'done', label: 'Выполнено', color: '#52c41a', bg: '#f6ffed', border: '#b7eb8f' },
 ];
 
-const TaskKanbanCard = ({ task, onEdit, onDelete, onMove, onFiles, onTogglePaid }) => {
+// Клик по бейджу — выбрать/сменить/снять исполнителя. Поле необязательное:
+// доступна опция «Без исполнителя», задачу можно оставить неназначенной.
+const AssigneeTag = ({ task, users, onAssign }) => {
+    const [open, setOpen] = useState(false);
+    return (
+        <Popover
+            trigger="click"
+            open={open}
+            onOpenChange={setOpen}
+            content={
+                <Select
+                    style={{ width: 220 }}
+                    placeholder="Выбрать исполнителя"
+                    showSearch
+                    allowClear
+                    autoFocus
+                    value={task.assignedTo?._id || undefined}
+                    optionFilterProp="label"
+                    options={(users || []).map((u) => ({ value: u._id, label: u.name }))}
+                    onChange={(userId) => { onAssign(task, userId || null); setOpen(false); }}
+                    onClear={() => { onAssign(task, null); setOpen(false); }}
+                />
+            }
+        >
+            {task.assignedTo?.name ? (
+                <Tag icon={<UserOutlined />} style={{ margin: 0, cursor: 'pointer' }}>
+                    {task.assignedTo.name}
+                </Tag>
+            ) : (
+                <Tag style={{ margin: 0, cursor: 'pointer', borderStyle: 'dashed', color: '#999' }} icon={<UserOutlined />}>
+                    Назначить
+                </Tag>
+            )}
+        </Popover>
+    );
+};
+
+const TaskKanbanCard = ({ task, users, onEdit, onDelete, onMove, onFiles, onTogglePaid, onAssign }) => {
     const isFilled = Number(task.hours) > 0 && task.customer?.trim() && task.system?.trim() && task.dueDate;
     const priorityInfo = TASK_PRIORITY[task.priority] || { label: task.priority, color: 'default' };
     const overdue = task.dueDate && task.status !== 'done' && dayjs(task.dueDate).isBefore(dayjs(), 'day');
@@ -604,9 +641,7 @@ const TaskKanbanCard = ({ task, onEdit, onDelete, onMove, onFiles, onTogglePaid 
                 <Tag color={priorityInfo.color} style={{ margin: 0 }}>{priorityInfo.label}</Tag>
                 {task.hours > 0 && <Tag color="blue" style={{ margin: 0 }}>{task.hours} ч</Tag>}
                 {task.customer && <Tag color="gold" style={{ margin: 0 }}>{task.customer}</Tag>}
-                {task.assignedTo?.name && (
-                    <Tag icon={<UserOutlined />} style={{ margin: 0 }}>{task.assignedTo.name}</Tag>
-                )}
+                <AssigneeTag task={task} users={users} onAssign={onAssign} />
                 {task.dueDate && (
                     <Tag color={overdue ? 'red' : 'default'} style={{ margin: 0 }}>
                         до {dayjs(task.dueDate).format('DD.MM')}{overdue ? ' ⚠️' : ''}
@@ -665,7 +700,7 @@ const TaskKanbanColumn = ({ col, tasks, ...cardProps }) => (
     </div>
 );
 
-const TaskKanbanBoard = ({ tasks, onEdit, onDelete, onMove, onFiles, onTogglePaid }) => {
+const TaskKanbanBoard = ({ tasks, users, onEdit, onDelete, onMove, onFiles, onTogglePaid, onAssign }) => {
     const cancelled = tasks.filter((t) => t.status === 'cancelled');
     // Прогресс считается от общей суммы задач текущей доски (модуль + спринт) —
     // двигается сразу, как только карточка попадает в колонку «Выполнено».
@@ -690,8 +725,9 @@ const TaskKanbanBoard = ({ tasks, onEdit, onDelete, onMove, onFiles, onTogglePai
                         key={col.key}
                         col={col}
                         tasks={tasks.filter((t) => t.status === col.key)}
+                        users={users}
                         onEdit={onEdit} onDelete={onDelete} onMove={onMove}
-                        onFiles={onFiles} onTogglePaid={onTogglePaid}
+                        onFiles={onFiles} onTogglePaid={onTogglePaid} onAssign={onAssign}
                     />
                 ))}
             </div>
@@ -1587,11 +1623,13 @@ const BoardProjectPage = () => {
                         ) : (
                             <TaskKanbanBoard
                                 tasks={moduleTasks}
+                                users={users}
                                 onEdit={openEditTask}
                                 onDelete={(task) => deleteTask.mutate({ projectId: currentProject._id, taskId: task._id })}
                                 onMove={(task, status) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { status } })}
                                 onFiles={(task) => setFilesDrawer({ open: true, task })}
                                 onTogglePaid={(task, isPaid) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { isPaid } })}
+                                onAssign={(task, userId) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { assignedTo: userId } })}
                             />
                         ),
                     },
