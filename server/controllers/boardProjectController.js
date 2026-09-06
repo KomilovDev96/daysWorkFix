@@ -351,14 +351,23 @@ exports.exportExcel = catchAsync(async (req, res, next) => {
 
     if (!project) return next(new AppError('Проект не найден', 404));
 
-    // ?unpaidOnly=true — только неоплаченные задачи
+    // ?unpaidOnly=true — только неоплаченные задачи; ?sprintId=... — только задачи спринта
     const unpaidOnly = req.query.unpaidOnly === 'true';
-    const allTasks   = (project.tasks || []).map(t => t.toObject ? t.toObject() : t);
-    const tasks      = unpaidOnly ? allTasks.filter(t => !t.isPaid) : allTasks;
+    const { sprintId } = req.query;
+    let allTasks = (project.tasks || []).map(t => t.toObject ? t.toObject() : t);
+
+    let sprintLabel = '';
+    if (sprintId) {
+        allTasks = allTasks.filter(t => String(t.sprint) === String(sprintId));
+        const sprint = project.sprints.id(sprintId);
+        sprintLabel = sprint ? ` — ${sprint.name}` : '';
+    }
+
+    const tasks = unpaidOnly ? allTasks.filter(t => !t.isPaid) : allTasks;
 
     const sheetLabel = unpaidOnly
         ? `${project.name.slice(0, 25)} (неопл.)`
-        : project.name.slice(0, 31);
+        : `${project.name}${sprintLabel}`.slice(0, 31);
 
     const workbook = new ExcelJS.Workbook();
     const ws = workbook.addWorksheet(sheetLabel);

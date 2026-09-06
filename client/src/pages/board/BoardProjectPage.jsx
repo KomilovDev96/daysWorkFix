@@ -877,6 +877,22 @@ const BoardProjectPage = () => {
         onError: () => message.error('Не удалось удалить клиента'),
     });
 
+    // Отдельная публичная ссылка на конкретный спринт (не общий портал проекта).
+    const getSprintLink = useMutation({
+        mutationFn: (sprintId) => apiClient.post(`/board-projects/${currentProject._id}/sprints/${sprintId}/link`),
+        onSuccess: ({ data }) => {
+            queryClient.invalidateQueries({ queryKey: ['board-projects'] });
+            navigator.clipboard.writeText(data.data.link);
+            message.success('Ссылка на спринт скопирована');
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось получить ссылку'),
+    });
+
+    const copySprintLink = (token) => {
+        navigator.clipboard.writeText(`${window.location.origin}/sprint-portal/${token}`);
+        message.success('Ссылка на спринт скопирована');
+    };
+
     // ── Handlers ───────────────────────────────────────────────────────────────
 
     const openCreateProject = () => {
@@ -941,11 +957,14 @@ const BoardProjectPage = () => {
         }
     };
 
-    const handleExcel = async (project, unpaidOnly = false) => {
+    const handleExcel = async (project, unpaidOnly = false, sprint = null) => {
         try {
+            const params = {};
+            if (unpaidOnly) params.unpaidOnly = 'true';
+            if (sprint) params.sprintId = sprint._id;
             const response = await apiClient.get(`/board-projects/${project._id}/export`, {
                 responseType: 'blob',
-                params: unpaidOnly ? { unpaidOnly: 'true' } : {},
+                params,
             });
             const blob = new Blob([response.data], {
                 type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -953,7 +972,8 @@ const BoardProjectPage = () => {
             const link = document.createElement('a');
             link.href = window.URL.createObjectURL(blob);
             const suffix = unpaidOnly ? '_неоплаченные' : '';
-            link.setAttribute('download', `${project.name}${suffix}.xlsx`);
+            const sprintSuffix = sprint ? `_${sprint.name}` : '';
+            link.setAttribute('download', `${project.name}${sprintSuffix}${suffix}.xlsx`);
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -1299,30 +1319,55 @@ const BoardProjectPage = () => {
                 </div>
 
                 {/* Переключатель спринта — влияет на то, какие задачи видны в модулях ниже */}
-                {sprints.length > 0 && (
-                    <Card size="small" style={{ marginBottom: 20, background: '#fafafa' }}>
-                        <Space wrap align="center">
-                            <RocketOutlined style={{ color: '#1677ff' }} />
-                            <Text strong>Спринт:</Text>
-                            <Select
-                                value={selectedSprintId}
-                                onChange={setSelectedSprintId}
-                                style={{ minWidth: 220 }}
-                                options={[
-                                    { value: 'all', label: 'Все спринты' },
-                                    ...sprints.slice().reverse().map((s) => ({
-                                        value: s._id,
-                                        label: `${s.name} ${s.status === 'active' ? '🟢 активен' : '✓ завершён'}`,
-                                    })),
-                                    { value: 'none', label: 'Без спринта (бэклог)' },
-                                ]}
-                            />
-                            {activeSprint && (
-                                <Tag color="green">Активный: {activeSprint.name}</Tag>
-                            )}
-                        </Space>
-                    </Card>
-                )}
+                {sprints.length > 0 && (() => {
+                    const selectedSprintObj = sprints.find((s) => s._id === selectedSprintId) || null;
+                    const sprintStatusMark = { active: '🟢 активен', planning: '🕐 запланирован', completed: '✓ завершён' };
+                    return (
+                        <Card size="small" style={{ marginBottom: 20, background: '#fafafa' }}>
+                            <Space wrap align="center">
+                                <RocketOutlined style={{ color: '#1677ff' }} />
+                                <Text strong>Спринт:</Text>
+                                <Select
+                                    value={selectedSprintId}
+                                    onChange={setSelectedSprintId}
+                                    style={{ minWidth: 220 }}
+                                    options={[
+                                        { value: 'all', label: 'Все спринты' },
+                                        ...sprints.slice().reverse().map((s) => ({
+                                            value: s._id,
+                                            label: `${s.name} ${sprintStatusMark[s.status] || ''}`,
+                                        })),
+                                        { value: 'none', label: 'Без спринта (бэклог)' },
+                                    ]}
+                                />
+                                {activeSprint && (
+                                    <Tag color="green">Активный: {activeSprint.name}</Tag>
+                                )}
+                                {selectedSprintObj && (
+                                    <>
+                                        {selectedSprintObj.token ? (
+                                            <Button size="small" icon={<LinkOutlined />}
+                                                onClick={() => copySprintLink(selectedSprintObj.token)}>
+                                                Ссылка для клиента
+                                            </Button>
+                                        ) : (
+                                            <Button size="small" icon={<LinkOutlined />}
+                                                loading={getSprintLink.isPending}
+                                                onClick={() => getSprintLink.mutate(selectedSprintObj._id)}>
+                                                Ссылка для клиента
+                                            </Button>
+                                        )}
+                                        <Button size="small" icon={<FileExcelOutlined />}
+                                            style={{ color: '#217346', borderColor: '#217346' }}
+                                            onClick={() => handleExcel(currentProject, false, selectedSprintObj)}>
+                                            Excel по спринту
+                                        </Button>
+                                    </>
+                                )}
+                            </Space>
+                        </Card>
+                    );
+                })()}
 
                 <Title level={4} style={{ marginBottom: 16 }}>Выберите модуль</Title>
 
