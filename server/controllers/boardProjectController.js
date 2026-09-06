@@ -297,6 +297,23 @@ exports.regenerateSprintLink = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'success', data: { token: sprint.token, link } });
 });
 
+// POST /:id/sprints/:sprintId/task-api-link — выпустить (или перевыпустить) API-токен для приёма
+// выполненных задач именно в этот спринт. В отличие от общего taskApi проекта — без тумблера
+// enabled: наличие токена уже означает, что приём включён; старый токен при перевыпуске гаснет.
+exports.regenerateSprintTaskApiLink = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    const sprint = project.sprints.id(req.params.sprintId);
+    if (!sprint) return next(new AppError('Спринт не найден', 404));
+
+    sprint.taskApiToken = await generateUniquePortalToken(BoardProject, 'sprints.taskApiToken');
+    await project.save();
+
+    res.status(200).json({ status: 'success', data: { token: sprint.taskApiToken } });
+});
+
 // ── Task files ────────────────────────────────────────────────────────────────
 
 exports.uploadTaskFile = catchAsync(async (req, res, next) => {

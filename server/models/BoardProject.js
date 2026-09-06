@@ -72,6 +72,9 @@ const sprintSchema = new mongoose.Schema(
         // от общего портала проекта. Работает для любого статуса (active/planning/completed) —
         // в отличие от общего портала, где скрыты завершённые; но подчиняется visibleToClient.
         token: { type: String, default: null },
+        // Публичный API-токен для приёма выполненных задач именно в этот спринт (аналог
+        // taskApi проекта, но без ручного тумблера enabled — наличие токена уже включает приём).
+        taskApiToken: { type: String, default: null },
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         completedAt: { type: Date, default: null },
     },
@@ -122,6 +125,10 @@ boardProjectSchema.index(
 boardProjectSchema.index(
     { 'sprints.token': 1 },
     { unique: true, partialFilterExpression: { 'sprints.token': { $type: 'string' } } }
+);
+boardProjectSchema.index(
+    { 'sprints.taskApiToken': 1 },
+    { unique: true, partialFilterExpression: { 'sprints.taskApiToken': { $type: 'string' } } }
 );
 
 module.exports = mongoose.model('BoardProject', boardProjectSchema);

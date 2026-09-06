@@ -555,14 +555,136 @@ const TaskApiDrawer = ({ open, project, onClose }) => {
 
                     <Text type="secondary" style={{ fontSize: 12 }}>
                         Поле <b>amount</b> — это цена задачи. Поле <b>execRole</b> обязательно в каждой задаче
-                        (frontend / backend / pm) и определяет, в какой модуль она попадёт. Задачи создаются сразу
-                        со статусом «Выполнено». Для нескольких задач за раз — оберните их в <b>"tasks": [...]</b>.
+                        (frontend / backend / pm / tester) и определяет, в какой модуль она попадёт. Задачи создаются
+                        сразу со статусом «Выполнено». Для нескольких задач за раз — оберните их в <b>"tasks": [...]</b>.
                     </Text>
                 </>
             )}
 
             {!taskApi?.enabled && !isLoading && (
                 <Empty description="API выключен. Включите переключателем выше." />
+            )}
+        </Drawer>
+    );
+};
+
+// ── API для задач конкретного спринта (без тумблера enabled — ключ есть = приём включён) ──
+const SprintTaskApiDrawer = ({ open, project, sprint, onClose }) => {
+    const queryClient = useQueryClient();
+
+    const regenerate = useMutation({
+        mutationFn: () => apiClient.post(`/board-projects/${project._id}/sprints/${sprint._id}/task-api-link`),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['board-projects'] });
+            message.success('Ключ спринта создан, старый (если был) больше не работает');
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось создать ключ'),
+    });
+
+    const copy = (text, label = 'Скопировано') => {
+        navigator.clipboard.writeText(text);
+        message.success(label);
+    };
+
+    const endpoint = sprint?.taskApiToken ? `${API_BASE}/api/public/sprint-task-api/${sprint.taskApiToken}/tasks` : null;
+
+    return (
+        <Drawer
+            title={<Space><ApiOutlined />API для задач спринта: {sprint?.name}</Space>}
+            open={open}
+            onClose={onClose}
+            width={520}
+        >
+            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+                Дайте эту ссылку и ключ фронтендщику, бэкендщику, пм или тестировщику — задачи, отправленные
+                через неё, автоматически попадут именно в спринт «{sprint?.name}», без входа в систему.
+            </Text>
+
+            {!endpoint ? (
+                <Button type="primary" icon={<ApiOutlined />} loading={regenerate.isPending}
+                    onClick={() => regenerate.mutate()}>
+                    Получить ключ для этого спринта
+                </Button>
+            ) : (
+                <>
+                    <Text strong style={{ display: 'block', marginBottom: 6 }}>Ссылка (endpoint)</Text>
+                    <Space.Compact style={{ width: '100%', marginBottom: 12 }}>
+                        <Input value={endpoint} readOnly />
+                        <Button icon={<CopyOutlined />} onClick={() => copy(endpoint, 'Ссылка скопирована')} />
+                    </Space.Compact>
+
+                    <Popconfirm
+                        title="Сгенерировать новый ключ?"
+                        description="Старая ссылка перестанет работать."
+                        onConfirm={() => regenerate.mutate()}
+                    >
+                        <Button icon={<ReloadOutlined />} loading={regenerate.isPending} style={{ marginBottom: 20 }}>
+                            Новый ключ
+                        </Button>
+                    </Popconfirm>
+
+                    <Divider>Пример запроса — одна задача</Divider>
+
+                    {Object.entries(MODULE_META).map(([key, { label, color }]) => {
+                        const curl = buildTaskApiCurl(endpoint, key);
+                        return (
+                            <div key={key} style={{ marginBottom: 16 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                    <Tag color={color}>{label}</Tag>
+                                    <Button size="small" icon={<CopyOutlined />} onClick={() => copy(curl, `Пример для ${label} скопирован`)}>
+                                        Копировать
+                                    </Button>
+                                </div>
+                                <pre style={{
+                                    background: '#f5f5f5', padding: 12, borderRadius: 6,
+                                    fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0,
+                                }}>
+                                    {curl}
+                                </pre>
+                            </div>
+                        );
+                    })}
+
+                    <Divider>Пакетная отправка — несколько задач сразу</Divider>
+                    <div style={{ marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <Text strong>Пример пакета (до 100 задач за запрос)</Text>
+                            <Button size="small" icon={<CopyOutlined />}
+                                onClick={() => copy(buildTaskApiBulkCurl(endpoint), 'Пример пакета скопирован')}>
+                                Копировать
+                            </Button>
+                        </div>
+                        <pre style={{
+                            background: '#f5f5f5', padding: 12, borderRadius: 6,
+                            fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0,
+                        }}>
+                            {buildTaskApiBulkCurl(endpoint)}
+                        </pre>
+                    </div>
+
+                    <Divider>Задача с файлами (скриншоты, PDF)</Divider>
+                    <div style={{ marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                            <Text strong>Пример с файлами (multipart)</Text>
+                            <Button size="small" icon={<CopyOutlined />}
+                                onClick={() => copy(buildTaskApiFileCurl(endpoint), 'Пример с файлами скопирован')}>
+                                Копировать
+                            </Button>
+                        </div>
+                        <pre style={{
+                            background: '#f5f5f5', padding: 12, borderRadius: 6,
+                            fontSize: 12, whiteSpace: 'pre-wrap', wordBreak: 'break-all', margin: 0,
+                        }}>
+                            {buildTaskApiFileCurl(endpoint)}
+                        </pre>
+                    </div>
+
+                    <Text type="secondary" style={{ fontSize: 12 }}>
+                        Поле <b>execRole</b> обязательно в каждой задаче (frontend / backend / pm / tester).
+                        Задача автоматически привяжется к спринту «{sprint?.name}» и создастся сразу
+                        со статусом «Выполнено». Для нескольких задач за раз — оберните их в <b>"tasks": [...]</b>.
+                    </Text>
+                </>
             )}
         </Drawer>
     );
@@ -752,6 +874,7 @@ const BoardProjectPage = () => {
     const [clientsDrawer, setClientsDrawer] = useState({ open: false, project: null });
     const [commentsDrawer, setCommentsDrawer] = useState({ open: false, project: null });
     const [taskApiDrawer, setTaskApiDrawer] = useState({ open: false, project: null });
+    const [sprintTaskApiDrawer, setSprintTaskApiDrawer] = useState({ open: false, sprintId: null });
     const [filesDrawer, setFilesDrawer] = useState({ open: false, task: null });
     const [clientForm] = Form.useForm();
     const [projectForm] = Form.useForm();
@@ -1362,6 +1485,10 @@ const BoardProjectPage = () => {
                                             onClick={() => handleExcel(currentProject, false, selectedSprintObj)}>
                                             Excel по спринту
                                         </Button>
+                                        <Button size="small" icon={<ApiOutlined />}
+                                            onClick={() => setSprintTaskApiDrawer({ open: true, sprintId: selectedSprintObj._id })}>
+                                            API по спринту
+                                        </Button>
                                     </>
                                 )}
                             </Space>
@@ -1379,6 +1506,13 @@ const BoardProjectPage = () => {
                     open={taskApiDrawer.open}
                     project={taskApiDrawer.project}
                     onClose={() => setTaskApiDrawer({ open: false, project: null })}
+                />
+
+                <SprintTaskApiDrawer
+                    open={sprintTaskApiDrawer.open}
+                    project={currentProject}
+                    sprint={sprints.find((s) => s._id === sprintTaskApiDrawer.sprintId) || null}
+                    onClose={() => setSprintTaskApiDrawer({ open: false, sprintId: null })}
                 />
             </div>
         );

@@ -24,5 +24,6 @@ const maybeUpload = (req, res, next) => {
 };
 
 router.post('/task-api/:token/tasks', limiter, maybeUpload, ctrl.submitTask);
+router.post('/sprint-task-api/:token/tasks', limiter, maybeUpload, ctrl.submitSprintTask);
 
 module.exports = router;

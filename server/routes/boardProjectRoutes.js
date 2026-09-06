@@ -41,6 +41,7 @@ router.post('/:id/sprints',               manage, ctrl.createSprint);
 router.patch('/:id/sprints/:sprintId',    manage, ctrl.updateSprint);
 router.delete('/:id/sprints/:sprintId',   manage, ctrl.deleteSprint);
 router.post('/:id/sprints/:sprintId/link', manage, ctrl.regenerateSprintLink);
+router.post('/:id/sprints/:sprintId/task-api-link', manage, ctrl.regenerateSprintTaskApiLink);
 
 router.post('/:id/tasks',           ctrl.addTask);
 router.patch('/:id/tasks/:taskId',  ctrl.updateTask);
