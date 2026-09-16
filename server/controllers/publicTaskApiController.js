@@ -5,7 +5,7 @@ const AppError = require('../utils/appError');
 const { logProjectEvent } = require('../utils/projectEvents');
 
 const EXEC_ROLES = ['frontend', 'backend', 'pm', 'tester'];
-const TASK_STATUSES = ['todo', 'in_progress', 'done', 'cancelled'];
+const TASK_STATUSES = ['todo', 'in_progress', 'review', 'done', 'cancelled'];
 const MAX_BATCH = 100;
 
 const ROLE_LABELS = { frontend: 'Frontend', backend: 'Backend', pm: 'PM', tester: 'Тестировщик' };

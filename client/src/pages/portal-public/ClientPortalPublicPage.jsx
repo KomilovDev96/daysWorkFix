@@ -26,6 +26,7 @@ const STATUS = {
 const TASK_STATUS = {
     todo:        { label: 'К выполнению', color: 'default' },
     in_progress: { label: 'В процессе',   color: 'processing' },
+    review:      { label: 'На проверке',  color: 'warning' },
     done:        { label: 'Готово',       color: 'success' },
 };
 

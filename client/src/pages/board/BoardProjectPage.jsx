@@ -21,6 +21,7 @@ import {
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useSelector } from 'react-redux';
+import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../shared/api/apiClient';
 import dayjs from 'dayjs';
 
@@ -38,6 +39,7 @@ const PROJECT_STATUS = {
 const TASK_STATUS = {
     todo: { label: 'К выполнению', color: 'default' },
     in_progress: { label: 'В процессе', color: 'processing' },
+    review: { label: 'На проверке', color: 'warning' },
     done: { label: 'Выполнено', color: 'success' },
     cancelled: { label: 'Отменено', color: 'error' },
 };
@@ -359,6 +361,73 @@ const CommentsDrawer = ({ open, project, user, onClose }) => {
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     placeholder="Ответить заказчику..."
+                    autoSize={{ minRows: 2 }}
+                />
+                <Button type="primary" icon={<SendOutlined />}
+                    loading={addComment.isPending}
+                    disabled={!text.trim()}
+                    onClick={() => addComment.mutate(text.trim())}
+                    style={{ height: 'auto' }}
+                />
+            </div>
+        </Drawer>
+    );
+};
+
+// ── Task Comments Drawer (комментарии к конкретной задаче, не к проекту) ──────
+const TaskCommentsDrawer = ({ open, task, projectId, onClose }) => {
+    const queryClient = useQueryClient();
+    const [text, setText] = useState('');
+
+    const { data: comments } = useQuery({
+        queryKey: ['task-comments', task?._id],
+        queryFn: async () => {
+            const { data } = await apiClient.get(`/board-projects/${projectId}/tasks/${task._id}/comments`);
+            return data.data.comments;
+        },
+        enabled: !!task?._id && !!projectId && open,
+        refetchInterval: open ? 10000 : false,
+    });
+
+    const addComment = useMutation({
+        mutationFn: (t) => apiClient.post(`/board-projects/${projectId}/tasks/${task._id}/comments`, { text: t }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['task-comments', task._id] });
+            setText('');
+        },
+        onError: () => message.error('Не удалось отправить'),
+    });
+
+    return (
+        <Drawer title={<Space><MessageOutlined />Комментарии: {task?.title}</Space>} open={open} onClose={onClose} width={440}>
+            {(!comments || comments.length === 0) && (
+                <Empty description="Комментариев пока нет" style={{ marginBottom: 16 }} />
+            )}
+            <List
+                dataSource={comments || []}
+                renderItem={(c) => (
+                    <List.Item style={{ border: 'none', padding: '4px 0' }}>
+                        <div style={{
+                            width: '100%', background: '#f6ffed', border: '1px solid #b7eb8f',
+                            borderRadius: 10, padding: '8px 12px',
+                        }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <Text strong style={{ fontSize: 13 }}>{c.authorName}</Text>
+                                <Text type="secondary" style={{ fontSize: 11 }}>
+                                    {dayjs(c.createdAt).format('DD.MM HH:mm')}
+                                </Text>
+                            </div>
+                            <Text style={{ fontSize: 14 }}>{c.text}</Text>
+                        </div>
+                    </List.Item>
+                )}
+            />
+            <Divider style={{ margin: '12px 0' }} />
+            <div style={{ display: 'flex', gap: 8 }}>
+                <Input.TextArea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder="Написать комментарий..."
                     autoSize={{ minRows: 2 }}
                 />
                 <Button type="primary" icon={<SendOutlined />}
@@ -694,6 +763,7 @@ const SprintTaskApiDrawer = ({ open, project, sprint, onClose }) => {
 const KANBAN_COLUMNS = [
     { key: 'todo', label: 'К выполнению', color: '#8c8c8c', bg: '#f5f5f5', border: '#d9d9d9' },
     { key: 'in_progress', label: 'В процессе', color: '#1677ff', bg: '#e6f4ff', border: '#91caff' },
+    { key: 'review', label: 'На проверке', color: '#fa8c16', bg: '#fff7e6', border: '#ffd591' },
     { key: 'done', label: 'Выполнено', color: '#52c41a', bg: '#f6ffed', border: '#b7eb8f' },
 ];
 
@@ -734,13 +804,17 @@ const AssigneeTag = ({ task, users, onAssign }) => {
     );
 };
 
-const TaskKanbanCard = ({ task, users, onEdit, onDelete, onMove, onFiles, onTogglePaid, onAssign }) => {
+const TaskKanbanCard = ({ task, users, onEdit, onDelete, onMove, onFiles, onComments, onTogglePaid, onAssign, canApprove }) => {
     const isFilled = Number(task.hours) > 0 && task.customer?.trim() && task.system?.trim() && task.dueDate;
     const priorityInfo = TASK_PRIORITY[task.priority] || { label: task.priority, color: 'default' };
     const overdue = task.dueDate && task.status !== 'done' && dayjs(task.dueDate).isBefore(dayjs(), 'day');
     const currentIdx = KANBAN_COLUMNS.findIndex((c) => c.key === task.status);
     const nextCol = KANBAN_COLUMNS[currentIdx + 1];
     const prevCol = KANBAN_COLUMNS[currentIdx - 1];
+    // «Выполнено» — только с проверки и только тому, кто может утверждать (PM/менеджер);
+    // выйти «с проверки» назад в работу — тоже только ему (решение «принял / вернул с ошибкой»).
+    const nextBlocked = nextCol?.key === 'done' && !canApprove;
+    const prevBlocked = task.status === 'review' && !canApprove;
 
     return (
         <Card size="small" style={{ marginBottom: 8 }} bodyStyle={{ padding: '10px 12px' }}>
@@ -774,13 +848,13 @@ const TaskKanbanCard = ({ task, users, onEdit, onDelete, onMove, onFiles, onTogg
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4 }}>
                 <Space size={4}>
                     {prevCol && (
-                        <Tooltip title={`Вернуть в «${prevCol.label}»`}>
-                            <Button size="small" onClick={() => onMove(task, prevCol.key)}>←</Button>
+                        <Tooltip title={prevBlocked ? 'Вернуть с проверки может только PM/менеджер' : `Вернуть в «${prevCol.label}»`}>
+                            <Button size="small" disabled={prevBlocked} onClick={() => onMove(task, prevCol.key)}>←</Button>
                         </Tooltip>
                     )}
                     {nextCol && (
-                        <Tooltip title={`Переместить в «${nextCol.label}»`}>
-                            <Button size="small" type="primary" ghost onClick={() => onMove(task, nextCol.key)}>→</Button>
+                        <Tooltip title={nextBlocked ? 'Отметить выполненной может только PM/менеджер' : `Переместить в «${nextCol.label}»`}>
+                            <Button size="small" type="primary" ghost disabled={nextBlocked} onClick={() => onMove(task, nextCol.key)}>→</Button>
                         </Tooltip>
                     )}
                 </Space>
@@ -788,6 +862,7 @@ const TaskKanbanCard = ({ task, users, onEdit, onDelete, onMove, onFiles, onTogg
                     <Tooltip title={task.isPaid ? 'Оплачено' : 'Не оплачено'}>
                         <Checkbox checked={!!task.isPaid} onChange={(e) => onTogglePaid(task, e.target.checked)} />
                     </Tooltip>
+                    <Button size="small" icon={<MessageOutlined />} onClick={() => onComments(task)} />
                     <Button size="small" icon={<PaperClipOutlined />}
                         type={task.files?.length ? 'primary' : 'default'} ghost={!!task.files?.length}
                         onClick={() => onFiles(task)}>
@@ -822,7 +897,7 @@ const TaskKanbanColumn = ({ col, tasks, ...cardProps }) => (
     </div>
 );
 
-const TaskKanbanBoard = ({ tasks, users, onEdit, onDelete, onMove, onFiles, onTogglePaid, onAssign }) => {
+const TaskKanbanBoard = ({ tasks, users, onEdit, onDelete, onMove, onFiles, onComments, onTogglePaid, onAssign, canApprove }) => {
     const cancelled = tasks.filter((t) => t.status === 'cancelled');
     // Прогресс считается от общей суммы задач текущей доски (модуль + спринт) —
     // двигается сразу, как только карточка попадает в колонку «Выполнено».
@@ -849,7 +924,8 @@ const TaskKanbanBoard = ({ tasks, users, onEdit, onDelete, onMove, onFiles, onTo
                         tasks={tasks.filter((t) => t.status === col.key)}
                         users={users}
                         onEdit={onEdit} onDelete={onDelete} onMove={onMove}
-                        onFiles={onFiles} onTogglePaid={onTogglePaid} onAssign={onAssign}
+                        onFiles={onFiles} onComments={onComments} onTogglePaid={onTogglePaid} onAssign={onAssign}
+                        canApprove={canApprove}
                     />
                 ))}
             </div>
@@ -864,21 +940,26 @@ const TaskKanbanBoard = ({ tasks, users, onEdit, onDelete, onMove, onFiles, onTo
 
 const BoardProjectPage = () => {
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
+    const { projectId, role: selectedModule } = useParams();
     const user = useSelector((state) => state.auth.user);
 
-    const [selectedProject, setSelectedProject] = useState(null);
-    const [selectedModule, setSelectedModule] = useState(null);
     const [selectedSprintId, setSelectedSprintId] = useState('all');
     const [projectModal, setProjectModal] = useState({ open: false, item: null });
     const [taskModal, setTaskModal] = useState({ open: false, item: null });
     const [clientsDrawer, setClientsDrawer] = useState({ open: false, project: null });
     const [commentsDrawer, setCommentsDrawer] = useState({ open: false, project: null });
+    const [taskCommentsDrawer, setTaskCommentsDrawer] = useState({ open: false, task: null });
     const [taskApiDrawer, setTaskApiDrawer] = useState({ open: false, project: null });
     const [sprintTaskApiDrawer, setSprintTaskApiDrawer] = useState({ open: false, sprintId: null });
     const [filesDrawer, setFilesDrawer] = useState({ open: false, task: null });
     const [clientForm] = Form.useForm();
     const [projectForm] = Form.useForm();
     const [taskForm] = Form.useForm();
+
+    // Кто может утверждать задачи «на проверке» (перевод в «Выполнено» или возврат в работу
+    // при ошибке) — admin/менеджер проекта либо воркер со специализацией PM.
+    const canApproveReview = user?.role === 'admin' || user?.role === 'projectManager' || user?.specialization === 'pm';
 
     // ── Queries ────────────────────────────────────────────────────────────────
 
@@ -898,16 +979,23 @@ const BoardProjectPage = () => {
         },
     });
 
-    // Keep selectedProject in sync after mutations
-    const currentProject = projects?.find((p) => p._id === selectedProject?._id) || selectedProject;
+    const currentProject = projects?.find((p) => p._id === projectId) || null;
     const sprints = currentProject?.sprints || [];
     const activeSprint = sprints.find((s) => s.status === 'active') || null;
 
     // При открытии проекта — сразу переключаемся на его активный спринт (если он есть).
     useEffect(() => {
+        if (!currentProject) return;
         setSelectedSprintId(activeSprint ? activeSprint._id : 'all');
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedProject?._id]);
+    }, [projectId, !!currentProject]);
+
+    // Обновить проект в кэше списка сразу после мутации задачи/файла, не дожидаясь рефетча.
+    const applyProjectUpdate = (project) => {
+        queryClient.setQueryData(['board-projects'], (old) =>
+            (old || []).map((p) => (p._id === project._id ? project : p))
+        );
+    };
 
     // ── Mutations ──────────────────────────────────────────────────────────────
 
@@ -933,13 +1021,10 @@ const BoardProjectPage = () => {
 
     const deleteProject = useMutation({
         mutationFn: (id) => apiClient.delete(`/board-projects/${id}`),
-        onSuccess: () => {
+        onSuccess: (_res, id) => {
             queryClient.invalidateQueries({ queryKey: ['board-projects'] });
             message.success('Проект удалён');
-            if (selectedProject) {
-                setSelectedProject(null);
-                setSelectedModule(null);
-            }
+            if (projectId === id) navigate('/board');
         },
         onError: () => message.error('Не удалось удалить проект'),
     });
@@ -947,8 +1032,8 @@ const BoardProjectPage = () => {
     const addTask = useMutation({
         mutationFn: ({ projectId, body }) => apiClient.post(`/board-projects/${projectId}/tasks`, body),
         onSuccess: ({ data }) => {
+            applyProjectUpdate(data.data.project);
             queryClient.invalidateQueries({ queryKey: ['board-projects'] });
-            setSelectedProject(data.data.project);
             message.success('Задача добавлена');
             setTaskModal({ open: false, item: null });
         },
@@ -959,12 +1044,12 @@ const BoardProjectPage = () => {
         mutationFn: ({ projectId, taskId, body }) =>
             apiClient.patch(`/board-projects/${projectId}/tasks/${taskId}`, body),
         onSuccess: ({ data }) => {
+            applyProjectUpdate(data.data.project);
             queryClient.invalidateQueries({ queryKey: ['board-projects'] });
-            setSelectedProject(data.data.project);
             message.success('Задача обновлена');
             setTaskModal({ open: false, item: null });
         },
-        onError: () => message.error('Не удалось обновить задачу'),
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось обновить задачу'),
     });
 
     const deleteTask = useMutation({
@@ -1014,6 +1099,24 @@ const BoardProjectPage = () => {
     const copySprintLink = (token) => {
         navigator.clipboard.writeText(`${window.location.origin}/sprint-portal/${token}`);
         message.success('Ссылка на спринт скопирована');
+    };
+
+    // Публичная ссылка «для команды» — одна на спринт, роль выбирается при открытии.
+    const getSprintTeamLink = useMutation({
+        mutationFn: (sprintId) => apiClient.post(`/board-projects/${currentProject._id}/sprints/${sprintId}/team-link`),
+        onSuccess: ({ data }) => {
+            queryClient.invalidateQueries({ queryKey: ['board-projects'] });
+            // Собираем ссылку сами (а не из data.data.link) — так она рабочая даже
+            // если на сервере не задан APP_PUBLIC_URL.
+            navigator.clipboard.writeText(`${window.location.origin}/team-portal/${data.data.token}`);
+            message.success('Ссылка для команды скопирована');
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось получить ссылку'),
+    });
+
+    const copySprintTeamLink = (token) => {
+        navigator.clipboard.writeText(`${window.location.origin}/team-portal/${token}`);
+        message.success('Ссылка для команды скопирована');
     };
 
     // ── Handlers ───────────────────────────────────────────────────────────────
@@ -1182,7 +1285,7 @@ const BoardProjectPage = () => {
             <Col xs={24} sm={12} lg={8} key={p._id}>
                 <Card
                     hoverable
-                    onClick={() => setSelectedProject(p)}
+                    onClick={() => navigate(`/board/${p._id}`)}
                     style={{ cursor: 'pointer' }}
                     actions={[
                         <Tooltip title="Экспорт Excel" key="excel">
@@ -1294,7 +1397,7 @@ const BoardProjectPage = () => {
             <Col xs={24} sm={12} lg={6} key={moduleKey}>
                 <Card
                     hoverable
-                    onClick={() => setSelectedModule(moduleKey)}
+                    onClick={() => navigate(`/board/${currentProject._id}/${moduleKey}`)}
                     style={{ cursor: 'pointer', textAlign: 'center' }}
                 >
                     <Tag color={color} style={{ fontSize: 14, padding: '4px 14px', marginBottom: 16 }}>
@@ -1328,7 +1431,7 @@ const BoardProjectPage = () => {
 
     // ── Project list view ──────────────────────────────────────────────────────
 
-    if (!selectedProject) {
+    if (!projectId) {
         return (
             <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -1419,6 +1522,23 @@ const BoardProjectPage = () => {
         );
     }
 
+    // ── Загрузка проекта по URL / проект не найден ───────────────────────────────
+
+    if (isLoading) {
+        return <div style={{ textAlign: 'center', padding: 60 }}>Загрузка...</div>;
+    }
+
+    if (!currentProject) {
+        return (
+            <div style={{ padding: 40 }}>
+                <Empty description="Проект не найден" />
+                <div style={{ textAlign: 'center', marginTop: 16 }}>
+                    <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/board')}>К списку проектов</Button>
+                </div>
+            </div>
+        );
+    }
+
     // ── Module selection (Frontend / Backend / PM) ───────────────────────────────
 
     if (!selectedModule) {
@@ -1426,7 +1546,7 @@ const BoardProjectPage = () => {
             <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
                     <Space>
-                        <Button icon={<ArrowLeftOutlined />} onClick={() => setSelectedProject(null)}>
+                        <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/board')}>
                             Все проекты
                         </Button>
                         <Title level={3} style={{ margin: 0 }}>{currentProject.name}</Title>
@@ -1489,6 +1609,18 @@ const BoardProjectPage = () => {
                                             onClick={() => setSprintTaskApiDrawer({ open: true, sprintId: selectedSprintObj._id })}>
                                             API по спринту
                                         </Button>
+                                        {selectedSprintObj.teamToken ? (
+                                            <Button size="small" icon={<TeamOutlined />}
+                                                onClick={() => copySprintTeamLink(selectedSprintObj.teamToken)}>
+                                                Ссылка для команды
+                                            </Button>
+                                        ) : (
+                                            <Button size="small" icon={<TeamOutlined />}
+                                                loading={getSprintTeamLink.isPending}
+                                                onClick={() => getSprintTeamLink.mutate(selectedSprintObj._id)}>
+                                                Ссылка для команды
+                                            </Button>
+                                        )}
                                     </>
                                 )}
                             </Space>
@@ -1658,6 +1790,7 @@ const BoardProjectPage = () => {
             fixed: 'right',
             render: (_, record) => (
                 <Space>
+                    <Button size="small" icon={<MessageOutlined />} onClick={() => setTaskCommentsDrawer({ open: true, task: record })} />
                     <Button size="small" icon={<EditOutlined />} onClick={() => openEditTask(record)} />
                     <Popconfirm
                         title="Удалить задачу?"
@@ -1675,7 +1808,7 @@ const BoardProjectPage = () => {
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <Space>
-                    <Button icon={<ArrowLeftOutlined />} onClick={() => setSelectedModule(null)}>
+                    <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(`/board/${currentProject._id}`)}>
                         Модули
                     </Button>
                     <Title level={3} style={{ margin: 0 }}>
@@ -1807,8 +1940,10 @@ const BoardProjectPage = () => {
                                 onDelete={(task) => deleteTask.mutate({ projectId: currentProject._id, taskId: task._id })}
                                 onMove={(task, status) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { status } })}
                                 onFiles={(task) => setFilesDrawer({ open: true, task })}
+                                onComments={(task) => setTaskCommentsDrawer({ open: true, task })}
                                 onTogglePaid={(task, isPaid) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { isPaid } })}
                                 onAssign={(task, userId) => updateTask.mutate({ projectId: currentProject._id, taskId: task._id, body: { assignedTo: userId } })}
+                                canApprove={canApproveReview}
                             />
                         ),
                     },
@@ -1877,12 +2012,20 @@ const BoardProjectPage = () => {
                 project={currentProject}
                 onClose={() => setFilesDrawer({ open: false, task: null })}
                 onUploaded={(updatedProject) => {
-                    setSelectedProject(updatedProject);
+                    applyProjectUpdate(updatedProject);
                     queryClient.invalidateQueries({ queryKey: ['board-projects'] });
                     // обновить task в drawer
                     const updatedTask = updatedProject.tasks.find(t => t._id === filesDrawer.task?._id);
                     if (updatedTask) setFilesDrawer(prev => ({ ...prev, task: updatedTask }));
                 }}
+            />
+
+            {/* Task Comments Drawer */}
+            <TaskCommentsDrawer
+                open={taskCommentsDrawer.open}
+                task={taskCommentsDrawer.task}
+                projectId={currentProject._id}
+                onClose={() => setTaskCommentsDrawer({ open: false, task: null })}
             />
 
             {/* Clients Drawer */}

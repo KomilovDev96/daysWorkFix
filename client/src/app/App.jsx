@@ -21,6 +21,8 @@ import BoardProjectPage    from '../pages/board/BoardProjectPage';
 import CustomerPortalPage  from '../pages/portal/CustomerPortalPage';
 import ClientPortalPublicPage from '../pages/portal-public/ClientPortalPublicPage';
 import SprintPortalPublicPage from '../pages/portal-public/SprintPortalPublicPage';
+import TeamPortalRoleSelectPage from '../pages/team-portal/TeamPortalRoleSelectPage';
+import TeamPortalBoardPage from '../pages/team-portal/TeamPortalBoardPage';
 import GuestLayout         from './providers/GuestLayout';
 import ProjectReportPage   from '../pages/project-report/ProjectReportPage';
 import CustomerReportPage  from '../pages/customer-report/CustomerReportPage';
@@ -78,6 +80,9 @@ const App = () => (
                         <Route path="/portal/:token" element={<ClientPortalPublicPage />} />
                         {/* Отдельная ссылка на один спринт — снимок конкретного спринта с прогрессом */}
                         <Route path="/sprint-portal/:token" element={<SprintPortalPublicPage />} />
+                        {/* Публичная командная доска спринта — без авторизации, роль выбирается при входе */}
+                        <Route path="/team-portal/:token" element={<TeamPortalRoleSelectPage />} />
+                        <Route path="/team-portal/:token/:role" element={<TeamPortalBoardPage />} />
 
                         {/* Гостевой портал */}
                         <Route element={<ProtectedRoute allowedRoles={['guest']} />}>
@@ -92,7 +97,9 @@ const App = () => (
                                 {/* Общие */}
                                 <Route path="/dashboard"      element={<DashboardPage />} />
                                 <Route path="/day/:id"        element={<DayLogDetailsPage />} />
-                                <Route path="/board"          element={<BoardProjectPage />} />
+                                <Route path="/board"                    element={<BoardProjectPage />} />
+                                <Route path="/board/:projectId"         element={<BoardProjectPage />} />
+                                <Route path="/board/:projectId/:role"   element={<BoardProjectPage />} />
                                 <Route path="/assistant"      element={<AssistantPage />} />
 
                                 {/* Менеджер + воркер */}

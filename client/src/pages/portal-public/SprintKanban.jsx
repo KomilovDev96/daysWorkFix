@@ -18,6 +18,7 @@ const ROLE_META = {
 const KANBAN_COLS = [
     { key: 'todo',        label: 'К выполнению', color: '#8c8c8c', bg: '#f0f0f0', border: '#d9d9d9' },
     { key: 'in_progress', label: 'В процессе',   color: '#1677ff', bg: '#e6f4ff', border: '#91caff' },
+    { key: 'review',      label: 'На проверке',  color: '#fa8c16', bg: '#fff7e6', border: '#ffd591' },
     { key: 'done',        label: 'Готово',       color: '#52c41a', bg: '#f6ffed', border: '#b7eb8f' },
 ];
 

@@ -6,7 +6,7 @@ const boardTaskSchema = new mongoose.Schema(
         description: { type: String, default: '' },
         status: {
             type: String,
-            enum: ['todo', 'in_progress', 'done', 'cancelled'],
+            enum: ['todo', 'in_progress', 'review', 'done', 'cancelled'],
             default: 'todo',
         },
         priority: {
@@ -75,6 +75,10 @@ const sprintSchema = new mongoose.Schema(
         // Публичный API-токен для приёма выполненных задач именно в этот спринт (аналог
         // taskApi проекта, но без ручного тумблера enabled — наличие токена уже включает приём).
         taskApiToken: { type: String, default: null },
+        // Публичная ссылка «для команды» (/team-portal/:token) — один общий токен на спринт,
+        // при открытии выбирается роль (frontend/backend/pm/tester); без пароля и входа в
+        // систему участники могут двигать статусы своих задач, комментировать и прикладывать файлы.
+        teamToken: { type: String, default: null },
         createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
         completedAt: { type: Date, default: null },
     },
@@ -129,6 +133,10 @@ boardProjectSchema.index(
 boardProjectSchema.index(
     { 'sprints.taskApiToken': 1 },
     { unique: true, partialFilterExpression: { 'sprints.taskApiToken': { $type: 'string' } } }
+);
+boardProjectSchema.index(
+    { 'sprints.teamToken': 1 },
+    { unique: true, partialFilterExpression: { 'sprints.teamToken': { $type: 'string' } } }
 );
 
 module.exports = mongoose.model('BoardProject', boardProjectSchema);

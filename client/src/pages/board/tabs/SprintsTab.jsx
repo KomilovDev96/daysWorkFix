@@ -6,7 +6,7 @@ import {
 import {
     PlusOutlined, RocketOutlined, FlagOutlined, DeleteOutlined,
     EditOutlined, CheckCircleOutlined, EyeOutlined, EyeInvisibleOutlined,
-    ClockCircleOutlined, LinkOutlined, ReloadOutlined,
+    ClockCircleOutlined, LinkOutlined, ReloadOutlined, TeamOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -57,6 +57,21 @@ const SprintsTab = ({ project }) => {
     const copySprintLink = (token) => {
         navigator.clipboard.writeText(`${window.location.origin}/sprint-portal/${token}`);
         message.success('Ссылка на спринт скопирована');
+    };
+
+    const getSprintTeamLink = useMutation({
+        mutationFn: (sprintId) => apiClient.post(`/board-projects/${project._id}/sprints/${sprintId}/team-link`),
+        onSuccess: ({ data }) => {
+            invalidate();
+            navigator.clipboard.writeText(`${window.location.origin}/team-portal/${data.data.token}`);
+            message.success('Ссылка для команды скопирована');
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось получить ссылку'),
+    });
+
+    const copySprintTeamLink = (token) => {
+        navigator.clipboard.writeText(`${window.location.origin}/team-portal/${token}`);
+        message.success('Ссылка для команды скопирована');
     };
 
     const openCreate = () => {
@@ -152,6 +167,25 @@ const SprintsTab = ({ project }) => {
                                     <Button size="small" icon={<LinkOutlined />} loading={getSprintLink.isPending}
                                         onClick={() => getSprintLink.mutate(s._id)}>
                                         Ссылка для клиента
+                                    </Button>
+                                )}
+                            </Space>
+                            <Space size={4}>
+                                {s.teamToken ? (
+                                    <>
+                                        <Button size="small" icon={<TeamOutlined />} onClick={() => copySprintTeamLink(s.teamToken)}>
+                                            Ссылка для команды
+                                        </Button>
+                                        <Popconfirm title="Обновить ссылку? Старая перестанет работать." onConfirm={() => getSprintTeamLink.mutate(s._id)}>
+                                            <Tooltip title="Новая ссылка">
+                                                <Button size="small" icon={<ReloadOutlined />} loading={getSprintTeamLink.isPending} />
+                                            </Tooltip>
+                                        </Popconfirm>
+                                    </>
+                                ) : (
+                                    <Button size="small" icon={<TeamOutlined />} loading={getSprintTeamLink.isPending}
+                                        onClick={() => getSprintTeamLink.mutate(s._id)}>
+                                        Ссылка для команды
                                     </Button>
                                 )}
                             </Space>

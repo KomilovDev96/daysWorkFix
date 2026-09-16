@@ -2,14 +2,17 @@ const ExcelJS = require('exceljs');
 const path = require('path');
 const fs   = require('fs');
 const BoardProject = require('../models/BoardProject');
+const TaskComment = require('../models/TaskComment');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { logProjectEvent } = require('../utils/projectEvents');
 const { generateUniquePortalToken } = require('../utils/portalToken');
+const { canApproveFromUser, assertStatusTransition } = require('../utils/taskStatusRules');
 
 const STATUS_LABELS = {
     todo: 'К выполнению',
     in_progress: 'В процессе',
+    review: 'На проверке',
     done: 'Выполнено',
     cancelled: 'Отменено',
 };
@@ -130,6 +133,14 @@ exports.updateTask = catchAsync(async (req, res, next) => {
 
     const task = project.tasks.id(req.params.taskId);
     if (!task) return next(new AppError('Задача не найдена', 404));
+
+    if (req.body.status !== undefined) {
+        try {
+            assertStatusTransition(task.status, req.body.status, canApproveFromUser(req.user));
+        } catch (e) {
+            return next(e);
+        }
+    }
 
     Object.assign(task, req.body);
     await project.save();
@@ -297,6 +308,24 @@ exports.regenerateSprintLink = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'success', data: { token: sprint.token, link } });
 });
 
+// POST /:id/sprints/:sprintId/team-link — выдать (или перевыпустить) публичную ссылку «для команды»
+// (/team-portal/:token). Одна ссылка на спринт: при открытии участник сам выбирает свою роль
+// (frontend/backend/pm/tester) и дальше видит/двигает только задачи своей роли (PM — видит все).
+exports.regenerateSprintTeamLink = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    const sprint = project.sprints.id(req.params.sprintId);
+    if (!sprint) return next(new AppError('Спринт не найден', 404));
+
+    sprint.teamToken = await generateUniquePortalToken(BoardProject, 'sprints.teamToken');
+    await project.save();
+
+    const link = `${(process.env.APP_PUBLIC_URL || '').replace(/\/+$/, '')}/team-portal/${sprint.teamToken}`;
+    res.status(200).json({ status: 'success', data: { token: sprint.teamToken, link } });
+});
+
 // POST /:id/sprints/:sprintId/task-api-link — выпустить (или перевыпустить) API-токен для приёма
 // выполненных задач именно в этот спринт. В отличие от общего taskApi проекта — без тумблера
 // enabled: наличие токена уже означает, что приём включён; старый токен при перевыпуске гаснет.
@@ -357,6 +386,43 @@ exports.deleteTaskFile = catchAsync(async (req, res, next) => {
     await project.save();
 
     res.status(204).json({ status: 'success', data: null });
+});
+
+// ── Task comments ─────────────────────────────────────────────────────────────
+// Комментарии к конкретной задаче (не к проекту целиком). Автор здесь всегда
+// текущий залогиненный пользователь — в отличие от публичной командной ссылки,
+// где имя вводится вручную (см. teamPortalPublicController).
+
+exports.getTaskComments = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+
+    const task = project.tasks.id(req.params.taskId);
+    if (!task) return next(new AppError('Задача не найдена', 404));
+
+    const comments = await TaskComment.find({ project: project._id, taskId: task._id }).sort({ createdAt: 1 });
+    res.status(200).json({ status: 'success', data: { comments } });
+});
+
+exports.addTaskComment = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+
+    const task = project.tasks.id(req.params.taskId);
+    if (!task) return next(new AppError('Задача не найдена', 404));
+
+    const text = req.body.text?.trim();
+    if (!text) return next(new AppError('Текст комментария обязателен', 400));
+
+    const comment = await TaskComment.create({
+        project: project._id,
+        taskId: task._id,
+        authorName: req.user.name,
+        role: req.user.specialization || null,
+        text,
+    });
+
+    res.status(201).json({ status: 'success', data: { comment } });
 });
 
 // ── Excel export ──────────────────────────────────────────────────────────────

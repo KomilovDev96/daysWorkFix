@@ -42,6 +42,7 @@ router.patch('/:id/sprints/:sprintId',    manage, ctrl.updateSprint);
 router.delete('/:id/sprints/:sprintId',   manage, ctrl.deleteSprint);
 router.post('/:id/sprints/:sprintId/link', manage, ctrl.regenerateSprintLink);
 router.post('/:id/sprints/:sprintId/task-api-link', manage, ctrl.regenerateSprintTaskApiLink);
+router.post('/:id/sprints/:sprintId/team-link', manage, ctrl.regenerateSprintTeamLink);
 
 router.post('/:id/tasks',           ctrl.addTask);
 router.patch('/:id/tasks/:taskId',  ctrl.updateTask);
@@ -49,5 +50,8 @@ router.delete('/:id/tasks/:taskId', ctrl.deleteTask);
 
 router.post('/:id/tasks/:taskId/files',           upload.single('file'), ctrl.uploadTaskFile);
 router.delete('/:id/tasks/:taskId/files/:fileId', ctrl.deleteTaskFile);
+
+router.get('/:id/tasks/:taskId/comments',  ctrl.getTaskComments);
+router.post('/:id/tasks/:taskId/comments', ctrl.addTaskComment);
 
 module.exports = router;

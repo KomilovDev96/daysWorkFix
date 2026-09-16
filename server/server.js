@@ -43,6 +43,7 @@ app.use('/api/portal',  require('./routes/portalRoutes'));
 app.use('/api/public',  require('./routes/publicPortalRoutes'));   // публичный портал по токену (без auth)
 app.use('/api/public',  require('./routes/publicFabrioRoutes'));   // ВРЕМЕННО: заполнение задач Fabrio без auth (только dev)
 app.use('/api/public',  require('./routes/publicTaskApiRoutes'));  // публичный приём выполненных задач по API-токену проекта (без auth)
+app.use('/api/public',  require('./routes/publicTeamPortalRoutes')); // публичная командная доска спринта по ролям (без auth)
 app.use('/api/board-projects', require('./routes/boardProjectRoutes'));
 app.use('/api/settings',      require('./routes/settingsRoutes'));
 app.use('/api/managed-tasks', require('./routes/managedTaskRoutes'));
