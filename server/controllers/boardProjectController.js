@@ -326,6 +326,21 @@ exports.regenerateSprintTeamLink = catchAsync(async (req, res, next) => {
     res.status(200).json({ status: 'success', data: { token: sprint.teamToken, link } });
 });
 
+// POST /:id/team-link — выдать (или перевыпустить) публичную ссылку «для команды» на ВЕСЬ
+// проект (все спринты сразу), для случая, когда в UI выбрано «Все спринты». Работает так же,
+// как sprints.teamToken (/team-portal/:token), но без привязки к одному спринту.
+exports.regenerateProjectTeamLink = catchAsync(async (req, res, next) => {
+    const project = await BoardProject.findById(req.params.id);
+    if (!project) return next(new AppError('Проект не найден', 404));
+    if (!assertProjectOwner(project, req.user, next)) return;
+
+    project.teamToken = await generateUniquePortalToken(BoardProject, 'teamToken');
+    await project.save();
+
+    const link = `${(process.env.APP_PUBLIC_URL || '').replace(/\/+$/, '')}/team-portal/${project.teamToken}`;
+    res.status(200).json({ status: 'success', data: { token: project.teamToken, link } });
+});
+
 // POST /:id/sprints/:sprintId/task-api-link — выпустить (или перевыпустить) API-токен для приёма
 // выполненных задач именно в этот спринт. В отличие от общего taskApi проекта — без тумблера
 // enabled: наличие токена уже означает, что приём включён; старый токен при перевыпуске гаснет.

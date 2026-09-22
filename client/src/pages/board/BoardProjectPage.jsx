@@ -1119,6 +1119,23 @@ const BoardProjectPage = () => {
         message.success('Ссылка для команды скопирована');
     };
 
+    // Публичная ссылка «для команды» на ВЕСЬ проект (все спринты сразу) — для режима
+    // «Все спринты» в переключателе ниже.
+    const getProjectTeamLink = useMutation({
+        mutationFn: () => apiClient.post(`/board-projects/${currentProject._id}/team-link`),
+        onSuccess: ({ data }) => {
+            queryClient.invalidateQueries({ queryKey: ['board-projects'] });
+            navigator.clipboard.writeText(`${window.location.origin}/team-portal/${data.data.token}`);
+            message.success('Ссылка для команды скопирована');
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось получить ссылку'),
+    });
+
+    const copyProjectTeamLink = (token) => {
+        navigator.clipboard.writeText(`${window.location.origin}/team-portal/${token}`);
+        message.success('Ссылка для команды скопирована');
+    };
+
     // ── Handlers ───────────────────────────────────────────────────────────────
 
     const openCreateProject = () => {
@@ -1622,6 +1639,20 @@ const BoardProjectPage = () => {
                                             </Button>
                                         )}
                                     </>
+                                )}
+                                {selectedSprintId === 'all' && (
+                                    currentProject.teamToken ? (
+                                        <Button size="small" icon={<TeamOutlined />}
+                                            onClick={() => copyProjectTeamLink(currentProject.teamToken)}>
+                                            Ссылка для команды (все спринты)
+                                        </Button>
+                                    ) : (
+                                        <Button size="small" icon={<TeamOutlined />}
+                                            loading={getProjectTeamLink.isPending}
+                                            onClick={() => getProjectTeamLink.mutate()}>
+                                            Ссылка для команды (все спринты)
+                                        </Button>
+                                    )
                                 )}
                             </Space>
                         </Card>

@@ -113,6 +113,10 @@ const boardProjectSchema = new mongoose.Schema(
         sprints: [sprintSchema],
         portal: { type: portalSchema, default: () => ({}) },
         taskApi: { type: taskApiSchema, default: () => ({}) },
+        // Публичная ссылка «для команды» на ВЕСЬ проект сразу (все спринты), в отличие от
+        // sprints.teamToken — той же формы (/team-portal/:token), но без фильтра по спринту:
+        // PM видит и утверждает задачи всех спринтов, остальные роли — только свои по всем спринтам.
+        teamToken: { type: String, default: null },
     },
     { timestamps: true }
 );
@@ -137,6 +141,10 @@ boardProjectSchema.index(
 boardProjectSchema.index(
     { 'sprints.teamToken': 1 },
     { unique: true, partialFilterExpression: { 'sprints.teamToken': { $type: 'string' } } }
+);
+boardProjectSchema.index(
+    { teamToken: 1 },
+    { unique: true, partialFilterExpression: { teamToken: { $type: 'string' } } }
 );
 
 module.exports = mongoose.model('BoardProject', boardProjectSchema);

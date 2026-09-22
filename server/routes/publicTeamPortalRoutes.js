@@ -18,6 +18,7 @@ const mutateLimiter = rateLimit({
 
 router.get('/team-portal/:token',                        ctrl.getTeamPortal);
 router.get('/team-portal/:token/:role/tasks',             ctrl.getTeamPortalTasks);
+router.post('/team-portal/:token/:role/tasks',            mutateLimiter, ctrl.createTeamPortalTask);
 router.patch('/team-portal/:token/:role/tasks/:taskId',   mutateLimiter, ctrl.updateTeamPortalTaskStatus);
 router.get('/team-portal/:token/tasks/:taskId/comments',  ctrl.getTeamPortalComments);
 router.post('/team-portal/:token/:role/tasks/:taskId/comments', mutateLimiter, ctrl.addTeamPortalComment);

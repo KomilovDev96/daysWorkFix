@@ -46,8 +46,8 @@ const TeamPortalRoleSelectPage = () => {
         <div style={{ maxWidth: 700, margin: '0 auto', padding: '60px 16px' }}>
             <div style={{ textAlign: 'center', marginBottom: 32 }}>
                 <Text type="secondary">{data.project.name}</Text>
-                <Title level={2} style={{ margin: '4px 0' }}>{data.sprint.name}</Title>
-                <Text type="secondary">Выберите вашу роль, чтобы открыть доску спринта</Text>
+                <Title level={2} style={{ margin: '4px 0' }}>{data.sprint ? data.sprint.name : 'Все спринты'}</Title>
+                <Text type="secondary">Выберите вашу роль, чтобы открыть доску {data.sprint ? 'спринта' : 'по всем спринтам'}</Text>
             </div>
             <Row gutter={[16, 16]}>
                 {data.roles.map((r) => (

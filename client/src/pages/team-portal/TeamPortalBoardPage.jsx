@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Typography, Card, Tag, Space, Button, Tooltip, Result, Spin, Empty, message } from 'antd';
+import { Typography, Card, Tag, Space, Button, Tooltip, Result, Spin, Empty, message, Modal, Form, Input, Select, InputNumber, DatePicker } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import publicApi from '../../shared/api/publicApi';
@@ -26,6 +27,8 @@ const TeamPortalBoardPage = () => {
     const { token, role } = useParams();
     const queryClient = useQueryClient();
     const [detailTaskId, setDetailTaskId] = useState(null);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [createForm] = Form.useForm();
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ['team-portal-tasks', token, role],
@@ -49,6 +52,19 @@ const TeamPortalBoardPage = () => {
         onError: (e) => message.error(e.response?.data?.message || 'Не удалось изменить статус'),
     });
 
+    const createTask = useMutation({
+        mutationFn: (payload) => publicApi.post(`/team-portal/${token}/${role}/tasks`, payload),
+        onSuccess: ({ data: res }) => {
+            queryClient.setQueryData(['team-portal-tasks', token, role], (old) =>
+                old ? { ...old, tasks: [...old.tasks, res.data.task] } : old
+            );
+            message.success('Задача создана');
+            setCreateOpen(false);
+            createForm.resetFields();
+        },
+        onError: (e) => message.error(e.response?.data?.message || 'Не удалось создать задачу'),
+    });
+
     if (isLoading) return <Spin size="large" style={{ display: 'block', margin: '120px auto' }} />;
     if (isError || !data) {
         return (
@@ -60,7 +76,7 @@ const TeamPortalBoardPage = () => {
         );
     }
 
-    const { sprint, project, tasks } = data;
+    const { sprint, project, tasks, sprints } = data;
     const isPm = role === 'pm';
     const detailTask = tasks.find((t) => t._id === detailTaskId) || null;
 
@@ -86,6 +102,7 @@ const TeamPortalBoardPage = () => {
                     </Text>
                 )}
                 <Space size={4} wrap style={{ marginBottom: 8 }}>
+                    {task.sprintName && <Tag color="geekblue" style={{ margin: 0 }}>{task.sprintName}</Tag>}
                     {task.hours > 0 && <Tag color="blue" style={{ margin: 0 }}>{task.hours} ч</Tag>}
                     {task.assignedTo?.name && <Tag style={{ margin: 0 }}>{task.assignedTo.name}</Tag>}
                     {task.dueDate && <Tag style={{ margin: 0 }}>до {dayjs(task.dueDate).format('DD.MM')}</Tag>}
@@ -116,10 +133,15 @@ const TeamPortalBoardPage = () => {
         <div style={{ maxWidth: 1100, margin: '0 auto', padding: '24px 16px 60px' }}>
             <div style={{ marginBottom: 20 }}>
                 <Text type="secondary">{project.name}</Text>
-                <Title level={2} style={{ margin: '4px 0' }}>{sprint.name}</Title>
-                <Space size={12} align="center">
+                <Title level={2} style={{ margin: '4px 0' }}>{sprint ? sprint.name : 'Все спринты'}</Title>
+                <Space size={12} align="center" wrap>
                     <Tag color={ROLE_COLORS[role]}>{ROLE_LABELS[role]}</Tag>
                     <Link to={`/team-portal/${token}`} style={{ fontSize: 13 }}>Сменить роль</Link>
+                    {isPm && (
+                        <Button size="small" type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+                            Создать задачу
+                        </Button>
+                    )}
                 </Space>
             </div>
 
@@ -165,6 +187,53 @@ const TeamPortalBoardPage = () => {
                 role={role}
                 onClose={() => setDetailTaskId(null)}
             />
+
+            {isPm && (
+                <Modal
+                    title="Новая задача"
+                    open={createOpen}
+                    onCancel={() => setCreateOpen(false)}
+                    onOk={() => createForm.submit()}
+                    confirmLoading={createTask.isPending}
+                    okText="Создать"
+                    destroyOnClose
+                >
+                    <Form
+                        form={createForm}
+                        layout="vertical"
+                        onFinish={(values) => createTask.mutate({
+                            ...values,
+                            dueDate: values.dueDate ? values.dueDate.format('YYYY-MM-DD') : null,
+                        })}
+                    >
+                        <Form.Item name="title" label="Название" rules={[{ required: true, message: 'Укажите название' }]}>
+                            <Input placeholder="Что нужно сделать" />
+                        </Form.Item>
+                        <Form.Item name="execRole" label="Исполнитель (роль)" rules={[{ required: true, message: 'Выберите роль' }]}>
+                            <Select options={Object.keys(ROLE_LABELS).map((r) => ({ value: r, label: ROLE_LABELS[r] }))} />
+                        </Form.Item>
+                        {!sprint && (
+                            <Form.Item name="sprintId" label="Спринт" rules={[{ required: true, message: 'Выберите спринт' }]}>
+                                <Select options={(sprints || []).map((s) => ({ value: s._id, label: s.name }))} />
+                            </Form.Item>
+                        )}
+                        <Form.Item name="description" label="Описание">
+                            <Input.TextArea rows={3} />
+                        </Form.Item>
+                        <Space size={12} style={{ width: '100%' }}>
+                            <Form.Item name="hours" label="Часы" style={{ flex: 1 }}>
+                                <InputNumber min={0} style={{ width: '100%' }} />
+                            </Form.Item>
+                            <Form.Item name="dueDate" label="Срок" style={{ flex: 1 }}>
+                                <DatePicker style={{ width: '100%' }} />
+                            </Form.Item>
+                        </Space>
+                        <Form.Item name="notes" label="Заметки">
+                            <Input.TextArea rows={2} />
+                        </Form.Item>
+                    </Form>
+                </Modal>
+            )}
 
             <div style={{ textAlign: 'center', marginTop: 24 }}>
                 <Text type="secondary" style={{ fontSize: 12 }}>DaysWorkFix · azdev.uz</Text>
